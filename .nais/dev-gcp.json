@@ -1,0 +1,43 @@
+{
+  "ingresses": [
+    "https://loggkamel.intern.dev.nav.no"
+  ],
+
+  "db": {
+    "poolsize": "2",
+    "type": "POSTGRES_18",
+    "tier": "db-f1-micro",
+    "name": "testlogg"
+  },
+  "db-flags": {
+    "pgaudit": {
+      "enabled": "off",
+      "logtype": "ddl,role,write"
+    }
+  },
+
+  "inbound": [
+    {
+      "name": "azure-token-generator",
+      "namespace": "nais",
+      "cluster": "dev-gcp"
+    }
+  ],
+  "nais": {
+    "cluster": {
+      "plan" : "startup-4",
+      "type": "dev"
+    }
+  },
+  "mem": {
+    "min": "32Mi",
+    "max": "256Mi"
+  },
+  "cpu": {
+    "min": "143m"
+  },
+  "replica": {
+    "min": 1,
+    "max": 1
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "ingresses": [],
+
+  "inbound": [
+    {
+      "name": "azure-token-generator",
+      "namespace": "nais",
+      "cluster": "prod-gcp"
+    }
+  ],
+  "nais": {
+    "cluster": {
+      "plan" : "startup-4",
+      "type": "prod"
+    }
+  },
+  "mem": {
+    "min": "32Mi",
+    "max": "1Gi"
+  },
+  "cpu": {
+    "min": "50m"
+  },
+  "replica": {
+    "min": 1,
+    "max": 1
+  }
+}

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>no.nav.sikkerhetstjenesten</groupId>
+  <artifactId>loggkamel</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>${project.artifactId}-${project.version}</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <surefire.plugin.version>3.0.0-M4</surefire.plugin.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <logback.version>1.5.22</logback.version>
+    <logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>
+    <spring.boot-version>4.0.2</spring.boot-version>
+    <camel-version>4.14.4</camel-version>
+    <java-version>21</java-version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Spring Boot BOM -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot-version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Camel BOM -->
+      <dependency>
+        <groupId>org.apache.camel.springboot</groupId>
+        <artifactId>camel-spring-boot-bom</artifactId>
+        <version>${camel-version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <!-- Hvis undertow i stedet for tomcat -->
+      <!--exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions-->
+    </dependency>
+
+    <!-- Hvis undertow i stedet for tomcat-->
+    <!--dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-undertow</artifactId>
+    </dependency-->
+
+    <!-- Camel -->
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-spring-boot-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-test-spring-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-quartz-starter</artifactId>
+    </dependency>
+    <!--dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-spring-jdbc-starter</artifactId>
+    </dependency-->
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-http-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-log-starter</artifactId>
+    </dependency>
+
+    <!-- Logstash -->
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>${logstash-logback-encoder.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Kanskje til Postgres on-prem -->
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-rest-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-file-watch-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-file-starter</artifactId>
+    </dependency>
+
+    <!-- Riktig versjon på avhengigheter som følger av andre -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>[7.0.0,)</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot-version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.1</version>
+        <configuration>
+          <release>${java-version}</release>
+          <source>${java-version}</source>
+          <target>${java-version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
