@@ -92,6 +92,10 @@
     </dependency-->
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-rest-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-http-starter</artifactId>
     </dependency>
     <dependency>
@@ -110,10 +114,6 @@
     <!-- Kanskje til Postgres on-prem -->
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-rest-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-file-watch-starter</artifactId>
     </dependency>
     <dependency>
@@ -121,7 +121,7 @@
       <artifactId>camel-file-starter</artifactId>
     </dependency>
 
-    <!-- Riktig versjon på avhengigheter som følger av andre -->
+    <!-- Versjon på avhengigheter som følger av andre -->
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
@@ -130,6 +130,8 @@
   </dependencies>
 
   <build>
+    <!-- Rename to loggkamel.jar -->
+    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

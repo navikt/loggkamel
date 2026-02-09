@@ -1,3 +1,3 @@
 FROM gcr.io/distroless/java21-debian13
-COPY /target/loggtransport.jar app.jar
+COPY /target/loggkamel.jar app.jar
 CMD ["app.jar"]
