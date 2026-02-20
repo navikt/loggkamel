@@ -1,0 +1,54 @@
+management:
+  info:
+    git:
+      mode: simple
+  observations:
+    annotations:
+      enabled: true
+  health:
+    group:
+      readiness:
+        show-components: never
+      liveness:
+        show-components: never
+    redis:
+      enabled: false
+    ssl:
+      enabled: false
+    ping:
+      enabled: false
+    diskspace:
+      enabled: false
+  endpoints:
+    web:
+      base-path: /monitoring
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: loggtransport
+  datasource:
+    url: ${db.jdbc.url}
+    username: ${db.username}
+    password: ${db.password}
+    hikari:
+      connection-timeout: 5000
+      max-lifetime: 1200000
+      idle-timeout: 600000
+      connection-test-query: SELECT 1
+      maximum-pool-size: ${db.poolsize}
+
+no.nav.security.jwt:
+  issuer:
+    azuread:
+      discovery-url: ${azure.app.well.known.url}
+      accepted_audience: ${azure.app.client.id}
+
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: ${azure.app.client.id}
+    csrf:
+      enabled: true
