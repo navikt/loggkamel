@@ -13,6 +13,12 @@ import java.util.regex.Pattern;
 public class PgBean {
     private static final Logger log = LoggerFactory.getLogger(PgBean.class);
 
+    static final String LOG_TIME = "logTime";
+    static final String NAV_IDENT = "navIdent";
+    static final String DB_NAME = "dbName";
+    static final String LOG_TYPE = "logType";
+    static final String SQL_COMMAND = "sqlCommand";
+
     public void extract(Exchange exchange) {
         Message msg = exchange.getMessage();
         String body = msg.getBody(String.class);
@@ -31,16 +37,16 @@ public class PgBean {
 //            log.info("SQL command: " + matcher.group(5));
 //            log.info("rest: " + matcher.group(6));
 
-            exchange.setVariable("logTime", matcher.group(1));
-            exchange.setVariable("navIdent", matcher.group(2));
-            exchange.setVariable("dbName", matcher.group(3));
-            exchange.setVariable("logType", matcher.group(4));
-            exchange.setVariable("sqlCommand", matcher.group(5));
+            exchange.setVariable(LOG_TIME, matcher.group(1));
+            exchange.setVariable(NAV_IDENT, matcher.group(2));
+            exchange.setVariable(DB_NAME, matcher.group(3));
+            exchange.setVariable(LOG_TYPE, matcher.group(4));
+            exchange.setVariable(SQL_COMMAND, matcher.group(5));
 
             msg.setBody(body);
         } else {
             log.error("Log failed to match expected pattern");
-//            throw new RuntimeException("Log failed to match expected pattern");
+            throw new RuntimeException("Log failed to match expected pattern");
         }
 
     }
