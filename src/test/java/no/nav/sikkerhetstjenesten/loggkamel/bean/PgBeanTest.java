@@ -42,7 +42,8 @@ class PgBeanTest {
         String dbName = "dbName";
         String logType = "READ";
         String sqlCommand = "sqlCommand";
-        String logMessageBody = String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,1,1,%s,SELECT,,,\"%s\",<none>\n", logTime, navIdent, dbName, logType, sqlCommand);
+        String sqlParameters = "<none>";
+        String logMessageBody = String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,1,1,%s,SELECT,,,\"%s\",%s\n", logTime, navIdent, dbName, logType, sqlCommand, sqlParameters);
 
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
@@ -54,6 +55,7 @@ class PgBeanTest {
         verify(exchange).setVariable(DB_NAME, dbName);
         verify(exchange).setVariable(LOG_TYPE, logType);
         verify(exchange).setVariable(SQL_COMMAND, sqlCommand);
+        verify(exchange).setVariable(SQL_PARAMS, sqlParameters);
     }
 
 }

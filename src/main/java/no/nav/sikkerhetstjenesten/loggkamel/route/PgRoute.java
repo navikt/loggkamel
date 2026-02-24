@@ -15,7 +15,7 @@ public class PgRoute extends RouteBuilder {
 
         // TODO: configure and test reasonable retry pattern here
         errorHandler(deadLetterChannel("file:src/main/resources/files/output/dead-letter?fileExist=Append")
-                .maximumRedeliveries(3)
+                .maximumRedeliveries(1)
                 .useExponentialBackOff()
         );
 
