@@ -1,5 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.bean;
 
+import no.nav.sikkerhetstjenesten.loggkamel.config.EntraProxyAnsatt;
+import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,12 @@ class PgBeanTest {
 
     @Mock
     Message message;
+
+    @Mock
+    EntraProxyAnsatt entraProxyAnsatt;
+
+    @Mock
+    EntraProxyService entraProxyService;
 
     @InjectMocks
     PgBean pgBean;
@@ -48,6 +56,10 @@ class PgBeanTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
+        String ePost = "epost";
+        when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
+        when(entraProxyAnsatt.getEPost()).thenReturn(ePost);
+
         pgBean.extract(exchange);
 
         verify(exchange).setVariable(LOG_TIME, logTime);
@@ -56,6 +68,7 @@ class PgBeanTest {
         verify(exchange).setVariable(LOG_TYPE, logType);
         verify(exchange).setVariable(SQL_COMMAND, sqlCommand);
         verify(exchange).setVariable(SQL_PARAMS, sqlParameters);
+        verify(exchange).setVariable(NAV_EPOST, ePost);
     }
 
 }
