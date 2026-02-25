@@ -32,7 +32,5 @@ public class PgRoute extends RouteBuilder {
                 // TODO: Confirm that you can access individual variables by name here
                 // TODO: Have the output location depend on (incorporate) db name
                 .toD("file:src/main/resources/files/output/?fileExist=Append");
-
-
     }
 }
