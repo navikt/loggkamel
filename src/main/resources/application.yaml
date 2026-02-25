@@ -1,1 +1,2 @@
-ENTRA_PROXY_BASE_URL: http://entra-proxy.sikkerhetstjenesten
+#TODO: move into env-specific configurations, including env-specific addresses
+ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no

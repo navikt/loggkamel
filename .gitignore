@@ -41,4 +41,4 @@ target/
 hs_err_pid*
 replay_pid*
 
-src/main/resources/files
+src/main/resources/files/*
