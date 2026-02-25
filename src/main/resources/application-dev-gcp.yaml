@@ -17,3 +17,6 @@ management:
   httpexchanges:
     recording:
       enabled: true
+
+#TODO: Set up in prod with prod-specific baseUrl
+ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no
