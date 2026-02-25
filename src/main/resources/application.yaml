@@ -1,4 +1,23 @@
-
+# TODO: remove this once can use env-specific configuration
+spring:
+  mvc:
+    log-request-details: true
+management:
+  endpoint:
+    env:
+      show-values: always
+    configprops:
+      show-values: always
+    health:
+      show-details: always
+      show-components: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  httpexchanges:
+    recording:
+      enabled: true
 
 logging:
   level:
