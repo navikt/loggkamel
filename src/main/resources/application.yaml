@@ -3,7 +3,7 @@ ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no
 
 logging:
   level:
-    root: debug
+    root: info
 
 management:
   endpoint:
