@@ -19,9 +19,15 @@ public class PgBean {
     static final String LOG_TIME = "logTime";
     static final String NAV_IDENT = "navIdent";
     static final String DB_NAME = "dbName";
-    static final String LOG_TYPE = "logType";
-    static final String SQL_COMMAND = "sqlCommand";
-    static final String SQL_PARAMS = "sqlParams";
+    static final String AUDIT_TYPE = "auditType";
+    static final String STATEMENT_ID = "statementId";
+    static final String SUBSTATEMENT_ID = "substatementId";
+    static final String PG_AUDIT_CLASS = "auditClass";
+    static final String PG_AUDIT_COMMAND = "auditCommand";
+    static final String PG_AUDIT_OBJECT_TYPE = "auditType";
+    static final String PG_AUDIT_OBJECT_NAME = "auditName";
+    static final String SQL_STATEMENT = "sqlStatement";
+    static final String SQL_PARAMETER = "sqlParameter";
     static final String NAV_EPOST = "navEpost";
 
     private final EntraProxyService entraProxyService;
@@ -35,7 +41,7 @@ public class PgBean {
         Message msg = exchange.getMessage();
         String body = msg.getBody(String.class);
 
-        String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(READ|WRITE|FUNCTION|DDL|MISC|MISC_SET),.*?,.*?,.*?,\"([\\s\\S]*)\",(.*)";
+        String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(body);
@@ -50,25 +56,38 @@ public class PgBean {
         String logTime = matcher.group(1);
         String navIdent = matcher.group(2);
         String dbName = matcher.group(3);
-        String logType = matcher.group(4);
-        String sqlCommand = matcher.group(5);
-        String sqlParameters = matcher.group(6);
+        String auditType = matcher.group(4);
+        String statementId = matcher.group(5);
+        String substatementId = matcher.group(6);
+        String pgAuditClass = matcher.group(7);
+        String pgAuditCommand = matcher.group(8);
+        String pgAuditObjectType = matcher.group(9);
+        String pgAuditObjectName = matcher.group(10);
+        String sqlStatement = matcher.group(12);
+        String sqlParameter = matcher.group(14);
 
         EntraProxyAnsatt entraProxyAnsatt;
         try {
             entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
+
+            // TODO: handle null or empty response here
         } catch (Exception e) {
             log.error("Error when fetching employee info", e);
             throw e;
         }
         String navEpost = entraProxyAnsatt.getEPost();
-
         exchange.setVariable(LOG_TIME, logTime);
         exchange.setVariable(NAV_IDENT, navIdent);
         exchange.setVariable(DB_NAME, dbName);
-        exchange.setVariable(LOG_TYPE, logType);
-        exchange.setVariable(SQL_COMMAND, sqlCommand);
-        exchange.setVariable(SQL_PARAMS, sqlParameters);
+        exchange.setVariable(AUDIT_TYPE, auditType);
+        exchange.setVariable(STATEMENT_ID, statementId);
+        exchange.setVariable(SUBSTATEMENT_ID, substatementId);
+        exchange.setVariable(PG_AUDIT_CLASS, pgAuditClass);
+        exchange.setVariable(PG_AUDIT_COMMAND, pgAuditCommand);
+        exchange.setVariable(PG_AUDIT_OBJECT_TYPE, pgAuditObjectType);
+        exchange.setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
+        exchange.setVariable(SQL_STATEMENT, sqlStatement);
+        exchange.setVariable(SQL_PARAMETER, sqlParameter);
         exchange.setVariable(NAV_EPOST, navEpost);
 
         msg.setBody(body);
