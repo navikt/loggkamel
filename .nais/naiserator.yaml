@@ -35,13 +35,11 @@ spec:
     enabled: true
     path: /monitoring/prometheus
   readiness:
-    path: /actuator/health/readiness #/monitoring/health/readiness
-    initialDelay: 60
-    failureThreshold: 10
+    path: /monitoring/health/readiness #/actuator/health/readiness
+    initialDelay: 30
   liveness:
-    path: /actuator/health/liveness #/monitoring/health/liveness
-    initialDelay: 60
-    failureThreshold: 10
+    path: /monitoring/health/liveness #/actuator/health/liveness
+    initialDelay: 30
   port: 8080
   replicas:
     max: {{replica.max}}
