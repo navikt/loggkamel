@@ -6,7 +6,7 @@ metadata:
   labels:
     team: sikkerhetstjenesten
 spec:
-  leaderElection: false
+  leaderElection: true
   gcp:
     sqlInstances:
       - type: {{db.type}}
@@ -37,9 +37,11 @@ spec:
   readiness:
     path: /actuator/health/readiness #/monitoring/health/readiness
     initialDelay: 30
+    failureThreshold: 10
   liveness:
     path: /actuator/health/liveness #/monitoring/health/liveness
     initialDelay: 30
+    failureThreshold: 10
   port: 8080
   replicas:
     max: {{replica.max}}
@@ -50,6 +52,7 @@ spec:
     requests:
       cpu: '{{cpu.min}}'
       memory: '{{mem.min}}'
+  terminationGracePeriodSeconds: 60
   accessPolicy:
     outbound:
       rules:
