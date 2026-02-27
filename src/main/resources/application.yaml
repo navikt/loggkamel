@@ -23,19 +23,5 @@ logging:
   level:
     root: info
 
-#management:
-#  endpoint:
-#    env:
-#      show-values: always
-#    configprops:
-#      show-values: always
-#    health:
-#      show-details: always
-#      show-components: always
-#  endpoints:
-#    web:
-#      exposure:
-#        include: '*'
-
 #TODO: remove this once have spring profiles working
 ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no

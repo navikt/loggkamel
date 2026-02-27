@@ -2,7 +2,6 @@
   "ingresses": [
     "https://loggkamel.intern.dev.nav.no"
   ],
-
   "db": {
     "poolsize": "2",
     "type": "POSTGRES_18",
@@ -15,7 +14,6 @@
       "logtype": "ddl,role,write"
     }
   },
-
   "inbound": [
     {
       "name": "azure-token-generator",
@@ -37,7 +35,7 @@
     "min": "143m"
   },
   "replica": {
-    "min": 2,
-    "max": 2
+    "min": 1,
+    "max": 1
   }
 }
