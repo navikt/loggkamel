@@ -21,7 +21,7 @@ management:
 
 logging:
   level:
-    root: info
+    root: debug
 
 #TODO: remove this once have spring profiles working
 ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no
