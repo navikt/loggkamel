@@ -17,7 +17,9 @@ public class ClusterUtils {
     public static String[] getProfiles() {
         var currentAsString = getCurrentAsString();
         log.info("local env: " + currentAsString);
+        log.info("cluster names: " + List.of(Cluster.values()));
         Optional<Cluster> currentOptional = Arrays.stream(Cluster.values()).filter(e -> e.clusterName.equals(currentAsString)).findFirst();
+        log.info("current optional: " + currentOptional);
 
         if (currentOptional.isEmpty()) {
             return new String[]{};
