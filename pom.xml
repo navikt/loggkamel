@@ -8,6 +8,17 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>${project.artifactId}-${project.version}</name>
 
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2</url>
+    </repository>
+    <repository>
+      <id>github</id>
+      <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
+    </repository>
+  </repositories>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire.plugin.version>3.5.5</surefire.plugin.version>
@@ -114,6 +125,12 @@
       <artifactId>lombok</artifactId>
       <version>1.18.42</version>
       <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>no.nav.boot</groupId>
+      <artifactId>boot-conditionals</artifactId>
+      <version>6.0.3</version>
     </dependency>
 
     <!-- Logstash -->
