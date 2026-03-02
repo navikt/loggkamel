@@ -13,6 +13,7 @@ management:
       show-components: always
   endpoints:
     web:
+      base-path: /monitoring
       exposure:
         include: '*'
   httpexchanges:
