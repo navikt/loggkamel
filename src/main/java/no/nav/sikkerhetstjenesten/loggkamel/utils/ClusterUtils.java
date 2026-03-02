@@ -1,6 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.utils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.utils.ClusterConstraints.*;
 
@@ -8,7 +10,14 @@ public class ClusterUtils {
 
     public static String[] getProfiles() {
         String currentAsString = System.getenv(NAIS_CLUSTER_NAME) != null ? System.getenv(NAIS_CLUSTER_NAME) : LOCAL;
-        Cluster current = Cluster.valueOf(currentAsString);
+        System.out.println("local env: " + currentAsString);
+        Optional<Cluster> currentOptional = Arrays.stream(Cluster.values()).filter(e -> e.clusterName.equals(currentAsString)).findFirst();
+
+        if (currentOptional.isEmpty()) {
+            return new String[]{};
+        }
+
+        Cluster current = currentOptional.get();
 
         if (List.of(Cluster.TEST_CLUSTER, Cluster.LOCAL_CLUSTER).contains(current)) {
             System.setProperty(NAIS_CLUSTER_NAME, current.clusterName);
