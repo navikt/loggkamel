@@ -1,3 +1,4 @@
+
 spring:
   mvc:
     log-request-details: true
@@ -20,3 +21,4 @@ management:
 
 #TODO: Set up in prod with prod-specific baseUrl
 ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no
+debug: true
