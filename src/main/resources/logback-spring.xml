@@ -23,6 +23,7 @@
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %X{Nav-CallId} [%thread] %-5level %logger{70} - %msg%n</Pattern>
             </layout>
         </appender>
+        <logger name="org.springframework" level="trace"/>
         <logger name="org.apache.camel" level="trace"/>
         <logger name="no.nav.sikkerhetstjenesten" level="trace"/>
     </springProfile>
