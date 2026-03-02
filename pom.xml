@@ -59,20 +59,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-      <!-- Hvis undertow i stedet for tomcat -->
-      <!--exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-tomcat</artifactId>
-        </exclusion>
-      </exclusions-->
     </dependency>
-
-    <!-- Hvis undertow i stedet for tomcat-->
-    <!--dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-undertow</artifactId>
-    </dependency-->
 
     <!-- Camel -->
     <dependency>
