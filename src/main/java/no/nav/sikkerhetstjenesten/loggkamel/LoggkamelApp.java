@@ -7,14 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class LoggkamelApp {
 
-    /**
-     * A main method to start this application.
-     */
     public static void main(String[] args) {
-        SpringApplication loggKamelApp = new SpringApplication(LoggkamelApp.class);
-//        loggKamelApp.setAdditionalProfiles(ClusterUtils.getProfiles());
+        var loggKamelApp = new SpringApplication(LoggkamelApp.class);
         loggKamelApp.setAdditionalProfiles(Cluster.profiler());
         loggKamelApp.run(args);
     }
-
 }
