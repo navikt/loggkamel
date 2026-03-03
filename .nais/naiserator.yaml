@@ -6,6 +6,9 @@ metadata:
   labels:
     team: sikkerhetstjenesten
 spec:
+  azure:
+    application:
+      enabled: true
   leaderElection: true
   gcp:
     sqlInstances:
@@ -57,6 +60,8 @@ spec:
       rules:
         - application: logging
           namespace: nais-system
+        - application: entra-proxy
+          namespace: sikkerhetstjenesten
     inbound:
       rules:
         {{#each inbound as |app|}}

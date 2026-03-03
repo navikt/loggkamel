@@ -20,5 +20,6 @@ management:
       enabled: true
 
 #TODO: Set up in prod with prod-specific baseUrl
+#TODO: Convert to service discovery instead of explicit complete url
 ENTRA_PROXY_BASE_URL: https://entraproxy.intern.dev.nav.no
 debug: false

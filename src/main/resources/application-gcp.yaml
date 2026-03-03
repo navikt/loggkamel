@@ -21,7 +21,7 @@ spring:
     virtual:
       enabled: true
   application:
-    name: loggtransport
+    name: loggkamel
   datasource:
     url: ${db.jdbc.url}
     username: ${db.username}
