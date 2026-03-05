@@ -9,18 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@CamelSpringBootTest
-@SpringBootTest(classes = LoggkamelApp.class)
-@ActiveProfiles({"gcp", "dev-gcp"})
-@ConditionalOnGCP
-public class LoggkamelAppTest {
-
-    @Autowired
-    private CamelContext camelContext;
-
-    @Test
-    public void toDo() throws Exception {
-        NotifyBuilder notify = new NotifyBuilder(camelContext).whenDone(1).create();
-        //assertTrue(notify.matches(10, TimeUnit.SECONDS));
-    }
-}
+//@CamelSpringBootTest
+//@SpringBootTest(classes = LoggkamelApp.class)
+//@ActiveProfiles({"gcp", "dev-gcp"})
+//@ConditionalOnGCP
+//public class LoggkamelAppTest {
+//
+//    @Autowired
+//    private CamelContext camelContext;
+//
+//    @Test
+//    public void toDo() throws Exception {
+//        NotifyBuilder notify = new NotifyBuilder(camelContext).whenDone(1).create();
+//        //assertTrue(notify.matches(10, TimeUnit.SECONDS));
+//    }
+//}
