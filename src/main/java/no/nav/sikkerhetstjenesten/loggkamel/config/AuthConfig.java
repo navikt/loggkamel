@@ -19,10 +19,10 @@ class AuthConfig {
         return restClientBuilder -> restClientBuilder.requestInterceptor(reqInterceptor);
     }
 
-//    @Bean
-//    public OAuth2ClientRequestInterceptor localOAuth2ClientRequestInterceptor(ClientConfigurationProperties properties, OAuth2AccessTokenService service, ClientConfigurationPropertiesMatcher matcher) {
-//        return new OAuth2ClientRequestInterceptor(properties, service, matcher);
-//    }
+    @Bean
+    public OAuth2ClientRequestInterceptor localOAuth2ClientRequestInterceptor(ClientConfigurationProperties properties, OAuth2AccessTokenService service, ClientConfigurationPropertiesMatcher matcher) {
+        return new OAuth2ClientRequestInterceptor(properties, service, matcher);
+    }
 
     @Bean
     public ClientConfigurationPropertiesMatcher clientConfigurationPropertiesMatcher() {
