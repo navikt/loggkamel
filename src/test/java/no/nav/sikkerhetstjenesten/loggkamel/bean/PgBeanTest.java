@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.bean;
 
-import no.nav.sikkerhetstjenesten.loggkamel.config.EntraProxyAnsatt;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;

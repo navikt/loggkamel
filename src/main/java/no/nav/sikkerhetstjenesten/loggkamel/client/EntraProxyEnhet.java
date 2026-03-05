@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.config;
+package no.nav.sikkerhetstjenesten.loggkamel.client;
 
 import lombok.Value;
 

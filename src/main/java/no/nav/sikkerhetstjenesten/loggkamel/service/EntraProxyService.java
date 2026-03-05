@@ -1,8 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.sikkerhetstjenesten.loggkamel.config.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.config.EntraProxyInterface;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyInterface;
 import org.springframework.stereotype.Service;
 
 @Service

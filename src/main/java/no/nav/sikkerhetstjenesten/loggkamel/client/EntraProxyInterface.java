@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.config;
+package no.nav.sikkerhetstjenesten.loggkamel.client;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
