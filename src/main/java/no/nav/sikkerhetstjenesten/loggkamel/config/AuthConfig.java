@@ -5,12 +5,13 @@ import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.ClientConfigurationPropertiesMatcher;
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client;
 import no.nav.security.token.support.client.spring.oauth2.OAuth2ClientRequestInterceptor;
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @EnableOAuth2Client(cacheEnabled = true)
-//@EnableJwtTokenValidation
+@EnableJwtTokenValidation
 @Configuration
 class AuthConfig {
     @Bean
@@ -18,10 +19,10 @@ class AuthConfig {
         return restClientBuilder -> restClientBuilder.requestInterceptor(reqInterceptor);
     }
 
-    @Bean
-    public OAuth2ClientRequestInterceptor localOAuth2ClientRequestInterceptor(ClientConfigurationProperties properties, OAuth2AccessTokenService service, ClientConfigurationPropertiesMatcher matcher) {
-        return new OAuth2ClientRequestInterceptor(properties, service, matcher);
-    }
+//    @Bean
+//    public OAuth2ClientRequestInterceptor localOAuth2ClientRequestInterceptor(ClientConfigurationProperties properties, OAuth2AccessTokenService service, ClientConfigurationPropertiesMatcher matcher) {
+//        return new OAuth2ClientRequestInterceptor(properties, service, matcher);
+//    }
 
     @Bean
     public ClientConfigurationPropertiesMatcher clientConfigurationPropertiesMatcher() {

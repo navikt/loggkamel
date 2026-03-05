@@ -12,7 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 @CamelSpringBootTest
 @SpringBootTest(classes = LoggkamelApp.class)
 @ActiveProfiles("local")
-//@EnableMockOAuth2Server
 @ConditionalOnGCP
 public class LoggkamelAppTest {
 
