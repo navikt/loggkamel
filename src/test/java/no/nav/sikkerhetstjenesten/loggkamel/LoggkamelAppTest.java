@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @CamelSpringBootTest
 @SpringBootTest(classes = LoggkamelApp.class)
-@ActiveProfiles("gcp")
+@ActiveProfiles({"gcp", "dev-gcp"})
 @ConditionalOnGCP
 public class LoggkamelAppTest {
 
