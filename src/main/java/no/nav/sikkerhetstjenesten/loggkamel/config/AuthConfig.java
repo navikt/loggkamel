@@ -5,13 +5,12 @@ import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.ClientConfigurationPropertiesMatcher;
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client;
 import no.nav.security.token.support.client.spring.oauth2.OAuth2ClientRequestInterceptor;
-import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @EnableOAuth2Client(cacheEnabled = true)
-@EnableJwtTokenValidation
+//@EnableJwtTokenValidation
 @Configuration
 class AuthConfig {
     @Bean

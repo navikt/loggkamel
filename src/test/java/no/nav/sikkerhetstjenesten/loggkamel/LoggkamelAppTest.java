@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel;
 
-import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
@@ -12,7 +12,8 @@ import org.springframework.test.context.ActiveProfiles;
 @CamelSpringBootTest
 @SpringBootTest(classes = LoggkamelApp.class)
 @ActiveProfiles("local")
-@EnableMockOAuth2Server
+//@EnableMockOAuth2Server
+@ConditionalOnGCP
 public class LoggkamelAppTest {
 
     @Autowired
