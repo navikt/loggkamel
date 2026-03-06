@@ -6,7 +6,7 @@
     "poolsize": "2",
     "type": "POSTGRES_18",
     "tier": "db-f1-micro",
-    "name": "testlogg"
+    "name": "loggkamel"
   },
   "db-flags": {
     "pgaudit": {
