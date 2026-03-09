@@ -6,9 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-class AuthConfig {
+public class CommonRestClientConfig {
+
     @Bean
-    public RestClientCustomizer customizer(OAuth2ClientRequestInterceptor reqInterceptor) {
-        return restClientBuilder -> restClientBuilder.requestInterceptor(reqInterceptor);
+    public RestClientCustomizer restClientCustomizer(OAuth2ClientRequestInterceptor interceptor) {
+        return restClientBuilder -> restClientBuilder.requestInterceptor(interceptor);
     }
 }
