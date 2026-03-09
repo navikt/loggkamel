@@ -36,7 +36,7 @@
         </turboFilter>
     </springProfile>
 
-    <root level="trace">
+    <root level="info">
         <appender-ref ref="otel"/>
     </root>
 </configuration>
