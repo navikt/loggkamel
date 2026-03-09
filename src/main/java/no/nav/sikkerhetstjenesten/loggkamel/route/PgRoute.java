@@ -19,14 +19,18 @@ public class PgRoute extends RouteBuilder {
                 .useExponentialBackOff()
         );
 
+        // TODO: define invalid message endpoint, for files in wrong encoding or that do not match expected log format
+
+        // TODO: use injected Endpoints to define the in and out points for the messages
         //from("quartz://myGroup/myTestTimer?cron=*/10+*+*+*+*+?")
         //from("timer://myTimer?period=600000")
         from("file:src/main/resources/files?noop=true")
-            .log("Message: ${body}, Headers: ${headers}")
-            .split(simple("${body}").tokenize("^\\<|\n\\<"))
+                .unmarshal().gzipDeflater()
+//                .log("Message: ${body}, Headers: ${headers}")
+                .split(simple("${body}").tokenize("^\\<|\n\\<"))
+                .log("Message: ${body}, Headers: ${headers}")
                 //.setProperty("navIdent", body())    //simple("${body} regex '[A-Z]\\d{6}'"))
                 //.log("Nav-ident: ${exchangeProperty.navIdent}")
-                .log("Message: ${body}")
                 .bean(PgBean.class, "extract")
                 .log("Per-message variables visible in the route after bean execution: ${variables}")
                 // TODO: Confirm that you can access individual variables by name here

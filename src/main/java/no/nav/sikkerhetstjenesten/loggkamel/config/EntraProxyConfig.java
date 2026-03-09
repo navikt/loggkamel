@@ -22,7 +22,6 @@ public class EntraProxyConfig {
                 .baseUrl(entraProxyUrl)
                 .build();
 
-        // Create factory for client proxies
         HttpServiceProxyFactory proxyFactory = HttpServiceProxyFactory.builder()
                 .exchangeAdapter(RestClientAdapter.create(restClient))
                 .build();
