@@ -16,14 +16,13 @@ import java.nio.charset.StandardCharsets;
 public class LoggingRequestInterceptor implements ClientHttpRequestInterceptor {
     private static final Logger log = LoggerFactory.getLogger(LoggingRequestInterceptor.class);
 
-    //TODO: reduce or eliminate logging to avoid logging request tokens
     @Override
     public @NonNull ClientHttpResponse intercept(HttpRequest request, byte @NonNull [] body, ClientHttpRequestExecution execution) throws IOException {
-        log.info("Headers for {}: {}", request.getURI(), request.getHeaders());
-        log.info("Body for {} {} : {} ", request.getMethod(), request.getURI(), new String(body, StandardCharsets.UTF_8));
+//        log.trace("Headers for {}: {}", request.getURI(), request.getHeaders());
+        log.debug("Body for {} {} : {} ", request.getMethod(), request.getURI(), new String(body, StandardCharsets.UTF_8));
 
         ClientHttpResponse response = execution.execute(request, body);
-        log.info("Response status for {} {}: {}", request.getMethod(), request.getURI(), response.getStatusCode());
+        log.debug("Response status for {} {}: {}", request.getMethod(), request.getURI(), response.getStatusCode());
 
         return response;
     }
