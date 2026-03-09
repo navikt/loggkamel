@@ -26,6 +26,11 @@ public class TestController {
     @GetMapping("ansatt/{navIdent}")
     public EntraProxyAnsatt getAnsattForNavident(@PathVariable("navIdent") String navIdent) {
         log.info("Fetching Ansatt for navIdent: {}", navIdent);
-        return entraProxyService.getAnsattFromNavIdent(navIdent);
+        try {
+            return entraProxyService.getAnsattFromNavIdent(navIdent);
+        } catch (Exception e) {
+            log.error("Failed to fetch Ansatt for navIdent: {}", navIdent, e);
+            throw new RuntimeException("Failed to fetch Ansatt for navIdent: " + navIdent, e);
+        }
     }
 }

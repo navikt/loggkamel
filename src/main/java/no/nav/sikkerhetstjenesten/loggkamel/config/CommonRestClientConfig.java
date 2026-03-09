@@ -9,7 +9,12 @@ import org.springframework.context.annotation.Configuration;
 public class CommonRestClientConfig {
 
     @Bean
-    public RestClientCustomizer restClientCustomizer(OAuth2ClientRequestInterceptor interceptor) {
-        return restClientBuilder -> restClientBuilder.requestInterceptor(interceptor);
+    public RestClientCustomizer restClientCustomizer(OAuth2ClientRequestInterceptor interceptor, LoggingRequestInterceptor loggingRequestInterceptor) {
+        return restClientBuilder -> {
+            restClientBuilder.requestInterceptors(interceptors -> {
+                interceptors.addFirst(interceptor);
+                interceptors.add(loggingRequestInterceptor);
+            });
+        };
     }
 }
