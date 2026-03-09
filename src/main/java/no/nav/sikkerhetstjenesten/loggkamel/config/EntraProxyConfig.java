@@ -16,9 +16,11 @@ public class EntraProxyConfig {
 
     @Bean
     @ConditionalOnGCP
-    public EntraProxyInterface entraProxyClient(@Value("${ENTRA_PROXY_BASE_URL}")
+    public EntraProxyInterface entraProxyClient(RestClient.Builder restClientBuilder, @Value("${ENTRA_PROXY_BASE_URL}")
                                                 String entraProxyUrl) {
-        RestClient restClient = RestClient.create(entraProxyUrl);
+        RestClient restClient = restClientBuilder
+                .baseUrl(entraProxyUrl)
+                .build();
 
         // Create factory for client proxies
         HttpServiceProxyFactory proxyFactory = HttpServiceProxyFactory.builder()

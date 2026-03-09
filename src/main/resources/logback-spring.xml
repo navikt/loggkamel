@@ -8,7 +8,7 @@
         <appender-ref ref="stdout-appender" />
     </appender>
 
-    <springProfile name="dev-gcp">
+    <springProfile name="dev">
         <logger name="no.nav.sikkerhetstjenesten" level="trace"/>
     </springProfile>
 
