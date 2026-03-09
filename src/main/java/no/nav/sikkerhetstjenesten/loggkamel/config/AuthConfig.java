@@ -1,17 +1,11 @@
 package no.nav.sikkerhetstjenesten.loggkamel.config;
 
-import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService;
-import no.nav.security.token.support.client.spring.ClientConfigurationProperties;
 import no.nav.security.token.support.client.spring.oauth2.ClientConfigurationPropertiesMatcher;
-import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client;
 import no.nav.security.token.support.client.spring.oauth2.OAuth2ClientRequestInterceptor;
-import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@EnableOAuth2Client(cacheEnabled = true)
-@EnableJwtTokenValidation
 @Configuration
 class AuthConfig {
     @Bean
@@ -19,6 +13,7 @@ class AuthConfig {
         return restClientBuilder -> restClientBuilder.requestInterceptor(reqInterceptor);
     }
 
+    //TODO: figure out under what circumstances we'd want to configure this ourselves, how to avoid bean declaration conflict
 //    @Bean
 //    public OAuth2ClientRequestInterceptor localOAuth2ClientRequestInterceptor(ClientConfigurationProperties properties, OAuth2AccessTokenService service, ClientConfigurationPropertiesMatcher matcher) {
 //        return new OAuth2ClientRequestInterceptor(properties, service, matcher);

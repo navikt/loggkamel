@@ -1,8 +1,18 @@
 no.nav.security.jwt:
   issuer:
-    azuread:
-      discoveryurl: http://localhost:8080/default/.well-known/openid-configuration
-      accepted_audience: client id
+    issuer1:
+      discoveryurl: http://localhost:${mock-oauth2-server.port}/issuerId/.well-known/openid-configuration
+      accepted_audience: someaudience
+  client:
+    registration:
+      entra-proxy:
+        token-endpoint-url: http://example.com
+        grant-type: client_credentials
+        scope: some-scope
+        authentication:
+          client-id: testclient
+          client-secret: testsecret
+          client-auth-method: client_secret_basic
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
