@@ -16,6 +16,9 @@ import java.util.regex.Pattern;
 public class PgBean {
     private static final Logger log = LoggerFactory.getLogger(PgBean.class);
 
+    static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern";
+    static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching employee info";
+
     static final String LOG_TIME = "logTime";
     static final String NAV_IDENT = "navIdent";
     static final String DB_NAME = "dbName";
@@ -41,16 +44,18 @@ public class PgBean {
         Message msg = exchange.getMessage();
         String body = msg.getBody(String.class);
 
+        if (body == null || body.isBlank()) {
+            throw new InvalidAuditMessageException("Audit log message is blank");
+        }
+
         String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(body);
 
-        // Check if the input string matches the template pattern
         if (!matcher.find()) {
-            log.error("Log failed to match expected pattern");
-            // TODO: more apt/targeted exception here?
-            throw new RuntimeException("Log failed to match expected pattern, log: " + body);
+            log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
+            throw new InvalidAuditMessageException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
         String logTime = matcher.group(1);
@@ -72,8 +77,8 @@ public class PgBean {
 
             // TODO: handle null or empty response here
         } catch (Exception e) {
-            log.error("Error when fetching employee info", e);
-            throw e;
+            log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
+            throw new InvalidAuditMessageException(ENTRA_PROXY_ERROR_MESSAGE, e);
         }
         String navEpost = entraProxyAnsatt.getEPost();
         exchange.setVariable(LOG_TIME, logTime);
