@@ -32,6 +32,7 @@
     <logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>
     <spring.boot-version>4.0.3</spring.boot-version>
     <camel-version>4.18.0</camel-version>
+    <nav.boot-version>6.0.3</nav.boot-version>
     <java-version>21</java-version>
   </properties>
 
@@ -63,17 +64,55 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+      <version>${spring.boot-version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+      <version>${spring.boot-version}</version>
     </dependency>
 
     <!-- Camel -->
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-spring-boot-starter</artifactId>
+      <version>${camel-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-quartz-starter</artifactId>
+      <version>${camel-version}</version>
+    </dependency>
+    <!--dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-spring-jdbc-starter</artifactId>
+    </dependency-->
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-rest-starter</artifactId>
+      <version>${camel-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-http-starter</artifactId>
+      <version>${camel-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-log-starter</artifactId>
+      <version>${camel-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-zip-deflater</artifactId>
+      <version>${camel-version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-google-storage</artifactId>
+      <version>${camel-version}</version>
     </dependency>
 
     <dependency>
@@ -100,39 +139,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-quartz-starter</artifactId>
-    </dependency>
-    <!--dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-spring-jdbc-starter</artifactId>
-    </dependency-->
-    <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-rest-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-http-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-log-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel</groupId>
-      <artifactId>camel-zip-deflater</artifactId>
-      <version>4.18.0</version>
-      <scope>compile</scope>
-    </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.apache.camel</groupId>-->
-<!--      <artifactId>camel-tarfile</artifactId>-->
-<!--      <version>4.18.0</version>-->
-<!--      <scope>compile</scope>-->
-<!--    </dependency>-->
-
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.42</version>
@@ -143,17 +149,17 @@
     <dependency>
       <groupId>no.nav.boot</groupId>
       <artifactId>boot-conditionals</artifactId>
-      <version>6.0.3</version>
+      <version>${nav.boot-version}</version>
     </dependency>
     <dependency>
       <groupId>no.nav.security</groupId>
       <artifactId>token-client-spring</artifactId>
-      <version>6.0.3</version>
+      <version>${nav.boot-version}</version>
     </dependency>
     <dependency>
       <groupId>no.nav.security</groupId>
       <artifactId>token-validation-spring-test</artifactId>
-      <version>6.0.3</version>
+      <version>${nav.boot-version}</version>
     </dependency>
 
     <!-- Logstash -->
@@ -181,10 +187,12 @@
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-file-watch-starter</artifactId>
+      <version>${camel-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-file-starter</artifactId>
+      <version>${camel-version}</version>
     </dependency>
 
     <!-- Versjon på avhengigheter som følger av andre -->
