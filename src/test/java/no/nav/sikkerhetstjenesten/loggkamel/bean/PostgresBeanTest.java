@@ -10,13 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.bean.PgBean.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.bean.PostgresBean.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PgBeanTest {
+class PostgresBeanTest {
 
     @Mock
     Exchange exchange;
@@ -31,7 +31,7 @@ class PgBeanTest {
     EntraProxyService entraProxyService;
 
     @InjectMocks
-    PgBean pgBean;
+    PostgresBean postgresBean;
 
     @Test
     void extract_invalidLogPattern() {
@@ -40,7 +40,7 @@ class PgBeanTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        assertThrows(InvalidAuditMessageException.class, () -> pgBean.extract(exchange));
+        assertThrows(InvalidAuditMessageException.class, () -> postgresBean.extract(exchange));
     }
 
     @Test
@@ -53,7 +53,7 @@ class PgBeanTest {
 
         when(entraProxyService.getAnsattFromNavIdent("A156179")).thenThrow(entraProxyException);
 
-        RuntimeException capturedException = assertThrows(RuntimeException.class, () -> pgBean.extract(exchange));
+        RuntimeException capturedException = assertThrows(RuntimeException.class, () -> postgresBean.extract(exchange));
         assertEquals(ENTRA_PROXY_ERROR_MESSAGE, capturedException.getMessage());
         assertEquals(entraProxyException, capturedException.getCause());
     }
@@ -81,7 +81,7 @@ class PgBeanTest {
         when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEPost()).thenReturn(ePost);
 
-        pgBean.extract(exchange);
+        postgresBean.extract(exchange);
 
         verify(exchange).setVariable(LOG_TIME, logTime);
         verify(exchange).setVariable(NAV_IDENT, navIdent);

@@ -13,8 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class PgBean {
-    private static final Logger log = LoggerFactory.getLogger(PgBean.class);
+public class PostgresBean {
+    private static final Logger log = LoggerFactory.getLogger(PostgresBean.class);
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching employee info";
@@ -36,7 +36,7 @@ public class PgBean {
     private final EntraProxyService entraProxyService;
 
     @Autowired
-    public PgBean(EntraProxyService entraProxyService) {
+    public PostgresBean(EntraProxyService entraProxyService) {
         this.entraProxyService = entraProxyService;
     }
 
@@ -77,10 +77,10 @@ public class PgBean {
 
             // TODO: handle null or empty response here
         } catch (Exception e) {
+            // TODO: handle exceptions resulting from entra-proxy errors or service unavailable
             log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
             throw new InvalidAuditMessageException(ENTRA_PROXY_ERROR_MESSAGE, e);
         }
-        String navEpost = entraProxyAnsatt.getEPost();
         exchange.setVariable(LOG_TIME, logTime);
         exchange.setVariable(NAV_IDENT, navIdent);
         exchange.setVariable(DB_NAME, dbName);
@@ -93,6 +93,7 @@ public class PgBean {
         exchange.setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
         exchange.setVariable(SQL_STATEMENT, sqlStatement);
         exchange.setVariable(SQL_PARAMETER, sqlParameter);
+        String navEpost = entraProxyAnsatt.getEPost();
         exchange.setVariable(NAV_EPOST, navEpost);
 
         msg.setBody(body);

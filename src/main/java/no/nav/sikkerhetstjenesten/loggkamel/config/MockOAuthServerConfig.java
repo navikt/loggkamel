@@ -7,5 +7,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnLocalOrTest
 @EnableMockOAuth2Server
-public class LocalSecurityConfiguration {
+public class MockOAuthServerConfig {
 }
