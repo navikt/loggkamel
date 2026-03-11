@@ -14,9 +14,20 @@
       "logtype": "ddl,role,write"
     }
   },
-  "bucket": {
-    "name": "loggkamel-pg-dev"
-  },
+  "buckets": [
+    {
+      "name": "loggkamel-pg-dead-letter-dev"
+    },
+    {
+      "name": "loggkamel-invalid-message-pg-dev"
+    },
+    {
+      "name": "loggkamel-ingress-pg-dev"
+    },
+    {
+      "name": "loggkamel-output-pg-dev"
+    }
+  ],
   "inbound": [
     {
       "name": "azure-token-generator",
