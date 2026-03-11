@@ -40,7 +40,7 @@ class PostgresBeanTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        assertThrows(InvalidAuditMessageException.class, () -> postgresBean.extract(exchange));
+        assertThrows(InvalidIndividualPostgresLog.class, () -> postgresBean.extract(exchange));
     }
 
     @Test

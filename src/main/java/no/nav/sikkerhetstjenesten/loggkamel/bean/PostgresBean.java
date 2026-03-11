@@ -45,7 +45,7 @@ public class PostgresBean {
         String body = msg.getBody(String.class);
 
         if (body == null || body.isBlank()) {
-            throw new InvalidAuditMessageException("Audit log message is blank");
+            throw new InvalidIndividualPostgresLog("Audit log message is blank");
         }
 
         String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
@@ -56,7 +56,7 @@ public class PostgresBean {
         if (!matcher.find()) {
             //TODO: add identifier for the log line that doesn't leak PII here
             log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
-            throw new InvalidAuditMessageException(UNEXPECTED_LOG_PATTERN_MESSAGE);
+            throw new InvalidIndividualPostgresLog(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
         String logTime = matcher.group(1);
@@ -83,7 +83,7 @@ public class PostgresBean {
         } catch (Exception e) {
             // TODO: handle exceptions resulting from entra-proxy errors or service unavailable
             log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
-            throw new InvalidAuditMessageException(ENTRA_PROXY_ERROR_MESSAGE, e);
+            throw new InvalidIndividualPostgresLog(ENTRA_PROXY_ERROR_MESSAGE, e);
         }
         exchange.setVariable(LOG_TIME, logTime);
         exchange.setVariable(NAV_IDENT, navIdent);

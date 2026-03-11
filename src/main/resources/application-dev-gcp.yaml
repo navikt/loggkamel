@@ -19,4 +19,11 @@ management:
     recording:
       enabled: true
 
+routing:
+  postgres:
+    consumer: "google-storage://loggkamel-ingress-pg-dev"
+    producer: "google-storage://loggkamel-output-pg-dev"
+    dead-letter: "google-storage://loggkamel-pg-dead-letter-dev"
+    invalid-message: "google-storage://loggkamel-invalid-message-pg-dev"
+
 debug: false
