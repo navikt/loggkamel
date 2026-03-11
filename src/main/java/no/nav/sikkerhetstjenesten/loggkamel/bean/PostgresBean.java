@@ -54,6 +54,7 @@ public class PostgresBean {
         Matcher matcher = pattern.matcher(body);
 
         if (!matcher.find()) {
+            //TODO: add identifier for the log line that doesn't leak PII here
             log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
             throw new InvalidAuditMessageException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
@@ -76,6 +77,9 @@ public class PostgresBean {
             entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
 
             // TODO: handle null or empty response here
+
+            //TODO: remove or update logging level for response object logging
+            log.info("Employee information extracted from navIdent: " + entraProxyAnsatt);
         } catch (Exception e) {
             // TODO: handle exceptions resulting from entra-proxy errors or service unavailable
             log.error(ENTRA_PROXY_ERROR_MESSAGE, e);

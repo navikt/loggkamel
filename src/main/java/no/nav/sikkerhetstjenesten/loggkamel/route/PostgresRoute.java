@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.route;
 
 import no.nav.sikkerhetstjenesten.loggkamel.bean.InvalidAuditMessageException;
 import no.nav.sikkerhetstjenesten.loggkamel.bean.PostgresBean;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,9 +57,10 @@ public class PostgresRoute extends RouteBuilder {
                     .stop()
                 .end()
                 .split(simple("${body}").tokenize("^\\<|\n\\<"))
-                .log("Message: ${body}, Headers: ${headers}")
+                .log(LoggingLevel.INFO, "Message: ${body}, Headers: ${headers}")
                 .bean(PostgresBean.class, "extract")
-                .log("Per-message variables visible in the route after bean execution: ${variables}")
+                //TODO: remove or update logging level for output logging
+                .log(LoggingLevel.INFO, "Per-message variables visible in the route after bean execution: ${variables}")
                 // TODO: broader: how to manually set the file name here?
                 // done by setting header, but can you get one message to result in a file for every line? What would you name each line?
                 .toD(postgresExitUri);
