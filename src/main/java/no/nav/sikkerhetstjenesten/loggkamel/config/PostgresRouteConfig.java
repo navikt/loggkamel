@@ -37,25 +37,25 @@ public class PostgresRouteConfig {
     @Bean(name = "postgresDeadLetterUri")
     @ConditionalOnDev
     public String devPostgresDeadLetterUri() {
-        return "google-storage://PLACEHOLDER_FOR_DEAD_LETTER";
+        return "google-storage://loggkamel-pg-dead-letter-dev";
     }
 
     @Bean(name = "postgresInvalidMessagesUri")
     @ConditionalOnDev
     public String devPostgresInvalidMessagesUri() {
-        return "google-storage://PLACEHOLDER_FOR_INVALID_MESSAGE";
+        return "google-storage://loggkamel-invalid-message-pg-dev";
     }
 
     @Bean(name = "postgresEntranceUri")
     @ConditionalOnDev
     public String devPostgresEntranceUri() {
-        return "google-storage://loggkamel-pg-dev";
+        return "google-storage://loggkamel-ingress-pg-dev";
     }
 
     @Bean(name = "postgresExitUri")
     @ConditionalOnDev
     public String devPostgresExitUri() {
-        return "google-storage://PLACEHOLDER_FOR_OUT_BUCKET";
+        return "google-storage://loggkamel-output-pg-dev";
     }
 
     // Prod endpoints
