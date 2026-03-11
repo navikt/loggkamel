@@ -24,7 +24,7 @@ spec:
             value: "{{db-flags.pgaudit.logtype}}"
     buckets:
       {{#each buckets as |bucket|}}
-          - name: {{bucket.name } }
+          - name: '{{bucket.name}}'
             publicAccessPrevention: true
       {{/each }}
   ingresses:
