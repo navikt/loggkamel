@@ -79,7 +79,7 @@ class PostgresBeanTest {
 
         String ePost = "epost";
         when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
-        when(entraProxyAnsatt.getEPost()).thenReturn(ePost);
+        when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
         postgresBean.extract(exchange);
 

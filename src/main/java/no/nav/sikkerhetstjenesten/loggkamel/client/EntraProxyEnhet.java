@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EntraProxyEnhet {
-    String enhetNummer;
+    String enhetnummer;
     String navn;
 }

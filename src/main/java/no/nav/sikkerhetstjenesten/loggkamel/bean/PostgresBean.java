@@ -97,7 +97,7 @@ public class PostgresBean {
         exchange.setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
         exchange.setVariable(SQL_STATEMENT, sqlStatement);
         exchange.setVariable(SQL_PARAMETER, sqlParameter);
-        String navEpost = entraProxyAnsatt.getEPost();
+        String navEpost = entraProxyAnsatt.getEpost();
         exchange.setVariable(NAV_EPOST, navEpost);
 
         msg.setBody(body);

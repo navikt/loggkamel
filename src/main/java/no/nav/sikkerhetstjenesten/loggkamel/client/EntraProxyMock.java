@@ -22,12 +22,12 @@ public class EntraProxyMock implements EntraProxyInterface {
                 .visningNavn(MOCK_ANSATT_VISNING_NAVN)
                 .fornavn(MOCK_ANSATT_FORNAVN)
                 .etternavn(MOCK_ANSATT_ETTERNAVN)
-                .ePost(MOCK_ANSATT_EPOST)
+                .epost(MOCK_ANSATT_EPOST)
                 .enhet(EntraProxyEnhet.builder()
-                        .enhetNummer(MOCK_ENHET_NUMMER)
+                        .enhetnummer(MOCK_ENHET_NUMMER)
                         .navn(MOCK_ENHET_NAVN)
                         .build())
-                .tIdent(MOCK_ANSATT_NAV_TIDENT)
+                .tident(MOCK_ANSATT_NAV_TIDENT)
                 .build();
     }
 

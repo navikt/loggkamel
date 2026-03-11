@@ -16,7 +16,7 @@ public class EntraProxyAnsatt {
     String visningNavn;
     String fornavn;
     String etternavn;
-    String ePost;
+    String epost;
     EntraProxyEnhet enhet;
-    String tIdent;
+    String tident;
 }
