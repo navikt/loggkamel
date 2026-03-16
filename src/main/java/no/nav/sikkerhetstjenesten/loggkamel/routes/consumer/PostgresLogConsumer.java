@@ -89,6 +89,9 @@ public class PostgresLogConsumer extends RouteBuilder {
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                 //TODO: only remove the .gz ending if it's present, only add the UUID if the .gz ending was present
                 .process(exchange -> {
+                    // TODO: added this for debugging, remove
+                    log.info("Message headers: {}", exchange.getIn().getHeaders());
+
                     String originalFileName = exchange.getIn().getHeader("CamelFileName", String.class);
                     String newFileName = UUID.randomUUID() + "." + originalFileName.substring(0, originalFileName.length() - 3);
                     exchange.getIn().setHeader("CamelFileName", newFileName);
