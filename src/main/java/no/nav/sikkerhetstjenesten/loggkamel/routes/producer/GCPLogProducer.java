@@ -24,6 +24,9 @@ public class GCPLogProducer extends LogProducer {
                 .process(exchange -> {
                     try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
 
+                        log.info("Attempting to log body: {}", exchange.getIn().getBody(String.class));
+                        log.info("Attempting to log name: {}", exchange.getIn().getHeader("CamelFileName", String.class));
+
                         LogEntry entry =
                                 LogEntry.newBuilder(Payload.StringPayload.of(exchange.getIn().getBody(String.class)))
                                         .setSeverity(Severity.ERROR)
