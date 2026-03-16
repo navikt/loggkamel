@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.bean;
+package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
@@ -13,8 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class PostgresBean {
-    private static final Logger log = LoggerFactory.getLogger(PostgresBean.class);
+public class PostgresLogEnrichmentProcessor {
+    private static final Logger log = LoggerFactory.getLogger(PostgresLogEnrichmentProcessor.class);
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching employee info";
@@ -36,7 +36,7 @@ public class PostgresBean {
     private final EntraProxyService entraProxyService;
 
     @Autowired
-    public PostgresBean(EntraProxyService entraProxyService) {
+    public PostgresLogEnrichmentProcessor(EntraProxyService entraProxyService) {
         this.entraProxyService = entraProxyService;
     }
 

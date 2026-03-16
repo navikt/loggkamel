@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.bean.InvalidIndividualPostgresLog;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.InvalidIndividualPostgresLog;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

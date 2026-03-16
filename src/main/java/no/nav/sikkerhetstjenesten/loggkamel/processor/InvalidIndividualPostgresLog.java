@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.bean;
+package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
 public class InvalidIndividualPostgresLog extends RuntimeException {
 

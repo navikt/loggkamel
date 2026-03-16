@@ -1,15 +1,11 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnGCP
 public class GCPLogProducer extends LogProducer {
-
-    @Value("${routing.postgres.producer}")
-    private String producerUri;
 
     @Override
     public void configure() {

@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment;
 
-import no.nav.sikkerhetstjenesten.loggkamel.bean.PostgresBean;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.PostgresLogEnrichmentProcessor;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class PostgresLogEnricher extends RouteBuilder {
         from(POSTGRES_LOG_ENRICH_ROUTE)
                 .routeId(POSTGRES_LOG_ENRICH_ID)
                 .log(LoggingLevel.INFO, "Message: ${body}, Headers: ${headers}")
-                .bean(PostgresBean.class, "extract")
+                .bean(PostgresLogEnrichmentProcessor.class, "extract")
                 //TODO: remove or update logging level for output logging
                 .log(LoggingLevel.INFO, "Per-message variables visible in the route after bean execution: ${variables}")
                 .to(POSTGRES_LOG_PRODUCER_ROUTE);
