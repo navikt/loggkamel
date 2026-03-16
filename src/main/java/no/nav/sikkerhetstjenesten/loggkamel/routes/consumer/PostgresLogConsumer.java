@@ -1,6 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.processor.InvalidIndividualPostgresLog;
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,10 +31,37 @@ public class PostgresLogConsumer extends RouteBuilder {
         //TODO: try to set up such that dead letter only handles postgres messages, not all undelivered messages
         // Alternatively, pull out of here and into a universal route definition
 
+        //TODO: decide whether to re-compress failed messages, or leave uncompressed
         // Delivery / technical failures for otherwise valid messages
         errorHandler(deadLetterChannel(deadLetterUri)
+//                .useOriginalMessage()
                 .maximumRedeliveries(1)
                 .useExponentialBackOff()
+                .retryAttemptedLogLevel(LoggingLevel.WARN)
+                .retriesExhaustedLogLevel(LoggingLevel.ERROR)
+                .logExhaustedMessageHistory(true)
+                .onPrepareFailure(exchange -> {
+                    Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+                    String fileName = exchange.getIn().getHeader("CamelFileName", String.class);
+                    String routeId = exchange.getFromRouteId();
+
+                    String exceptionType = cause != null ? cause.getClass().getName() : "unknown";
+                    String exceptionMessage = cause != null ? cause.getMessage() : "unknown";
+
+                    exchange.getIn().setHeader("deadLetterExceptionType", exceptionType);
+                    exchange.getIn().setHeader("deadLetterReason", exceptionMessage);
+                    exchange.getIn().setHeader("deadLetterRouteId", routeId);
+                    exchange.getIn().setHeader("deadLetterFileName", fileName);
+
+                    log.error(
+                            "Routing message to dead letter channel. routeId={}, fileName={}, exceptionType={}, reason={}",
+                            routeId,
+                            fileName,
+                            exceptionType,
+                            exceptionMessage,
+                            cause
+                    );
+                })
         );
 
         //TODO: should narrow exception class to keep this specific to postgres?
