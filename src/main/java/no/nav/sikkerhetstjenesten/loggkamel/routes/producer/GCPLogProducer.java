@@ -36,6 +36,9 @@ public class GCPLogProducer extends LogProducer {
 
                         // Optional - flush any pending log entries just before Logging is closed
                         logging.flush();
+                    } catch (Exception e) {
+                        log.error("Failed to publish to GCP, exception: {}", e.getMessage());
+                        throw e;
                     }
                 });
     }
