@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.PostgresLogEnricher.POSTGRES_LOG_ENRICH_ROUTE;
 
@@ -47,9 +48,9 @@ public class PostgresLogConsumer extends RouteBuilder {
 
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
+                // TODO: only unmarshall if file is encoded
                 .doTry()
                     .unmarshal().gzipDeflater()
-                    //TODO: update filename to remove the .gz at the end here
                 .endDoTry()
                 .doCatch(IOException.class)
                     .log("Routing non-gzip or unreadable gzip input to invalid-messages channel: ${exception.message}, invalid filename: ${headers['CamelFileName']}")
@@ -57,7 +58,12 @@ public class PostgresLogConsumer extends RouteBuilder {
                     .stop()
                 .end()
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
-                //TODO: update filename to differentiate from all other split entries here
+                //TODO: only remove the .gz ending if it's present, only add the UUID if the .gz ending was present
+                .process(exchange -> {
+                    String originalFileName = exchange.getIn().getHeader("CamelFileName", String.class);
+                    String newFileName = UUID.randomUUID() + "." + originalFileName.substring(0, originalFileName.length() - 3);
+                    exchange.getIn().setHeader("CamelFileName", newFileName);
+                })
                 .to(POSTGRES_LOG_ENRICH_ROUTE);
     }
 }

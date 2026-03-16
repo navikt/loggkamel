@@ -17,11 +17,6 @@ public class LocalLogProducer extends LogProducer {
                 .process(exchange -> {
                     exchange.getMessage().setBody(exchange.getMessage().getBody() + ", messageVariables: " + exchange.getVariables());
                 })
-                .process(exchange -> {
-                    String originalFileName = exchange.getIn().getHeader("CamelFileName", String.class);
-                    String newFileName = UUID.randomUUID() + "." + originalFileName.substring(0, originalFileName.length() - 3);
-                    exchange.getIn().setHeader("CamelFileName", newFileName);
-                })
                 .toD(producerUri);
     }
 }
