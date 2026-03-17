@@ -49,13 +49,13 @@ class PostgresLogEnrichmentProcessorTest {
 
     @Test
     void enrich_exceptionFromEntraProxy() {
-        String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-A156179-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
+        String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLE_NAV_IDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
         RuntimeException entraProxyException = new RuntimeException("Something went wrong, panic!");
 
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        when(entraProxyService.getAnsattFromNavIdent("A156179")).thenThrow(entraProxyException);
+        when(entraProxyService.getAnsattFromNavIdent("SAMPLE_NAV_IDENT")).thenThrow(entraProxyException);
 
         RuntimeException capturedException = assertThrows(RuntimeException.class, () -> postgresLogEnrichmentProcessor.enrich(exchange));
         assertEquals(ENTRA_PROXY_ERROR_MESSAGE, capturedException.getMessage());
