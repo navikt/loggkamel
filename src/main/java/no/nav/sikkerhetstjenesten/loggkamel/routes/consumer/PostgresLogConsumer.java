@@ -1,9 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.processor.InvalidIndividualPostgresLog;
-import org.apache.camel.Exchange;
+import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,64 +11,16 @@ import java.util.UUID;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.PostgresLogEnricher.POSTGRES_LOG_ENRICH_ROUTE;
 
 @Component
-public class PostgresLogConsumer extends RouteBuilder {
+public class PostgresLogConsumer extends SharedRouteErrorHandler {
 
     public static String POSTGRES_LOG_CONSUMER_ID = "postgres-log-consumer";
-
-    @Value("${routing.postgres.dead-letter}")
-    private String deadLetterUri;
-
-    @Value("${routing.postgres.invalid-message}")
-    private String invalidMessageUri;
 
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
 
     @Override
     public void configure() {
-        //TODO: try to set up such that dead letter only handles postgres messages, not all undelivered messages
-        // Alternatively, pull out of here and into a universal route definition
-
-        //TODO: decide whether to re-compress failed messages, or leave uncompressed
-        errorHandler(deadLetterChannel(deadLetterUri)
-                .useOriginalMessage()
-                .maximumRedeliveries(1)
-                .useExponentialBackOff()
-                .retryAttemptedLogLevel(LoggingLevel.INFO)
-                .retriesExhaustedLogLevel(LoggingLevel.WARN)
-                .logExhaustedMessageHistory(true)
-                .onPrepareFailure(exchange -> {
-                    Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-                    String fileName = exchange.getIn().getHeader("CamelFileName", String.class);
-                    String routeId = exchange.getFromRouteId();
-
-                    String exceptionType = cause != null ? cause.getClass().getName() : "unknown";
-                    String exceptionMessage = cause != null ? cause.getMessage() : "unknown";
-
-                    exchange.getIn().setHeader("deadLetterExceptionType", exceptionType);
-                    exchange.getIn().setHeader("deadLetterReason", exceptionMessage);
-                    exchange.getIn().setHeader("deadLetterRouteId", routeId);
-                    exchange.getIn().setHeader("deadLetterFileName", fileName);
-
-                    log.error(
-                            "Routing message to dead letter channel. routeId={}, fileName={}, exceptionType={}, reason={}",
-                            routeId,
-                            fileName,
-                            exceptionType,
-                            exceptionMessage,
-                            cause
-                    );
-                })
-        );
-
-        //TODO: should narrow exception class to keep this specific to postgres?
-        //TODO: test that this log message formatting works as expected
-        // Invalid logical message format
-        onException(InvalidIndividualPostgresLog.class)
-                .handled(true)
-                .useOriginalMessage()
-                .log("Routing invalid message to invalid-messages channel: ${exception.message}, invalid filename: ${headers['CamelFileName']}")
-                .to(invalidMessageUri);
+        super.errorHandling();
 
         //from("quartz://myGroup/myTestTimer?cron=*/10+*+*+*+*+?")
 
@@ -82,6 +32,7 @@ public class PostgresLogConsumer extends RouteBuilder {
                         exchange.getIn().setHeader("CamelFileName", exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
                     }
                 })
+                .log(LoggingLevel.INFO, "Processing postgres log message from ${header.CamelFileName}")
                 .choice()
                 .when(header("CamelFileName").endsWith(".gz"))
                     .doTry()

@@ -1,9 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.producer;
 
-import org.apache.camel.builder.RouteBuilder;
+import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.springframework.beans.factory.annotation.Value;
 
-public abstract class LogProducer extends RouteBuilder {
+public abstract class LogProducer extends SharedRouteErrorHandler {
 
     @Value("${routing.postgres.producer}")
     String producerUri;
