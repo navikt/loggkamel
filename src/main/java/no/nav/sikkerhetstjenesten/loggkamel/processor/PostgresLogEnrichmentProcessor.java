@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,11 +29,13 @@ public class PostgresLogEnrichmentProcessor {
     static final String SUBSTATEMENT_ID = "substatementId";
     static final String PG_AUDIT_CLASS = "auditClass";
     static final String PG_AUDIT_COMMAND = "auditCommand";
-    static final String PG_AUDIT_OBJECT_TYPE = "auditType";
-    static final String PG_AUDIT_OBJECT_NAME = "auditName";
+    static final String PG_AUDIT_OBJECT_TYPE = "pgAuditType";
+    static final String PG_AUDIT_OBJECT_NAME = "pgAuditName";
     static final String SQL_STATEMENT = "sqlStatement";
     static final String SQL_PARAMETER = "sqlParameter";
     static final String NAV_EPOST = "navEpost";
+
+    public static final String LOG_VALUES = "logValues";
 
     private final EntraProxyService entraProxyService;
 
@@ -82,19 +86,24 @@ public class PostgresLogEnrichmentProcessor {
             log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
             throw new InvalidIndividualPostgresLog(ENTRA_PROXY_ERROR_MESSAGE, e);
         }
-        exchange.setVariable(LOG_TIME, logTime);
-        exchange.setVariable(NAV_IDENT, navIdent);
-        exchange.setVariable(DB_NAME, dbName);
-        exchange.setVariable(AUDIT_TYPE, auditType);
-        exchange.setVariable(STATEMENT_ID, statementId);
-        exchange.setVariable(SUBSTATEMENT_ID, substatementId);
-        exchange.setVariable(PG_AUDIT_CLASS, pgAuditClass);
-        exchange.setVariable(PG_AUDIT_COMMAND, pgAuditCommand);
-        exchange.setVariable(PG_AUDIT_OBJECT_TYPE, pgAuditObjectType);
-        exchange.setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
-        exchange.setVariable(SQL_STATEMENT, sqlStatement);
-        exchange.setVariable(SQL_PARAMETER, sqlParameter);
-        exchange.setVariable(NAV_EPOST, entraProxyAnsatt.getEpost());
+
+        Map<String, Object> logValues = new HashMap<>();
+
+        logValues.put(LOG_TIME, logTime);
+        logValues.put(NAV_IDENT, navIdent);
+        logValues.put(DB_NAME, dbName);
+        logValues.put(AUDIT_TYPE, auditType);
+        logValues.put(STATEMENT_ID, statementId);
+        logValues.put(SUBSTATEMENT_ID, substatementId);
+        logValues.put(PG_AUDIT_CLASS, pgAuditClass);
+        logValues.put(PG_AUDIT_COMMAND, pgAuditCommand);
+        logValues.put(PG_AUDIT_OBJECT_TYPE, pgAuditObjectType);
+        logValues.put(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
+        logValues.put(SQL_STATEMENT, sqlStatement);
+        logValues.put(SQL_PARAMETER, sqlParameter);
+        logValues.put(NAV_EPOST, entraProxyAnsatt.getEpost());
+
+        exchange.setVariable(LOG_VALUES, logValues);
 
         msg.setBody(body);
     }

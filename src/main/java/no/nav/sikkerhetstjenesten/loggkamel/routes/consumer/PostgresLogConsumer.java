@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.PostgresLogEnricher.POSTGRES_LOG_ENRICH_ROUTE;
+import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
 public class PostgresLogConsumer extends SharedRouteErrorHandler {
@@ -28,13 +29,13 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
                 .process(exchange -> {
                     // If the file comes from a bucket instead of local storage, still populate the filename
-                    if (exchange.getIn().getHeader("CamelFileName", String.class) == null) {
-                        exchange.getIn().setHeader("CamelFileName", exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
+                    if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
+                        exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
                     }
                 })
                 .log(LoggingLevel.INFO, "Processing postgres log message from ${header.CamelFileName}")
                 .choice()
-                .when(header("CamelFileName").endsWith(".gz"))
+                .when(header(FILE_NAME).endsWith(".gz"))
                     .doTry()
                         .unmarshal().gzipDeflater()
                     .endDoTry()
@@ -47,11 +48,11 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
                 // Split the log file by lines, and strip the leading "<" symbols
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                 .process(exchange -> {
-                    String originalFileName = exchange.getIn().getHeader("CamelFileName", String.class);
+                    String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
                     // If a line was part of a compressed file, strip compression extension and make unique with a UUID
                     if (originalFileName.endsWith(".gz")) {
                         String newFileName = UUID.randomUUID() + "." + originalFileName.substring(0, originalFileName.length() - 3);
-                        exchange.getIn().setHeader("CamelFileName", newFileName);
+                        exchange.getIn().setHeader(FILE_NAME, newFileName);
                     }
                 })
                 .to(POSTGRES_LOG_ENRICH_ROUTE);

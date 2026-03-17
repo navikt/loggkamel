@@ -17,9 +17,6 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-        //TODO: try to set up such that dead letter only handles postgres messages, not all undelivered messages
-        // Alternatively, pull out of here and into a universal route definition
-
         errorHandler(deadLetterChannel(deadLetterUri)
                 .useOriginalMessage()
                 .maximumRedeliveries(1)
@@ -29,7 +26,7 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
                 .logExhaustedMessageHistory(true)
                 .onPrepareFailure(exchange -> {
                     Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-                    String fileName = exchange.getIn().getHeader("CamelFileName", String.class);
+                    String fileName = exchange.getIn().getHeader(org.apache.camel.Exchange.FILE_NAME, String.class);
                     String routeId = exchange.getFromRouteId();
 
                     String exceptionType = cause != null ? cause.getClass().getName() : "unknown";
@@ -51,9 +48,6 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
                 })
         );
 
-        //TODO: should narrow exception class to keep this specific to postgres?
-        //TODO: test that this log message formatting works as expected
-        // Invalid logical message format
         onException(InvalidIndividualPostgresLog.class)
                 .handled(true)
                 .useOriginalMessage()

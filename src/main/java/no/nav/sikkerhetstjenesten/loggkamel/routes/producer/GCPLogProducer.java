@@ -9,6 +9,9 @@ import no.nav.boot.conditionals.ConditionalOnGCP;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Map;
+
+import static no.nav.sikkerhetstjenesten.loggkamel.processor.PostgresLogEnrichmentProcessor.LOG_VALUES;
 
 @Component
 @ConditionalOnGCP
@@ -20,22 +23,17 @@ public class GCPLogProducer extends LogProducer {
 
         from(POSTGRES_LOG_PRODUCER_ROUTE)
                 .routeId(POSTGRES_LOG_PRODUCER_ID)
-                // TODO: build new log body that is a json blob containing both original message body and collected metadata
-                // TODO: instead of sending to a destination, send to a bean that uploads it to the google log api
                 .process(exchange -> {
                     try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
+                        Payload.JsonPayload jsonPayload = Payload.JsonPayload.of((Map<String, ?>) exchange.getVariables().get(LOG_VALUES));
+
                         LogEntry entry =
-                                LogEntry.newBuilder(Payload.StringPayload.of(exchange.getIn().getBody(String.class)))
+                                LogEntry.newBuilder(jsonPayload)
                                         .setSeverity(Severity.ERROR)
-                                        .setLogName("my-log") //TODO: select more appropriate name
+                                        .setLogName("loggkamel-backup")
                                         .build();
 
-                        // Writes the log entry asynchronously
                         logging.write(Collections.singleton(entry));
-                    } catch (Exception e) {
-                        // TODO: expect and handle GCP connectivity or configuration issues separately
-                        log.error("Failed to publish to GCP, exception: {}", e.getMessage());
-                        throw e;
                     }
                 });
     }
