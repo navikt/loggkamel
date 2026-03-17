@@ -93,6 +93,7 @@ public class PostgresLogConsumer extends RouteBuilder {
                         .stop()
                     .end()
                 .end()
+                // Split the log file by lines, and strip the leading "<" symbols
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                 .process(exchange -> {
                     String originalFileName = exchange.getIn().getHeader("CamelFileName", String.class);

@@ -3,8 +3,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.routes.producer;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 @ConditionalOnLocalOrTest
 public class LocalLogProducer extends LogProducer {
@@ -17,6 +15,7 @@ public class LocalLogProducer extends LogProducer {
                 .process(exchange -> {
                     exchange.getMessage().setBody(exchange.getMessage().getBody() + ", messageVariables: " + exchange.getVariables());
                 })
+                // INSERT GCP LOGS HERE FOR TESTING
                 .toD(producerUri);
     }
 }

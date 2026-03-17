@@ -23,22 +23,14 @@ public class GCPLogProducer extends LogProducer {
                 // TODO: instead of sending to a destination, send to a bean that uploads it to the google log api
                 .process(exchange -> {
                     try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
-
-                        log.info("Attempting to log body: {}", exchange.getIn().getBody(String.class));
-                        log.info("Attempting to log name: {}", exchange.getIn().getHeader("CamelFileName", String.class));
-
                         LogEntry entry =
                                 LogEntry.newBuilder(Payload.StringPayload.of(exchange.getIn().getBody(String.class)))
                                         .setSeverity(Severity.ERROR)
                                         .setLogName(exchange.getIn().getHeader("CamelFileName", String.class))
-                                        .setResource(MonitoredResource.newBuilder("global").build())
                                         .build();
 
                         // Writes the log entry asynchronously
                         logging.write(Collections.singleton(entry));
-
-                        // Optional - flush any pending log entries just before Logging is closed
-                        logging.flush();
                     } catch (Exception e) {
                         // TODO: expect and handle GCP connectivity or configuration issues separately
                         log.error("Failed to publish to GCP, exception: {}", e.getMessage());
