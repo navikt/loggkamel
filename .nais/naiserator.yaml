@@ -31,12 +31,12 @@ spec:
       - resource:
           apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
           kind: Project
-          name: gcp-logging
+          name: gcp-logging-writer
         role: roles/logging.logWriter
       - resource:
           apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
           kind: Project
-          name: gcp-logging
+          name: gcp-logging-config
         role: roles/logging.configWriter
   ingresses:
     {{#each ingresses as |ingress|}}
