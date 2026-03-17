@@ -38,17 +38,17 @@ class PostgresLogEnrichmentProcessorTest {
     PostgresLogEnrichmentProcessor postgresLogEnrichmentProcessor;
 
     @Test
-    void extract_invalidLogPattern() {
+    void enrich_invalidLogPattern() {
         String logMessageBody = "blah";
 
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        assertThrows(InvalidIndividualPostgresLog.class, () -> postgresLogEnrichmentProcessor.extract(exchange));
+        assertThrows(InvalidIndividualPostgresLog.class, () -> postgresLogEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
-    void extract_exceptionFromEntraProxy() {
+    void enrich_exceptionFromEntraProxy() {
         String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-A156179-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
         RuntimeException entraProxyException = new RuntimeException("Something went wrong, panic!");
 
@@ -57,13 +57,13 @@ class PostgresLogEnrichmentProcessorTest {
 
         when(entraProxyService.getAnsattFromNavIdent("A156179")).thenThrow(entraProxyException);
 
-        RuntimeException capturedException = assertThrows(RuntimeException.class, () -> postgresLogEnrichmentProcessor.extract(exchange));
+        RuntimeException capturedException = assertThrows(RuntimeException.class, () -> postgresLogEnrichmentProcessor.enrich(exchange));
         assertEquals(ENTRA_PROXY_ERROR_MESSAGE, capturedException.getMessage());
         assertEquals(entraProxyException, capturedException.getCause());
     }
 
     @Test
-    void extract_happyPath() {
+    void enrich_happyPath() {
         String logTime = "time";
         String navIdent = "navIdent";
         String dbName = "dbName";
@@ -85,7 +85,7 @@ class PostgresLogEnrichmentProcessorTest {
         when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
-        postgresLogEnrichmentProcessor.extract(exchange);
+        postgresLogEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<Map<String, Object>> logValuesCaptor = ArgumentCaptor.forClass(Map.class);
 

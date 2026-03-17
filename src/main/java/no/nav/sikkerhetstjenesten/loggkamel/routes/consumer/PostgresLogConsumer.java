@@ -34,6 +34,7 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
                     }
                 })
                 .log(LoggingLevel.INFO, "Processing postgres log message from ${header.CamelFileName}")
+                //TODO: split out DB name, put into header variables here
                 .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .doTry()

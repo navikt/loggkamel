@@ -44,7 +44,7 @@ public class PostgresLogEnrichmentProcessor {
         this.entraProxyService = entraProxyService;
     }
 
-    public void extract(Exchange exchange) {
+    public void enrich(Exchange exchange) {
         Message msg = exchange.getMessage();
         String body = msg.getBody(String.class);
 

@@ -5,7 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.routes.producer.LogProducer.POSTGRES_LOG_PRODUCER_ROUTE;
+import static no.nav.sikkerhetstjenesten.loggkamel.routes.filter.LogFilter.POSTGRES_LOG_FILTER_ROUTE;
 
 @Component
 public class PostgresLogEnricher extends SharedRouteErrorHandler {
@@ -21,8 +21,8 @@ public class PostgresLogEnricher extends SharedRouteErrorHandler {
                 .routeId(POSTGRES_LOG_ENRICH_ID)
                 .log(LoggingLevel.INFO, "Enriching log message ${header.CamelFileName}")
                 .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
-                .bean(PostgresLogEnrichmentProcessor.class, "extract")
+                .bean(PostgresLogEnrichmentProcessor.class, "enrich")
                 .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
-                .to(POSTGRES_LOG_PRODUCER_ROUTE);
+                .to(POSTGRES_LOG_FILTER_ROUTE);
     }
 }

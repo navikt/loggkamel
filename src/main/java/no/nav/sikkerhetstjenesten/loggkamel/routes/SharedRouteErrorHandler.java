@@ -37,8 +37,8 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
                     exchange.getIn().setHeader("deadLetterRouteId", routeId);
                     exchange.getIn().setHeader("deadLetterFileName", fileName);
 
-                    log.error(
-                            "Routing message to dead letter channel. routeId={}, fileName={}, exceptionType={}, reason={}",
+                    log.warn(
+                            "Messaged failed to process normally. routeId={}, fileName={}, exceptionType={}, reason={}",
                             routeId,
                             fileName,
                             exceptionType,
@@ -48,6 +48,7 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
                 })
         );
 
+        //TODO: set up inheriting exception classes that can provide more context for failures, leaving the shared invalid handler here
         onException(InvalidIndividualPostgresLog.class)
                 .handled(true)
                 .useOriginalMessage()
