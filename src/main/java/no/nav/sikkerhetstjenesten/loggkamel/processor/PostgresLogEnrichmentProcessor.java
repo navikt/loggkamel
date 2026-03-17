@@ -77,9 +77,6 @@ public class PostgresLogEnrichmentProcessor {
             entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
 
             // TODO: handle null or empty response here
-
-            //TODO: remove or update logging level for response object logging
-            log.info("Employee information extracted from navIdent: " + entraProxyAnsatt);
         } catch (Exception e) {
             // TODO: handle exceptions resulting from entra-proxy errors or service unavailable
             log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
@@ -97,8 +94,7 @@ public class PostgresLogEnrichmentProcessor {
         exchange.setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
         exchange.setVariable(SQL_STATEMENT, sqlStatement);
         exchange.setVariable(SQL_PARAMETER, sqlParameter);
-        String navEpost = entraProxyAnsatt.getEpost();
-        exchange.setVariable(NAV_EPOST, navEpost);
+        exchange.setVariable(NAV_EPOST, entraProxyAnsatt.getEpost());
 
         msg.setBody(body);
     }

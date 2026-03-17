@@ -17,10 +17,9 @@ public class PostgresLogEnricher extends RouteBuilder {
     public void configure() {
         from(POSTGRES_LOG_ENRICH_ROUTE)
                 .routeId(POSTGRES_LOG_ENRICH_ID)
-                .log(LoggingLevel.INFO, "Message: ${body}, Headers: ${headers}")
+                .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
                 .bean(PostgresLogEnrichmentProcessor.class, "extract")
-                //TODO: remove or update logging level for output logging
-                .log(LoggingLevel.INFO, "Per-message variables visible in the route after bean execution: ${variables}")
+                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
                 .to(POSTGRES_LOG_PRODUCER_ROUTE);
     }
 }

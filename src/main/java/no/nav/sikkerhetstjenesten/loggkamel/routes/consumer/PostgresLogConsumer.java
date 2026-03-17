@@ -33,7 +33,7 @@ public class PostgresLogConsumer extends RouteBuilder {
 
         //TODO: decide whether to re-compress failed messages, or leave uncompressed
         errorHandler(deadLetterChannel(deadLetterUri)
-//                .useOriginalMessage()
+                .useOriginalMessage()
                 .maximumRedeliveries(1)
                 .useExponentialBackOff()
                 .retryAttemptedLogLevel(LoggingLevel.INFO)
