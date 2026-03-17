@@ -6,12 +6,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
 import static no.nav.sikkerhetstjenesten.loggkamel.processor.PostgresLogEnrichmentProcessor.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,19 +87,25 @@ class PostgresLogEnrichmentProcessorTest {
 
         postgresLogEnrichmentProcessor.extract(exchange);
 
-        verify(exchange).setVariable(LOG_TIME, logTime);
-        verify(exchange).setVariable(NAV_IDENT, navIdent);
-        verify(exchange).setVariable(DB_NAME, dbName);
-        verify(exchange).setVariable(AUDIT_TYPE, auditType);
-        verify(exchange).setVariable(STATEMENT_ID, statementId);
-        verify(exchange).setVariable(SUBSTATEMENT_ID, substatementId);
-        verify(exchange).setVariable(PG_AUDIT_CLASS, pgAuditClass);
-        verify(exchange).setVariable(PG_AUDIT_COMMAND, pgAuditCommand);
-        verify(exchange).setVariable(PG_AUDIT_OBJECT_TYPE, pgAuditObjectType);
-        verify(exchange).setVariable(PG_AUDIT_OBJECT_NAME, pgAuditObjectName);
-        verify(exchange).setVariable(SQL_STATEMENT, sqlStatement);
-        verify(exchange).setVariable(SQL_PARAMETER, sqlParameter);
-        verify(exchange).setVariable(NAV_EPOST, ePost);
+        ArgumentCaptor<Map<String, Object>> logValuesCaptor = ArgumentCaptor.forClass(Map.class);
+
+        verify(exchange).setVariable(eq(LOG_VALUES), logValuesCaptor.capture());
+
+        Map<String, Object> logValues = logValuesCaptor.getValue();
+        assertNotNull(logValues);
+        assertEquals(logTime, logValues.get(LOG_TIME));
+        assertEquals(navIdent, logValues.get(NAV_IDENT));
+        assertEquals(dbName, logValues.get(DB_NAME));
+        assertEquals(auditType, logValues.get(AUDIT_TYPE));
+        assertEquals(statementId, logValues.get(STATEMENT_ID));
+        assertEquals(substatementId, logValues.get(SUBSTATEMENT_ID));
+        assertEquals(pgAuditClass, logValues.get(PG_AUDIT_CLASS));
+        assertEquals(pgAuditCommand, logValues.get(PG_AUDIT_COMMAND));
+        assertEquals(pgAuditObjectType, logValues.get(PG_AUDIT_OBJECT_TYPE));
+        assertEquals(pgAuditObjectName, logValues.get(PG_AUDIT_OBJECT_NAME));
+        assertEquals(sqlStatement, logValues.get(SQL_STATEMENT));
+        assertEquals(sqlParameter, logValues.get(SQL_PARAMETER));
+        assertEquals(ePost, logValues.get(NAV_EPOST));
     }
 
 }
