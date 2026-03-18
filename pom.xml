@@ -89,10 +89,10 @@
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-quartz-starter</artifactId>
     </dependency>
-    <!--dependency>
+    <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-spring-jdbc-starter</artifactId>
-    </dependency-->
+    </dependency>
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-rest-starter</artifactId>
@@ -207,14 +207,12 @@
       <artifactId>google-cloud-logging</artifactId>
     </dependency>
 
-    <!-- Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-database-postgresql -->
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-database-postgresql</artifactId>
       <version>12.1.0</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-flyway -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-flyway</artifactId>
