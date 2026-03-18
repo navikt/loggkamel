@@ -10,7 +10,7 @@
   },
   "db-flags": {
     "pgaudit": {
-      "enabled": "yes",
+      "enabled": "on",
       "logtype": "ddl,role,write"
     }
   },
