@@ -82,3 +82,5 @@ spec:
   env:
     - name: NAIS_CLUSTER_TYPE
       value: {{nais.cluster.type}}
+    - name: DB_POOLSIZE
+      value: '{{db.poolsize}}'
