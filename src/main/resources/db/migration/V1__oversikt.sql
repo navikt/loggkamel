@@ -1,4 +1,4 @@
-CREATE TYPE dbms AS ENUM ('PostgreSQL', 'Oracle', 'DB2', 'IMS');
+CREATE TYPE dbms AS ENUM ('PosgreSQL', 'Oracle', 'DB2', 'IMS');
 
 CREATE TABLE oversikt
 (
