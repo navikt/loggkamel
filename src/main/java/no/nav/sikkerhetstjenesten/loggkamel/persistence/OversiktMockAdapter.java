@@ -13,8 +13,16 @@ public class OversiktMockAdapter implements OversiktAdapter {
     }
 
     @Override
-    public OversiktEntity findByDbname(String dbname) {
-        //TODO: create test data here
-        return null;
+    public OversiktEntity findByDbnameAndTeknologi(String dbname, String teknologi) {
+        return OversiktEntity.builder()
+                .id(1)
+                .naisteam("NAIS Team")
+                .teknologi(TeknologiEnum.valueOf(teknologi))
+                .dbname(dbname)
+                .okonomi(true)
+                .arkiv(true)
+                .personvern(true)
+                .fiksa(true)
+                .build();
     }
 }

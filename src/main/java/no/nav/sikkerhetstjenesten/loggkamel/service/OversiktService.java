@@ -32,7 +32,7 @@ public class OversiktService {
         return adapter.save(newEntity);
     }
 
-    public OversiktEntity getOversiktByDbname(String dbname) {
-        return adapter.findByDbname(dbname);
+    public OversiktEntity getOversiktByDbnameAndTeknologi(String dbname, String teknologi) {
+        return adapter.findByDbnameAndTeknologi(dbname, teknologi);
     }
 }

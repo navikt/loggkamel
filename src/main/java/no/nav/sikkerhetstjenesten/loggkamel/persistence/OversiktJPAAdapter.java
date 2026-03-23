@@ -19,8 +19,8 @@ public class OversiktJPAAdapter implements OversiktAdapter {
         return repository.save(entity);
     }
 
-    public OversiktEntity findByDbname(String dbname) {
-        return repository.findByDbname(dbname);
+    public OversiktEntity findByDbnameAndTeknologi(String dbname, String teknologi) {
+        return repository.findByDbnameAndTeknologi(dbname, TeknologiEnum.valueOf(teknologi));
     }
 
 

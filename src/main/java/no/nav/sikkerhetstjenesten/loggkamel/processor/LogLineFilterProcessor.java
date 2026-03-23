@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
-public class LogFilterProcessor {
+public class LogLineFilterProcessor {
 
-    private static final Logger log = LoggerFactory.getLogger(LogFilterProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LogLineFilterProcessor.class);
 
-    public void doSomething(Exchange exchange) {
+    public boolean doSomething(Exchange exchange) {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
         //TODO: pull the database being operated on from the exchange header variables
@@ -22,5 +22,7 @@ public class LogFilterProcessor {
         //TODO: build set of logging actions we care about for the given set of logging flags
 
         //TODO: determine whether to continue logging or drop the message based on its logging action and set of actions of interest
+
+        return true;
     }
 }
