@@ -47,7 +47,7 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
                     .end()
                 .end()
                 // Split the log file by lines, and strip the leading "<" symbols
-                .split(body().tokenize("^\\<|\n\\<")).streaming()
+                .split(body().tokenize("^\\<|\n\\<|\n")).streaming()
                 .process(exchange -> {
                     String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
                     // If a line was part of a compressed file, strip compression extension and make unique with a UUID

@@ -1,0 +1,27 @@
+package no.nav.sikkerhetstjenesten.loggkamel.persistence;
+
+import no.nav.boot.conditionals.ConditionalOnGCP;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+@ConditionalOnGCP
+public class OversiktJPAAdapter implements OversiktAdapter {
+
+    private final OversiktRepository repository;
+
+    @Autowired
+    public OversiktJPAAdapter(OversiktRepository repository) {
+        this.repository = repository;
+    }
+
+    public OversiktEntity save(OversiktEntity entity) {
+        return repository.save(entity);
+    }
+
+    public OversiktEntity findByDbname(String dbname) {
+        return repository.findByDbname(dbname);
+    }
+
+
+}
