@@ -17,6 +17,17 @@ no.nav.security.jwt:
 spring:
   cache:
     type: caffeine
+  datasource:
+    url: ${LOCAL_DB_JDBC_URL:jdbc:postgresql://localhost:5432/loggkamel}
+    username: ${LOCAL_DB_USERNAME:${USER}}
+    password: ${LOCAL_DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false
 
 routing:
   postgres:
