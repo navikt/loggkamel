@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 public class OversiktMockAdapter implements OversiktAdapter {
 
     @Override
-    public OversiktEntity save(OversiktEntity entity) {
+    public Oversikt save(Oversikt entity) {
         return null;
     }
 
     @Override
-    public OversiktEntity findByDbnameAndTeknologi(String dbname, String teknologi) {
-        return OversiktEntity.builder()
-                .id(1)
+    public Oversikt findByDbnameAndTeknologi(String dbname, String teknologi) {
+        return Oversikt.builder()
+                .id(1L)
                 .naisteam("NAIS Team")
                 .teknologi(TeknologiEnum.valueOf(teknologi))
                 .dbname(dbname)

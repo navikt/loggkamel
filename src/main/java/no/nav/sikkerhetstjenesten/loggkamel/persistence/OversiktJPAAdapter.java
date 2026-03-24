@@ -15,11 +15,11 @@ public class OversiktJPAAdapter implements OversiktAdapter {
         this.repository = repository;
     }
 
-    public OversiktEntity save(OversiktEntity entity) {
+    public Oversikt save(Oversikt entity) {
         return repository.save(entity);
     }
 
-    public OversiktEntity findByDbnameAndTeknologi(String dbname, String teknologi) {
+    public Oversikt findByDbnameAndTeknologi(String dbname, String teknologi) {
         return repository.findByDbnameAndTeknologi(dbname, TeknologiEnum.valueOf(teknologi));
     }
 

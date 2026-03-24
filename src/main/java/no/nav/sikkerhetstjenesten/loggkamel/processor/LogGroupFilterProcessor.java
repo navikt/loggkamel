@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktEntity;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.Oversikt;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class LogGroupFilterProcessor {
         String teknologi = exchange.getIn().getHeader(TEKNOLOGI, String.class);
 
         //TODO: test checking for missing db, make sure it's null here and not an exception
-        OversiktEntity backupTask = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
+        Oversikt backupTask = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
 
         if (backupTask == null) {
             log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi);
