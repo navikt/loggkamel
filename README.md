@@ -16,6 +16,12 @@ Applikasjonen er satt opp til a bruke PostgreSQL i `local`-profilen (ikke H2).
 
 ### Alternativ 1: Lokal proxy mot dev DB (anbefalt)
 
+Start your local proxy with:
+
+```zsh
+nais postgres proxy --team sikkerhetstjenesten --environment dev-gcp --reason "debugging issue" loggkamel
+```
+
 Standard lokal JDBC-url er:
 
 - `jdbc:postgresql://localhost:5432/loggkamel`
