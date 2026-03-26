@@ -20,15 +20,15 @@ spring:
   threads:
     virtual:
       enabled: true
-  jpa:
-    properties:
-      hibernate:
-        generate_statistics: false
-        connection:
-          url: ${spring.datasource.url}
-          username: ${spring.datasource.username}
-          password: ${spring.datasource.password}
-          pool_size: ${spring.datasource.hikari.maximum-pool-size}
+#  jpa:
+#    properties:
+#      hibernate:
+#        generate_statistics: false
+#        connection:
+#          url: ${spring.datasource.url}
+#          username: ${spring.datasource.username}
+#          password: ${spring.datasource.password}
+#          pool_size: ${spring.datasource.hikari.maximum-pool-size}
   application:
     name: loggkamel
   datasource:
