@@ -22,10 +22,12 @@ spring:
     username: ${LOCAL_DB_USERNAME:${USER}}
     password: ${LOCAL_DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hikari:
+      connection-timeout: 5000
+      max-lifetime: 1200000
+      idle-timeout: 600000
+      connection-test-query: SELECT 1
+      maximum-pool-size: 5
   flyway:
     enabled: false
 

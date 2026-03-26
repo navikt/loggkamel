@@ -1,8 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
 public enum TeknologiEnum {
-    POSTGRESQL("PostgreSQL"),
-    ORACLE("Oracle"),
+    POSTGRESQL("POSTGRESQL"),
+    ORACLE("ORACLE"),
     DB2("DB2"),
     IMS("IMS");
 
