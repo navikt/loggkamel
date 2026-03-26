@@ -20,15 +20,6 @@ spring:
   threads:
     virtual:
       enabled: true
-#  jpa:
-#    properties:
-#      hibernate:
-#        generate_statistics: false
-#        connection:
-#          url: ${spring.datasource.url}
-#          username: ${spring.datasource.username}
-#          password: ${spring.datasource.password}
-#          pool_size: ${spring.datasource.hikari.maximum-pool-size}
   application:
     name: loggkamel
   datasource:
@@ -41,6 +32,10 @@ spring:
       idle-timeout: 600000
       connection-test-query: SELECT 1
       maximum-pool-size: ${db.poolsize}
+
+logging:
+  level:
+    org.hibernate.orm.connections.pooling: WARN
 
 no.nav.security.jwt:
   issuer:
