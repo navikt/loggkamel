@@ -2,15 +2,39 @@ name: CodeQL
 
 on:
   schedule:
-    - cron: '32 13 * * 1'
+    - cron: '32 13 * * 5' # hver fredag 13:32
 
 jobs:
-  run-codeql:
+  analyze-java:
+    name: Analyze Java
+    runs-on: ubuntu-latest-8-cores
     permissions:
       actions: read
       contents: read
       security-events: write
-    uses: navikt/dok-workflows/.github/workflows/codeql.yml@main
-    secrets: inherit
-    with:
-      java-version: '21'
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: JDK
+        uses: actions/setup-java@v5
+        with:
+          # https://github.com/actions/setup-java/blob/main/README.md#Supported-distributions
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: 'java'
+
+      - name: Build Java
+        run: ./mvnw clean install -P github-actions -DskipTests=true --threads=2 --batch-mode #--settings ./.mvn/settings.xml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:java"
