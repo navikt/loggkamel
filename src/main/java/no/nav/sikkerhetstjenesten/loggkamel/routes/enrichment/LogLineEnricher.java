@@ -26,7 +26,6 @@ public class LogLineEnricher extends SharedRouteErrorHandler {
                     .when(header(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL.name()))
                         .to(POSTGRES_LOG_ENRICH_ROUTE)
                     .otherwise()
-                        // TODO: test that this branch is hit when no teknologi header is set, and that the exception is thrown and handled correctly
                         .log(LoggingLevel.INFO, "No specific enricher found for teknologi ${header.TEKNOLOGI} in file ${header.CamelFileName}, sending to invalid message queue")
                         // TODO: more generic exception here
                         .throwException(new InvalidIndividualPostgresLog("Could not determine which enricher to use for log message ${header.CamelFileName} with teknologi ${header.TEKNOLOGI}"));

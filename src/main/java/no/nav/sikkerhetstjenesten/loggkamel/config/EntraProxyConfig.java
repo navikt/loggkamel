@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.config;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
-import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyInterface;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyMock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ public class EntraProxyConfig {
 
     @Bean
     @ConditionalOnGCP
-    public EntraProxyInterface entraProxyClient(RestClient.Builder restClientBuilder, @Value("${ENTRA_PROXY_BASE_URL}")
+    public EntraProxyClient entraProxyClient(RestClient.Builder restClientBuilder, @Value("${ENTRA_PROXY_BASE_URL}")
                                                 String entraProxyUrl) {
         RestClient restClient = restClientBuilder
                 .baseUrl(entraProxyUrl)
@@ -26,12 +26,12 @@ public class EntraProxyConfig {
                 .exchangeAdapter(RestClientAdapter.create(restClient))
                 .build();
 
-        return proxyFactory.createClient(EntraProxyInterface.class);
+        return proxyFactory.createClient(EntraProxyClient.class);
     }
 
     @Bean
     @ConditionalOnLocalOrTest
-    public EntraProxyInterface entraProxyClientMock() {
+    public EntraProxyClient entraProxyClientMock() {
         return new EntraProxyMock();
     }
 }

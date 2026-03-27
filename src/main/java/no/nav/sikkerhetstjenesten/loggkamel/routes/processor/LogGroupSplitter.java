@@ -10,6 +10,7 @@ import java.util.UUID;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
 
+//TODO: given that this route does two things, either name something more generic or split into two routes
 @Component
 public class LogGroupSplitter extends SharedRouteErrorHandler {
 
@@ -45,6 +46,7 @@ public class LogGroupSplitter extends SharedRouteErrorHandler {
                 .log(LoggingLevel.INFO, "Splitting log file ${header.CamelFileName} into individual messages")
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                 .process(exchange -> {
+                    //TODO: instead of modifying the filename here, toss a UUID into the header and use to generate filename only on local write or failure queues
                     String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
                     String fileExtension = originalFileName.contains(".") ? originalFileName.substring(originalFileName.lastIndexOf('.')) : "";
                     String fileBeforeExtension = fileExtension.isEmpty() ? originalFileName : originalFileName.substring(0, originalFileName.lastIndexOf('.'));

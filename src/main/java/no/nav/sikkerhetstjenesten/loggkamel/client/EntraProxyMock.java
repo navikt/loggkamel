@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client;
 
-public class EntraProxyMock implements EntraProxyInterface {
+public class EntraProxyMock implements EntraProxyClient {
     public static final String MOCK_ANSATT_NAV_IDENT = "MOCK_NAV_IDENT";
     public static final String MOCK_ANSATT_NAV_TIDENT = "MOCK_NAV_TIDENT";
     public static final String MOCK_ANSATT_VISNING_NAVN = "MOCK_NAVN";

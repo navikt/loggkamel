@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment;
 
-import no.nav.sikkerhetstjenesten.loggkamel.processor.PostgresLogEnrichmentProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.PostgresLogEnrichmentProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
