@@ -32,7 +32,7 @@ jobs:
           languages: 'java'
 
       - name: Build Java
-        run: ./mvnw clean install -P github-actions -DskipTests=true --threads=2 --batch-mode #--settings ./.mvn/settings.xml
+        run: ./mvnw clean install -P github-actions -DskipTests=true --threads=2 --batch-mode --settings ./.mvn/settings.xml
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

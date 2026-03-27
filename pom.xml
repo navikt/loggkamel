@@ -26,10 +26,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <surefire.plugin.version>3.5.5</surefire.plugin.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <logback.version>1.5.22</logback.version>
-    <logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>
     <spring.boot-version>4.0.5</spring.boot-version>
     <camel-version>4.18.0</camel-version>
     <nav.boot-version>6.0.3</nav.boot-version>
@@ -168,7 +165,7 @@
     <dependency>
       <groupId>net.logstash.logback</groupId>
       <artifactId>logstash-logback-encoder</artifactId>
-      <version>${logstash-logback-encoder.version}</version>
+      <version>9.0</version>
       <scope>runtime</scope>
     </dependency>
 
@@ -195,13 +192,12 @@
       <artifactId>camel-file-starter</artifactId>
     </dependency>
 
-    <!-- Versjon på avhengigheter som følger av andre -->
+    <!-- Versjon på transitive avhengigheter -->
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>[7.0.0,)</version>
     </dependency>
-
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-logging</artifactId>
@@ -252,7 +248,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.plugin.version}</version>
+        <version>3.5.5</version>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
