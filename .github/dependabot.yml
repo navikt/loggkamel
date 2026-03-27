@@ -10,17 +10,19 @@ version: 2
 #    password: ${{secrets.READER_TOKEN}}
 
 updates:
-  - package-ecosystem: github-actions
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
-
-  - package-ecosystem: maven
-    directory: "/"
-    schedule:
-      interval: daily
+      interval: "daily"
     cooldown:
-      default-days: 3
+      default-days: 4
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 4
 #    registries:
 #      - mvn-repo
 
@@ -28,3 +30,5 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    cooldown:
+      default-days: 4
