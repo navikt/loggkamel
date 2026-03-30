@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   schedule:
-    - cron: '32 13 * * 5' # hver fredag 13:32
+    - cron: '32 13 * * 1'
 
 jobs:
   analyze-java:
