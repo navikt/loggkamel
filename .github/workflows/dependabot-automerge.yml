@@ -12,6 +12,6 @@ jobs:
       contents: write
     steps:
       - name: Automerge Dependabot PRs
-        uses: navikt/automerge-dependabot@v1.3
+        uses: navikt/automerge-dependabot@v1.4
         with:
           token: ${{ github.token }}
