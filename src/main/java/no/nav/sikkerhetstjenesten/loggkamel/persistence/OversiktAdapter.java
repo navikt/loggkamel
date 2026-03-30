@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
 public interface OversiktAdapter {
 
-    Oversikt save(Oversikt entity);
+    BackupTask save(BackupTask entity);
 
-    Oversikt findByDbnameAndTeknologi(String dbname, String teknologi);
+    BackupTask findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
 }

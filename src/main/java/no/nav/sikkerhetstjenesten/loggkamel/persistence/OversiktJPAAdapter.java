@@ -13,12 +13,12 @@ public class OversiktJPAAdapter implements OversiktAdapter {
         this.repository = repository;
     }
 
-    public Oversikt save(Oversikt entity) {
+    public BackupTask save(BackupTask entity) {
         return repository.save(entity);
     }
 
-    public Oversikt findByDbnameAndTeknologi(String dbname, String teknologi) {
-        return repository.findByDbnameAndTeknologi(dbname, TeknologiEnum.valueOf(teknologi));
+    public BackupTask findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+        return repository.findByDbnameAndTeknologi(dbname, teknologi);
     }
 
 

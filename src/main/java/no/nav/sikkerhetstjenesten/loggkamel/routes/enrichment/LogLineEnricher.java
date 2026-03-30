@@ -23,7 +23,7 @@ public class LogLineEnricher extends SharedRouteErrorHandler {
                 .routeId(LOG_LINE_ENRICHER_ID)
                 .log(LoggingLevel.INFO, "Determining which teknologi-specific enricher to use for ${header.CamelFileName}")
                 .choice()
-                    .when(header(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL.name()))
+                    .when(exchangeProperty(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
                         .to(POSTGRES_LOG_ENRICH_ROUTE)
                     .otherwise()
                         .log(LoggingLevel.INFO, "No specific enricher found for teknologi ${header.TEKNOLOGI} in file ${header.CamelFileName}, sending to invalid message queue")

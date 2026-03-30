@@ -1,10 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
@@ -12,17 +15,20 @@ public class LogLineFilterProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(LogLineFilterProcessor.class);
 
-    public boolean doSomething(Exchange exchange) {
+    public boolean doesLineActionMatchConfiguredBackupTask(Exchange exchange) {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
-        //TODO: pull the database being operated on from the exchange header variables
+        BackupTask backupTask = exchange.getProperty(BACKUP_TASK, BackupTask.class);
+        LogRoutingAttributes routingAttributes = exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class);
 
-        //TODO: query local DB to get logging flags for associated DB
+        if (backupTask.getPersonvern() && routingAttributes.isRead()) {
+            return true;
+        }
 
-        //TODO: build set of logging actions we care about for the given set of logging flags
+        if ((backupTask.getArkiv() || backupTask.getOkonomi()) && routingAttributes.isModification()) {
+            return true;
+        }
 
-        //TODO: determine whether to continue logging or drop the message based on its logging action and set of actions of interest
-
-        return true;
+        return false;
     }
 }

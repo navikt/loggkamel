@@ -29,6 +29,7 @@ public class GCPLogProducer extends LogProducer {
 
         from(POSTGRES_LOG_PRODUCER_ROUTE)
                 .routeId(POSTGRES_LOG_PRODUCER_ID)
+                .log("Producing log message ${header.CamelFileName} to GCP Logging")
                 .process(exchange -> {
                     try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
 

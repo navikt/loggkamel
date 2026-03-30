@@ -28,7 +28,7 @@ import java.time.Instant;
 @Table(name = "oversikt")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Oversikt {
+public class BackupTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

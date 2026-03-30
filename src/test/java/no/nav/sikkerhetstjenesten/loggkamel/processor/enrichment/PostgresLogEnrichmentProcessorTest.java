@@ -41,10 +41,16 @@ class PostgresLogEnrichmentProcessorTest {
     Message message;
 
     @Mock
+    LogRoutingAttributes logRoutingAttributes;
+
+    @Mock
     EntraProxyAnsatt entraProxyAnsatt;
 
     @Mock
     EntraProxyService entraProxyService;
+
+    @Mock
+    LogRoutingAttributesEnricher logRoutingAttributesEnricher;
 
     @InjectMocks
     PostgresLogEnrichmentProcessor postgresLogEnrichmentProcessor;
@@ -85,19 +91,21 @@ class PostgresLogEnrichmentProcessorTest {
         when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
+        when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logRoutingAttributes);
+
         postgresLogEnrichmentProcessor.enrich(exchange);
 
-        ArgumentCaptor<PostgresLogEnrichment> logEnrichmentCaptor = ArgumentCaptor.forClass(PostgresLogEnrichment.class);
-
+        ArgumentCaptor<PostgresEnrichmentAttributes> logEnrichmentCaptor = ArgumentCaptor.forClass(PostgresEnrichmentAttributes.class);
         verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());
+        verify(exchange).setProperty(eq(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logRoutingAttributes));
 
-        PostgresLogEnrichment capturedLogEnrichment = logEnrichmentCaptor.getValue();
+        PostgresEnrichmentAttributes capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(), capturedLogEnrichment);
 
     }
 
-    private PostgresLogEnrichment expectedLogEnrichment() {
-        return PostgresLogEnrichment.builder()
+    private PostgresEnrichmentAttributes expectedLogEnrichment() {
+        return PostgresEnrichmentAttributes.builder()
                 .logTime(logTime)
                 .navIdent(navIdent)
                 .dbName(dbName)
@@ -105,11 +113,11 @@ class PostgresLogEnrichmentProcessorTest {
                 .statementId(statementId)
                 .substatementId(substatementId)
                 .pgAuditClass(pgAuditClass)
-                .pgAuditCommand(pgAuditCommand)
-                .pgAuditObjectType(pgAuditObjectType)
-                .pgAuditObjectName(pgAuditObjectName)
+                .pgCommand(pgAuditCommand)
+                .pgObjectType(pgAuditObjectType)
+                .pgObjectName(pgAuditObjectName)
                 .sqlStatement(sqlStatement)
-                .sqlParameter(sqlParameter)
+                .sqlParameters(sqlParameter)
                 .epost(entraProxyAnsatt.getEpost())
                 .build();
     }

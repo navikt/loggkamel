@@ -1,6 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.Oversikt;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -8,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -20,10 +23,10 @@ public class LogGroupFilterProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(LogGroupFilterProcessor.class);
 
-    public boolean filterIfDatabaseNotConfiguredForBackup(Exchange exchange) {
-        log.info("LogGroupFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
+    public boolean isMatchingBackupTaskFound(Exchange exchange) {
+        log.info("LogGroupFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
-        String filename = exchange.getIn().getHeader(FILE_NAME, String.class);
+        String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 
         if (filename == null || !filename.contains(".")) {
             log.warn("Filename header is missing or does not contain expected format: {}", filename);
@@ -33,17 +36,16 @@ public class LogGroupFilterProcessor {
         //database name is the first part of the filename, before the first period
         String dbname = filename.split("\\.")[0];
 
-        String teknologi = exchange.getIn().getHeader(TEKNOLOGI, String.class);
+        TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        //TODO: test checking for missing db, make sure it's null here and not an exception
-        Oversikt backupTask = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
+        BackupTask backupTask = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
 
         if (backupTask == null) {
-            log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi);
+            log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        exchange.getIn().setHeader(BACKUP_TASK, backupTask);
+        exchange.setProperty(BACKUP_TASK, backupTask);
 
         return true;
     }

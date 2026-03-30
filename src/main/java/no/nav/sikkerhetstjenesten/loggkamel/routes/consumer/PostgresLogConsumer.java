@@ -1,14 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.UUID;
-
+import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.filter.LogGroupFilter.LOG_GROUP_FILTER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -29,7 +28,7 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
 
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
-                .process(exchange -> exchange.getIn().setHeader(TEKNOLOGI, TeknologiEnum.POSTGRESQL.name()))
+                .process(exchange -> exchange.setProperty(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
                 .process(exchange -> {
                     // If the file comes from a bucket instead of local storage, still populate the filename
                     if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
