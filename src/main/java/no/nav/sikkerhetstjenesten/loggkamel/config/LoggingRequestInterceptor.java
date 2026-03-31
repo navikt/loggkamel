@@ -18,7 +18,6 @@ public class LoggingRequestInterceptor implements ClientHttpRequestInterceptor {
 
     @Override
     public @NonNull ClientHttpResponse intercept(HttpRequest request, byte @NonNull [] body, ClientHttpRequestExecution execution) throws IOException {
-//        log.trace("Headers for {}: {}", request.getURI(), request.getHeaders());
         log.debug("Body for {} {} : {} ", request.getMethod(), request.getURI(), new String(body, StandardCharsets.UTF_8));
 
         ClientHttpResponse response = execution.execute(request, body);

@@ -2,7 +2,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
 import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -27,9 +26,6 @@ class LogGroupFilterProcessorTest {
 
     @Mock
     Message message;
-
-    @Mock
-    LogRoutingAttributes logRoutingAttributes;
 
     @Mock
     BackupTaskDTO backupTaskDTO;
@@ -67,7 +63,7 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getOversiktByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(null);
+        when(oversiktService.getBackupTaskByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(null);
 
         assertFalse(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
     }
@@ -83,7 +79,7 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getOversiktByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(backupTaskDTO);
+        when(oversiktService.getBackupTaskByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(backupTaskDTO);
 
         assertTrue(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
 

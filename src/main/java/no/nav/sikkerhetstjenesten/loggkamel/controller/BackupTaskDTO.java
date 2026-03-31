@@ -3,12 +3,14 @@ package no.nav.sikkerhetstjenesten.loggkamel.controller;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 
 import java.time.Instant;
 
 @Value
 @Builder(toBuilder = true)
+@Jacksonized
 public class BackupTaskDTO {
     Long id;
     

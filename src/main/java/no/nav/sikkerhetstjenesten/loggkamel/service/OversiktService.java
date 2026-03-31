@@ -6,6 +6,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class OversiktService {
     private final OversiktJPAAdapter adapter;
@@ -15,11 +17,19 @@ public class OversiktService {
         this.adapter = adapter;
     }
 
-    public BackupTaskDTO createOversikt(BackupTaskDTO request) {
-        return adapter.createBackupEntity(request);
+    public BackupTaskDTO createBackupTask(BackupTaskDTO request) {
+        return adapter.createBackupTask(request);
     }
 
-    public BackupTaskDTO getOversiktByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+    public BackupTaskDTO updateBackupTask(BackupTaskDTO request) {
+        return adapter.updateBackupTask(request);
+    }
+
+    public BackupTaskDTO getBackupTaskByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
         return adapter.findByDbnameAndTeknologi(dbname, teknologi);
+    }
+
+    public List<BackupTaskDTO> getBackupTaskByNaisteam(String naisteam) {
+        return adapter.getAllTasksByNaisteam(naisteam);
     }
 }

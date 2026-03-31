@@ -18,7 +18,7 @@ public class OversiktJPAAdapter {
         this.mapper = mapper;
     }
 
-    public BackupTaskDTO createBackupEntity(BackupTaskDTO dto) {
+    public BackupTaskDTO createBackupTask(BackupTaskDTO dto) {
         BackupTaskEntity toSave = mapper.backupTaskDTOToEntity(dto);
 
         toSave = repository.save(toSave);
@@ -26,7 +26,7 @@ public class OversiktJPAAdapter {
         return mapper.backupTaskEntityToDTO(toSave);
     }
 
-    public BackupTaskDTO updateBackupEntity(BackupTaskDTO dto) {
+    public BackupTaskDTO updateBackupTask(BackupTaskDTO dto) {
         BackupTaskEntity toUpdate = mapper.backupTaskDTOToEntity(dto);
 
         toUpdate = repository.save(toUpdate);

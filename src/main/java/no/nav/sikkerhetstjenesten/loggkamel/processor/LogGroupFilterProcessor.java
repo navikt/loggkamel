@@ -36,7 +36,7 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        BackupTaskDTO backupTaskDTO = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
+        BackupTaskDTO backupTaskDTO = oversiktService.getBackupTaskByDbnameAndTeknologi(dbname, teknologi);
 
         if (backupTaskDTO == null) {
             log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
