@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -25,7 +25,7 @@ class LogLineFilterProcessorTest {
     Message message;
 
     @Mock
-    BackupTask backupTask;
+    BackupTaskDTO backupTaskDTO;
 
     @Mock
     LogRoutingAttributes logRoutingAttributes;
@@ -37,13 +37,13 @@ class LogLineFilterProcessorTest {
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
-        when(exchange.getProperty("backupTask", BackupTask.class)).thenReturn(backupTask);
+        when(exchange.getProperty("backupTask", BackupTaskDTO.class)).thenReturn(backupTaskDTO);
         when(exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class)).thenReturn(logRoutingAttributes);
     }
 
     @Test
     void isPersonvernAndRead_passesFilter() {
-        when(backupTask.getPersonvern()).thenReturn(true);
+        when(backupTaskDTO.getPersonvern()).thenReturn(true);
         when(logRoutingAttributes.isRead()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchConfiguredBackupTask(exchange));
@@ -51,7 +51,7 @@ class LogLineFilterProcessorTest {
 
     @Test
     void isArkivAndWrite_passesFilter() {
-        when(backupTask.getArkiv()).thenReturn(true);
+        when(backupTaskDTO.getArkiv()).thenReturn(true);
         when(logRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchConfiguredBackupTask(exchange));
@@ -59,7 +59,7 @@ class LogLineFilterProcessorTest {
 
     @Test
     void isOkonomiAndWrite_passesFilter() {
-        when(backupTask.getOkonomi()).thenReturn(true);
+        when(backupTaskDTO.getOkonomi()).thenReturn(true);
         when(logRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchConfiguredBackupTask(exchange));

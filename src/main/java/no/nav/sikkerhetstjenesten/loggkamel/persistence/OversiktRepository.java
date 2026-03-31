@@ -2,6 +2,10 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-interface OversiktRepository extends JpaRepository<BackupTask, Long> {
-    BackupTask findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
+import java.util.List;
+
+interface OversiktRepository extends JpaRepository<BackupTaskEntity, Long> {
+    BackupTaskEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
+
+    List<BackupTaskEntity> findAllByNaisteam(String naisteam);
 }

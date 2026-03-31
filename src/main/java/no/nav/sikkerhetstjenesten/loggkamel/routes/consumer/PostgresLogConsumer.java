@@ -1,13 +1,11 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.filter.LogGroupFilter.LOG_GROUP_FILTER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;

@@ -33,7 +33,6 @@ public class GCPLogProducer extends LogProducer {
                 .process(exchange -> {
                     try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
 
-                        //TODO: test this in dev, ensure it actually injects as expected
                         Map<String, Object> logEnrichmentMap = mapper.convertValue(exchange.getVariables().get(LOG_ENRICHMENT), new TypeReference<>() {});
                         Payload.JsonPayload jsonPayload = Payload.JsonPayload.of(logEnrichmentMap);
 

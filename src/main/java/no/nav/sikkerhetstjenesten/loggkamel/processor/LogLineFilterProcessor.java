@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ public class LogLineFilterProcessor {
     public boolean doesLineActionMatchConfiguredBackupTask(Exchange exchange) {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
-        BackupTask backupTask = exchange.getProperty(BACKUP_TASK, BackupTask.class);
+        BackupTaskDTO backupTaskDTO = exchange.getProperty(BACKUP_TASK, BackupTaskDTO.class);
         LogRoutingAttributes routingAttributes = exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class);
 
-        if (backupTask.getPersonvern() && routingAttributes.isRead()) {
+        if (backupTaskDTO.getPersonvern() && routingAttributes.isRead()) {
             return true;
         }
 
-        if ((backupTask.getArkiv() || backupTask.getOkonomi()) && routingAttributes.isModification()) {
+        if ((backupTaskDTO.getArkiv() || backupTaskDTO.getOkonomi()) && routingAttributes.isModification()) {
             return true;
         }
 

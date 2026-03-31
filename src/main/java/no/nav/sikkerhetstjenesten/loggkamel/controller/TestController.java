@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @UnprotectedRestController("/api/v1")
 @ConditionalOnDevOrLocal
+//TODO: remove this controller entirely, you no longer need it. Just copy from it to set up the gaal controller first
 public class TestController {
 
     private static final Logger log = LoggerFactory.getLogger(TestController.class);

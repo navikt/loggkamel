@@ -1,8 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -38,14 +36,14 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        BackupTask backupTask = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
+        BackupTaskDTO backupTaskDTO = oversiktService.getOversiktByDbnameAndTeknologi(dbname, teknologi);
 
-        if (backupTask == null) {
+        if (backupTaskDTO == null) {
             log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        exchange.setProperty(BACKUP_TASK, backupTask);
+        exchange.setProperty(BACKUP_TASK, backupTaskDTO);
 
         return true;
     }

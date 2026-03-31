@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.BackupTask;
+import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -33,7 +32,7 @@ class LogGroupFilterProcessorTest {
     LogRoutingAttributes logRoutingAttributes;
 
     @Mock
-    BackupTask backupTask;
+    BackupTaskDTO backupTaskDTO;
 
     @Mock
     OversiktService oversiktService;
@@ -84,11 +83,11 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getOversiktByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(backupTask);
+        when(oversiktService.getOversiktByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(backupTaskDTO);
 
         assertTrue(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
 
-        verify(exchange).setProperty(BACKUP_TASK, backupTask);
+        verify(exchange).setProperty(BACKUP_TASK, backupTaskDTO);
     }
 
 }
