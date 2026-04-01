@@ -17,7 +17,7 @@ import java.util.List;
 
 //TODO: make protected, deploy in all GCP environments
 // TODO: set up interceptor to handle exceptions, map to meaningful http status codes
-// TODO: switch logs back to debug once you're done testing
+// TODO: look into input sanitization to avoid sql, log injection
 @UnprotectedRestController("/api/v1")
 @ConditionalOnDevOrLocal
 public class BackupTaskController {
@@ -33,19 +33,19 @@ public class BackupTaskController {
 
     @PostMapping(path = "backupTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BackupTaskDTO createBackupTask(@RequestBody BackupTaskDTO backupTask) {
-        log.info("Creating backup task: {}", backupTask);
-        return oversiktService.createBackupTask(backupTask.withSanitizedSqlFields());
+        log.debug("Creating backup task: {}", backupTask);
+        return oversiktService.createBackupTask(backupTask);
     }
 
     @PutMapping("backupTask")
     public BackupTaskDTO updateBackupTask(@RequestBody BackupTaskDTO backupTask) {
-        log.info("Updating backup task: {}", backupTask);
-        return oversiktService.updateBackupTask(backupTask.withSanitizedSqlFields());
+        log.debug("Updating backup task: {}", backupTask);
+        return oversiktService.updateBackupTask(backupTask);
     }
 
     @GetMapping("backupTask/{naisTeam}")
     public List<BackupTaskDTO> getBackupTasksByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
-        log.info("Getting backup tasks by nais team: {}", naisTeam);
+        log.debug("Getting backup tasks by nais team: {}", naisTeam);
         return oversiktService.getBackupTaskByNaisteam(naisTeam);
     }
 }

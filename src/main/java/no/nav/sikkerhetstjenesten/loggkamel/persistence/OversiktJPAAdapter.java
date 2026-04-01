@@ -21,6 +21,7 @@ public class OversiktJPAAdapter {
     public BackupTaskDTO createBackupTask(BackupTaskDTO dto) {
         BackupTaskEntity toSave = mapper.backupTaskDTOToEntity(dto);
 
+        //TODO: catch DataIntegrityViolationException for attempt to duplicate dbname and teknologi, throw exception that is converted by interceptor into meaningful response
         toSave = repository.save(toSave);
 
         return mapper.backupTaskEntityToDTO(toSave);
@@ -29,6 +30,7 @@ public class OversiktJPAAdapter {
     public BackupTaskDTO updateBackupTask(BackupTaskDTO dto) {
         BackupTaskEntity toUpdate = mapper.backupTaskDTOToEntity(dto);
 
+        //TODO: catch DataIntegrityViolationException for attempt to duplicate dbname and teknologi, throw exception that is converted by interceptor into meaningful response
         toUpdate = repository.save(toUpdate);
 
         return mapper.backupTaskEntityToDTO(toUpdate);

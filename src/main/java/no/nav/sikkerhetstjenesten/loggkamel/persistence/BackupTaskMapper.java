@@ -18,7 +18,7 @@ public abstract class BackupTaskMapper {
     @Mapping(target = "updated", ignore = true)
     public abstract BackupTaskEntity backupTaskDTOToEntity(BackupTaskDTO dto);
 
-    //TODO: remove the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
+    //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
     @Named("loggingLeseoperasjoner")
     public boolean loggingLeseoperasjoner(BackupTaskEntity entity) {
         return entity.getArkiv();
