@@ -22,7 +22,7 @@ updates:
     schedule:
       interval: "daily"
     cooldown:
-      default-days: 4
+      default-days: 7
 #    registries:
 #      - mvn-repo
 
@@ -31,4 +31,4 @@ updates:
     schedule:
       interval: daily
     cooldown:
-      default-days: 4
+      default-days: 7
