@@ -36,13 +36,10 @@ public class BackupTaskEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    //TODO: created and updated are being left null when saving, investigate and fix
-    @ColumnDefault("now()")
-    @Column(name = "created")
+    @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
-    @ColumnDefault("now()")
-    @Column(name = "updated")
+    @Column(name = "updated", nullable = false, insertable = false, updatable = false)
     private Instant updated;
 
     @Size(max = 100)
