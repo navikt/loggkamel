@@ -30,6 +30,7 @@ public class OversiktJPAAdapter {
     public BackupTaskDTO updateBackupTask(BackupTaskDTO dto) {
         BackupTaskEntity toUpdate = mapper.backupTaskDTOToEntity(dto);
 
+        // TODO: check that task with given id exists, if not throw exception that is converted by interceptor into meaningful response
         //TODO: catch DataIntegrityViolationException for attempt to duplicate dbname and teknologi, throw exception that is converted by interceptor into meaningful response
         toUpdate = repository.save(toUpdate);
 
