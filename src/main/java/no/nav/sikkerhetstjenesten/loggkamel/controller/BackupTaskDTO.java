@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.controller;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -13,6 +14,17 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
+@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, personvern, arkiv, fiksa"}, example = """
+  {
+              "arkiv": false,
+              "dbname": "db-to-backup",
+              "fiksa": true,
+              "naisteam": "team-that-owns-db-logs",
+              "okonomi": false,
+              "personvern": false,
+              "teknologi": "POSTGRESQL"
+          }
+""")
 public class BackupTaskDTO {
     Long id;
     

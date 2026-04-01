@@ -10,6 +10,12 @@ https://confluence.adeo.no/spaces/TM/pages/760453055/Loggtransport
 Slackkanal:
 #team-sikkerhetstjenesten
 
+## Swagger
+
+DEV: https://loggkamel.intern.dev.nav.no/swagger-ui/index.html#/
+
+PROD: TODO
+
 ## Kjore lokalt med PostgreSQL
 
 Applikasjonen er satt opp til a bruke PostgreSQL i `local`-profilen (ikke H2).
