@@ -16,14 +16,19 @@ import java.time.Instant;
 @AllArgsConstructor
 @Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, personvern, arkiv, fiksa"}, example = """
   {
-              "arkiv": false,
-              "dbname": "db-to-backup",
-              "fiksa": true,
-              "naisteam": "team-that-owns-db-logs",
-              "okonomi": false,
-              "personvern": false,
-              "teknologi": "POSTGRESQL"
-          }
+      "id": 2,
+      "naisteam": "owning-team",
+      "teknologi": "POSTGRESQL",
+      "dbname": "db-to-backup",
+      "okonomi": true,
+      "arkiv": false,
+      "personvern": false,
+      "fiksa": false,
+      "created": "2026-03-30T10:36:47.331075Z",
+      "updated": "2026-03-30T10:36:47.331075Z",
+      "loggingLeseoperasjoner": false,
+      "loggingEndringer": true
+  },
 """)
 public class BackupTaskDTO {
     Long id;
