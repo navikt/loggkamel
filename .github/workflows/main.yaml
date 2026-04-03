@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
-      - uses: nais/deploy/actions/deploy@7c152a10f4da3ca352d57a25eba0b3a8e04882f9 # Deploy
+      - uses: nais/deploy/actions/deploy@437e4adfe270e3f1c98fd0eed7f86ecf0e0873db # Deploy
         env:
           PRINT_PAYLOAD: true
           RESOURCE: .nais/naiserator.yaml
