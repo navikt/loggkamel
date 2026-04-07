@@ -39,7 +39,7 @@ public class GCPLogProducer extends LogProducer {
                         LogEntry entry =
                                 LogEntry.newBuilder(jsonPayload)
                                         .setSeverity(Severity.ERROR)
-                                        .setLogName("loggkamel-backup")
+                                        .setLogName("loggkamel-arkiv")
                                         .build();
 
                         logging.write(Collections.singleton(entry));

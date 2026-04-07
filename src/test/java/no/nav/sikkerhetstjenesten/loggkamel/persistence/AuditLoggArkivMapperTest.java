@@ -1,13 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BackupTaskMapperTest {
+class AuditLoggArkivMapperTest {
 
     private final static Long ID = 1L;
     private final static Instant CREATED = Instant.parse("2024-01-01T00:00:00Z");
@@ -17,26 +17,26 @@ class BackupTaskMapperTest {
     private final static String DBNAME = "testdb";
     private static final Boolean FIKSA = true;
 
-    BackupTaskMapper mapper = new BackupTaskMapperImpl();
+    AuditLoggArkivMapper mapper = new AuditLoggArkivMapperImpl();
 
     @Test
     void dtoToEntity() {
-        BackupTaskDTO dto = createDTO(true, false, true, true, false);
-        BackupTaskEntity entity = mapper.backupTaskDTOToEntity(dto);
+        AuditLoggArkivDTO dto = createDTO(true, false, true, true, false);
+        AuditLoggArkivEntity entity = mapper.auditLoggArkivDTOToEntity(dto);
 
         assertEquals(createEntity(true, false, true), entity);
     }
 
     @Test
     void entityToDTO() {
-        BackupTaskEntity entity = createEntity(true, false, true);
-        BackupTaskDTO dto = mapper.backupTaskEntityToDTO(entity);
+        AuditLoggArkivEntity entity = createEntity(true, false, true);
+        AuditLoggArkivDTO dto = mapper.auditLoggArkivEntityToDTO(entity);
 
         assertEquals(createDTO(true, false, true, true, true), dto);
     }
 
-    private BackupTaskEntity createEntity(boolean arkiv, boolean okonomi, boolean personvern) {
-        return BackupTaskEntity.builder()
+    private AuditLoggArkivEntity createEntity(boolean arkiv, boolean okonomi, boolean personvern) {
+        return AuditLoggArkivEntity.builder()
                 .id(1L)
                 .created(CREATED)
                 .updated(UPDATED)
@@ -50,8 +50,8 @@ class BackupTaskMapperTest {
                 .build();
     }
 
-    private BackupTaskDTO createDTO(boolean arkiv, boolean okonomi, boolean personvern, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
-        return BackupTaskDTO.builder()
+    private AuditLoggArkivDTO createDTO(boolean arkiv, boolean okonomi, boolean personvern, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
+        return AuditLoggArkivDTO.builder()
                 .id(1L)
                 .created(CREATED)
                 .updated(UPDATED)

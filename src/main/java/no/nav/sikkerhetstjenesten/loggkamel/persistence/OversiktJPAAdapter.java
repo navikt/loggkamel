@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,20 +12,20 @@ import java.util.List;
 public class OversiktJPAAdapter {
 
     private final OversiktRepository repository;
-    private final BackupTaskMapper mapper;
+    private final AuditLoggArkivMapper mapper;
 
     @Autowired
-    public OversiktJPAAdapter(OversiktRepository repository, BackupTaskMapper mapper) {
+    public OversiktJPAAdapter(OversiktRepository repository, AuditLoggArkivMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
 
-    public BackupTaskDTO createBackupTask(BackupTaskDTO dto) {
-        BackupTaskEntity savedTask = saveBackupTaskEntity(mapper.backupTaskDTOToEntity(dto));
-        return mapper.backupTaskEntityToDTO(savedTask);
+    public AuditLoggArkivDTO createAuditLoggArkiv(AuditLoggArkivDTO dto) {
+        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(mapper.auditLoggArkivDTOToEntity(dto));
+        return mapper.auditLoggArkivEntityToDTO(savedTask);
     }
 
-    private BackupTaskEntity saveBackupTaskEntity(BackupTaskEntity toSave) {
+    private AuditLoggArkivEntity saveAuditLoggArkivEntity(AuditLoggArkivEntity toSave) {
         try {
             return repository.save(toSave);
         } catch (DataIntegrityViolationException e) {
@@ -33,25 +33,25 @@ public class OversiktJPAAdapter {
         }
     }
 
-    public BackupTaskDTO updateBackupTask(BackupTaskDTO dto) {
+    public AuditLoggArkivDTO updateAuditLoggArkiv(AuditLoggArkivDTO dto) {
         if (dto.getId() == null || dto.getId() == 0) {
             throw new ForbiddenOperationException("Id must be provided when updating a task");
         }
 
         repository.findById(dto.getId()).orElseThrow(() -> new ForbiddenOperationException("Task with id " + dto.getId() + " does not exist"));
 
-        BackupTaskEntity savedTask = saveBackupTaskEntity(mapper.backupTaskDTOToEntity(dto));
-        return mapper.backupTaskEntityToDTO(savedTask);
+        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(mapper.auditLoggArkivDTOToEntity(dto));
+        return mapper.auditLoggArkivEntityToDTO(savedTask);
     }
 
-    public BackupTaskDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
-        return mapper.backupTaskEntityToDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
+    public AuditLoggArkivDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+        return mapper.auditLoggArkivEntityToDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
     }
 
-    public List<BackupTaskDTO> getAllTasksByNaisteam(String naisteam) {
-        List<BackupTaskEntity> foundEntities = repository.findAllByNaisteam(naisteam);
+    public List<AuditLoggArkivDTO> getAllTasksByNaisteam(String naisteam) {
+        List<AuditLoggArkivEntity> foundEntities = repository.findAllByNaisteam(naisteam);
 
-        return foundEntities.stream().map(mapper::backupTaskEntityToDTO).toList();
+        return foundEntities.stream().map(mapper::auditLoggArkivEntityToDTO).toList();
     }
 
 }

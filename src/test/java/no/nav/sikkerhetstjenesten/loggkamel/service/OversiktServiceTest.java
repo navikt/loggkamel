@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.junit.jupiter.api.Test;
@@ -22,10 +22,10 @@ class OversiktServiceTest {
     private static final String NAISTEAM = "naisteam";
 
     @Mock
-    BackupTaskDTO requestBackupTaskDTO;
+    AuditLoggArkivDTO requestAuditLoggArkivDTO;
 
     @Mock
-    BackupTaskDTO responseBackupTaskDTO;
+    AuditLoggArkivDTO responseAuditLoggArkivDTO;
 
     @Mock
     OversiktJPAAdapter adapter;
@@ -34,58 +34,58 @@ class OversiktServiceTest {
     OversiktService service;
 
     @Test
-    void createBackupTask_successful() {
-        when(adapter.createBackupTask(requestBackupTaskDTO)).thenReturn(responseBackupTaskDTO);
+    void createAuditLoggArkiv_successful() {
+        when(adapter.createAuditLoggArkiv(requestAuditLoggArkivDTO)).thenReturn(responseAuditLoggArkivDTO);
 
-        assertEquals(responseBackupTaskDTO, service.createBackupTask(requestBackupTaskDTO));
+        assertEquals(responseAuditLoggArkivDTO, service.createAuditLoggArkiv(requestAuditLoggArkivDTO));
     }
 
     @Test
-    void createBackupTask_exceptionPassesThrough() {
-        when(adapter.createBackupTask(requestBackupTaskDTO)).thenThrow(RuntimeException.class);
+    void createAuditLoggArkiv_exceptionPassesThrough() {
+        when(adapter.createAuditLoggArkiv(requestAuditLoggArkivDTO)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.createBackupTask(requestBackupTaskDTO));
+        assertThrows(RuntimeException.class, () -> service.createAuditLoggArkiv(requestAuditLoggArkivDTO));
     }
 
     @Test
-    void updateBackupTask_successful() {
-        when(adapter.updateBackupTask(requestBackupTaskDTO)).thenReturn(responseBackupTaskDTO);
+    void updateAuditLoggArkiv_successful() {
+        when(adapter.updateAuditLoggArkiv(requestAuditLoggArkivDTO)).thenReturn(responseAuditLoggArkivDTO);
 
-        assertEquals(responseBackupTaskDTO, service.updateBackupTask(requestBackupTaskDTO));
+        assertEquals(responseAuditLoggArkivDTO, service.updateAuditLoggArkiv(requestAuditLoggArkivDTO));
     }
 
     @Test
-    void updateBackupTask_exceptionPassesThrough() {
-        when(adapter.updateBackupTask(requestBackupTaskDTO)).thenThrow(RuntimeException.class);
+    void updateAuditLoggArkiv_exceptionPassesThrough() {
+        when(adapter.updateAuditLoggArkiv(requestAuditLoggArkivDTO)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.updateBackupTask(requestBackupTaskDTO));
+        assertThrows(RuntimeException.class, () -> service.updateAuditLoggArkiv(requestAuditLoggArkivDTO));
     }
 
     @Test
-    void getBackupTaskByDbnameAndTeknologi_successful() {
-        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(responseBackupTaskDTO);
+    void getAuditLoggArkivByDbnameAndTeknologi_successful() {
+        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(responseAuditLoggArkivDTO);
 
-        assertEquals(responseBackupTaskDTO, service.getBackupTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertEquals(responseAuditLoggArkivDTO, service.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
-    void getBackupTaskByDbnameAndTeknologi_exceptionPassesThrough() {
+    void getAuditLoggArkivByDbnameAndTeknologi_exceptionPassesThrough() {
         when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.getBackupTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertThrows(RuntimeException.class, () -> service.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
-    void getBackupTaskByNaisteam_successful() {
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(requestBackupTaskDTO, responseBackupTaskDTO));
+    void getAuditLoggArkivByNaisteam_successful() {
+        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(requestAuditLoggArkivDTO, responseAuditLoggArkivDTO));
 
-        assertEquals(List.of(requestBackupTaskDTO, responseBackupTaskDTO), service.getBackupTaskByNaisteam(NAISTEAM));
+        assertEquals(List.of(requestAuditLoggArkivDTO, responseAuditLoggArkivDTO), service.getAuditLoggArkivByNaisteam(NAISTEAM));
     }
 
     @Test
-    void getBackupTaskByNaisteam_exceptionPassesThrough() {
+    void getAuditLoggArkivByNaisteam_exceptionPassesThrough() {
         when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.getBackupTaskByNaisteam(NAISTEAM));
+        assertThrows(RuntimeException.class, () -> service.getAuditLoggArkivByNaisteam(NAISTEAM));
     }
 }

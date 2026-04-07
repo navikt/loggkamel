@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
+import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.AUDIT_LOGG_ARKIV;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -21,7 +21,7 @@ public class LogGroupFilterProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(LogGroupFilterProcessor.class);
 
-    public boolean isMatchingBackupTaskFound(Exchange exchange) {
+    public boolean isMatchingAuditLoggArkivFound(Exchange exchange) {
         log.info("LogGroupFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
         String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
@@ -36,14 +36,15 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        BackupTaskDTO backupTaskDTO = oversiktService.getBackupTaskByDbnameAndTeknologi(dbname, teknologi);
+        AuditLoggArkivDTO auditLoggArkivDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
 
-        if (backupTaskDTO == null) {
-            log.info("No backup task found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
+        //TODO: also stop processing here if the backup isn't fiksa, or if all of the backup fields are false
+        if (auditLoggArkivDTO == null) {
+            log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        exchange.setProperty(BACKUP_TASK, backupTaskDTO);
+        exchange.setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivDTO);
 
         return true;
     }

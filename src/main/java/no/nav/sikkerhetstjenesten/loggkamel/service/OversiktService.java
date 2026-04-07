@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +17,19 @@ public class OversiktService {
         this.adapter = adapter;
     }
 
-    public BackupTaskDTO createBackupTask(BackupTaskDTO request) {
-        return adapter.createBackupTask(request);
+    public AuditLoggArkivDTO createAuditLoggArkiv(AuditLoggArkivDTO request) {
+        return adapter.createAuditLoggArkiv(request);
     }
 
-    public BackupTaskDTO updateBackupTask(BackupTaskDTO request) {
-        return adapter.updateBackupTask(request);
+    public AuditLoggArkivDTO updateAuditLoggArkiv(AuditLoggArkivDTO request) {
+        return adapter.updateAuditLoggArkiv(request);
     }
 
-    public BackupTaskDTO getBackupTaskByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+    public AuditLoggArkivDTO getAuditLoggArkivByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
         return adapter.findByDbnameAndTeknologi(dbname, teknologi);
     }
 
-    public List<BackupTaskDTO> getBackupTaskByNaisteam(String naisteam) {
+    public List<AuditLoggArkivDTO> getAuditLoggArkivByNaisteam(String naisteam) {
         return adapter.getAllTasksByNaisteam(naisteam);
     }
 }

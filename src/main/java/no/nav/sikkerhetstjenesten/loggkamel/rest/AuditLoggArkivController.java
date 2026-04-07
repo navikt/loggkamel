@@ -28,39 +28,39 @@ import static org.springframework.http.HttpStatus.OK;
 @ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "BackupTaskController", description = "Denne kontrolleren skal brukes for å kontrollere backup tasks")
-public class BackupTaskController {
+@Tag(name = "AuditLoggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
+public class AuditLoggArkivController {
 
-    private static final Logger log = LoggerFactory.getLogger(BackupTaskController.class);
+    private static final Logger log = LoggerFactory.getLogger(AuditLoggArkivController.class);
 
     private final OversiktService oversiktService;
 
     @Autowired
-    public BackupTaskController(OversiktService oversiktService) {
+    public AuditLoggArkivController(OversiktService oversiktService) {
         this.oversiktService = oversiktService;
     }
 
-    @PostMapping(path = "backupTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "auditLoggArkiv", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(OK)
-    @Operation(summary = "Generer en backup task for gitt dbname og teknologi")
-    public BackupTaskDTO createBackupTask(@RequestBody BackupTaskDTO backupTask) {
-        log.debug("Creating backup task: {}", backupTask);
-        return oversiktService.createBackupTask(backupTask);
+    @Operation(summary = "Registrerer en DB for Audit Log Arkivering")
+    public AuditLoggArkivDTO createAuditLoggArkiv(@RequestBody AuditLoggArkivDTO auditLoggArkivDTO) {
+        log.debug("Creating audit logg arkiv: {}", auditLoggArkivDTO);
+        return oversiktService.createAuditLoggArkiv(auditLoggArkivDTO);
     }
 
-    @PutMapping("backupTask")
+    @PutMapping("auditLoggArkiv")
     @ResponseStatus(OK)
-    @Operation(summary = "Oppdatere en backup task for gitt dbname og teknologi")
-    public BackupTaskDTO updateBackupTask(@RequestBody BackupTaskDTO backupTask) {
-        log.debug("Updating backup task: {}", backupTask);
-        return oversiktService.updateBackupTask(backupTask);
+    @Operation(summary = "Oppdatere Audit Log Arkivering for en DB")
+    public AuditLoggArkivDTO updateAuditLoggArkiv(@RequestBody AuditLoggArkivDTO auditLoggArkivDTO) {
+        log.debug("Updating audit logg arkiv: {}", auditLoggArkivDTO);
+        return oversiktService.updateAuditLoggArkiv(auditLoggArkivDTO);
     }
 
-    @GetMapping("backupTask/{naisTeam}")
+    @GetMapping("auditLoggArkiv/{naisTeam}")
     @ResponseStatus(OK)
-    @Operation(summary = "Finne alle backup tasks for gitt nais team")
-    public List<BackupTaskDTO> getBackupTasksByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
-        log.debug("Getting backup tasks by nais team: {}", naisTeam);
-        return oversiktService.getBackupTaskByNaisteam(naisTeam);
+    @Operation(summary = "Finne alle audit logg arkiv for gitt nais team")
+    public List<AuditLoggArkivDTO> getAuditLoggArkivByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
+        log.debug("Getting audit logg arkiv by nais team: {}", naisTeam);
+        return oversiktService.getAuditLoggArkivByNaisteam(naisTeam);
     }
 }

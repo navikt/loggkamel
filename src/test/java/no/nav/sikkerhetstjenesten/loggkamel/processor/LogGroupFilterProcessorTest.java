@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.BACKUP_TASK;
+import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.AUDIT_LOGG_ARKIV;
 import static no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +28,7 @@ class LogGroupFilterProcessorTest {
     Message message;
 
     @Mock
-    BackupTaskDTO backupTaskDTO;
+    AuditLoggArkivDTO auditLoggArkivDTO;
 
     @Mock
     OversiktService oversiktService;
@@ -41,7 +41,7 @@ class LogGroupFilterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertFalse(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
     }
 
     @Test
@@ -49,11 +49,11 @@ class LogGroupFilterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
-        assertFalse(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
     }
 
     @Test
-    void noMatchingBackupTask() {
+    void noMatchingAuditLoggArkiv() {
         String dbName = "blah";
         String extension = "extension";
         String filenameWithExtension = dbName + "." + extension;
@@ -63,13 +63,13 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getBackupTaskByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(null);
+        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(null);
 
-        assertFalse(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
     }
 
     @Test
-    void confirmBackupTaskIsSetAsProperty() {
+    void confirmAuditLoggArkivIsSetAsProperty() {
         String dbName = "blah";
         String extension = "extension";
         String filenameWithExtension = dbName + "." + extension;
@@ -79,11 +79,11 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getBackupTaskByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(backupTaskDTO);
+        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(auditLoggArkivDTO);
 
-        assertTrue(logGroupFilterProcessor.isMatchingBackupTaskFound(exchange));
+        assertTrue(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
 
-        verify(exchange).setProperty(BACKUP_TASK, backupTaskDTO);
+        verify(exchange).setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivDTO);
     }
 
 }

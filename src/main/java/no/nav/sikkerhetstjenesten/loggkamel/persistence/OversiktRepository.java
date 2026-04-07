@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-interface OversiktRepository extends JpaRepository<BackupTaskEntity, Long> {
-    BackupTaskEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
+interface OversiktRepository extends JpaRepository<AuditLoggArkivEntity, Long> {
+    AuditLoggArkivEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
 
-    List<BackupTaskEntity> findAllByNaisteam(String naisteam);
+    List<AuditLoggArkivEntity> findAllByNaisteam(String naisteam);
 }

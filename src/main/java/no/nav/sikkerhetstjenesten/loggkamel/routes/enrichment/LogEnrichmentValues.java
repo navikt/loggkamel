@@ -2,6 +2,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.routes.enrichment;
 
 public abstract class LogEnrichmentValues {
 
-    public static String BACKUP_TASK = "backupTask";
+    public static String AUDIT_LOGG_ARKIV = "auditLoggArkiv";
     public static String TEKNOLOGI = "teknologi";
 }

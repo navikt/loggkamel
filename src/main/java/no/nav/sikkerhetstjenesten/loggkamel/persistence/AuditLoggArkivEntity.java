@@ -30,7 +30,7 @@ import java.util.Objects;
 @Table(name = "oversikt")
 @NoArgsConstructor
 @AllArgsConstructor
-public class BackupTaskEntity {
+public class AuditLoggArkivEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -82,7 +82,7 @@ public class BackupTaskEntity {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        BackupTaskEntity that = (BackupTaskEntity) o;
+        AuditLoggArkivEntity that = (AuditLoggArkivEntity) o;
         return getId() != null && Objects.equals(getId(), that.getId());
     }
 
