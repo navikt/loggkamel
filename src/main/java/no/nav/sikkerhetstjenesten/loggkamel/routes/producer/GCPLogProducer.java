@@ -38,7 +38,7 @@ public class GCPLogProducer extends LogProducer {
 
                         LogEntry entry =
                                 LogEntry.newBuilder(jsonPayload)
-                                        .setSeverity(Severity.ERROR)
+                                        .setSeverity(Severity.INFO)
                                         .setLogName("loggkamel-arkiv")
                                         .build();
 

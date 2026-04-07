@@ -16,16 +16,13 @@
   },
   "buckets": [
     {
-      "name": "loggkamel-pg-dead-letter-dev"
+      "name": "loggkamel-dev-postgresql-deadletter"
     },
     {
-      "name": "loggkamel-invalid-message-pg-dev"
+      "name": "loggkamel-dev-postgresql-invalid-message"
     },
     {
-      "name": "loggkamel-ingress-pg-dev"
-    },
-    {
-      "name": "loggkamel-output-pg-dev"
+      "name": "loggkamel-dev-postgresql-consumer"
     }
   ],
   "inbound": [
