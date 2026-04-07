@@ -1,7 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
 import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.controller.ForbiddenOperationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,22 +21,27 @@ public class OversiktJPAAdapter {
     }
 
     public BackupTaskDTO createBackupTask(BackupTaskDTO dto) {
-        BackupTaskEntity toSave = mapper.backupTaskDTOToEntity(dto);
+        BackupTaskEntity savedTask = saveBackupTaskEntity(mapper.backupTaskDTOToEntity(dto));
+        return mapper.backupTaskEntityToDTO(savedTask);
+    }
 
-        //TODO: catch DataIntegrityViolationException for attempt to duplicate dbname and teknologi, throw exception that is converted by interceptor into meaningful response
-        toSave = repository.save(toSave);
-
-        return mapper.backupTaskEntityToDTO(toSave);
+    private BackupTaskEntity saveBackupTaskEntity(BackupTaskEntity toSave) {
+        try {
+            return repository.save(toSave);
+        } catch (DataIntegrityViolationException e) {
+            throw new ForbiddenOperationException("Task with dbname " + toSave.getDbname() + " and teknologi " + toSave.getTeknologi() + " already exists");
+        }
     }
 
     public BackupTaskDTO updateBackupTask(BackupTaskDTO dto) {
-        BackupTaskEntity toUpdate = mapper.backupTaskDTOToEntity(dto);
+        if (dto.getId() == null || dto.getId() == 0) {
+            throw new ForbiddenOperationException("Id must be provided when updating a task");
+        }
 
-        // TODO: check that task with given id exists, if not throw exception that is converted by interceptor into meaningful response
-        //TODO: catch DataIntegrityViolationException for attempt to duplicate dbname and teknologi, throw exception that is converted by interceptor into meaningful response
-        toUpdate = repository.save(toUpdate);
+        repository.findById(dto.getId()).orElseThrow(() -> new ForbiddenOperationException("Task with id " + dto.getId() + " does not exist"));
 
-        return mapper.backupTaskEntityToDTO(toUpdate);
+        BackupTaskEntity savedTask = saveBackupTaskEntity(mapper.backupTaskDTOToEntity(dto));
+        return mapper.backupTaskEntityToDTO(savedTask);
     }
 
     public BackupTaskDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
