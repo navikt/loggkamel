@@ -47,6 +47,7 @@ public class BackupTaskEntity {
     @Column(name = "naisteam", nullable = false, length = 100)
     private String naisteam;
 
+    @NotNull
     @Column(name = "teknologi")
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)

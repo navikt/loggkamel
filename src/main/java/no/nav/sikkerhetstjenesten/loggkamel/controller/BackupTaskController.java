@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
+import no.nav.security.token.support.spring.ProtectedRestController;
 import no.nav.security.token.support.spring.UnprotectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
@@ -23,10 +24,9 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-//TODO: make protected, deploy in all GCP environments
-// TODO: set up interceptor to handle exceptions, map to meaningful http status codes
+//TODO: deploy in all GCP environments
 // TODO: look into input sanitization to avoid sql, log injection
-@UnprotectedRestController("/api/v1")
+@ProtectedRestController(value = "/api/v1", issuer = "azuread", claimMap = {})
 @ConditionalOnDevOrLocal
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
