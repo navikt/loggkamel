@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

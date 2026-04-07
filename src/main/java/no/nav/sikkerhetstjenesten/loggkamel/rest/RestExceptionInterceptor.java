@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.controller;
+package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,11 +31,6 @@ public class RestExceptionInterceptor {
     @ExceptionHandler(UpdatingNonexistentTaskException.class)
     public ResponseEntity<ErrorResponse> handleUpdatingNonexistentTaskException(UpdatingNonexistentTaskException exception, HttpServletRequest request) {
         return mapToInternalServerError(HttpStatus.CONFLICT, exception, request);
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException exception, HttpServletRequest request) {
-        return mapToInternalServerError(HttpStatus.INTERNAL_SERVER_ERROR, exception, request);
     }
 
     private ResponseEntity<ErrorResponse> mapToInternalServerError(HttpStatus httpStatus, Exception exception, HttpServletRequest request) {

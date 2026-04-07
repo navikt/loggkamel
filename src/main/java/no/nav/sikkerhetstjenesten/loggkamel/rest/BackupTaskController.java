@@ -1,12 +1,11 @@
-package no.nav.sikkerhetstjenesten.loggkamel.controller;
+package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.security.token.support.spring.ProtectedRestController;
-import no.nav.security.token.support.spring.UnprotectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +23,9 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-//TODO: deploy in all GCP environments
 // TODO: look into input sanitization to avoid sql, log injection
 @ProtectedRestController(value = "/api/v1", issuer = "azuread", claimMap = {})
-@ConditionalOnDevOrLocal
+@ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "BackupTaskController", description = "Denne kontrolleren skal brukes for å kontrollere backup tasks")

@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;

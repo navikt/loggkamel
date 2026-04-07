@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.springframework.beans.factory.annotation.Autowired;

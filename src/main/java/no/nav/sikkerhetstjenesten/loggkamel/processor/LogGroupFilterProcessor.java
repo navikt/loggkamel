@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;

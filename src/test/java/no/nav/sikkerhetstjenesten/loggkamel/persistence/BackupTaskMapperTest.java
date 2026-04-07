@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

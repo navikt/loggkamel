@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.controller.BackupTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.controller.ForbiddenOperationException;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.BackupTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

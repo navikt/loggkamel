@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.controller;
+package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 public class ForbiddenOperationException extends RuntimeException {
     public ForbiddenOperationException(String message) {

@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.controller;
+package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -59,20 +59,6 @@ class RestExceptionInterceptorTest {
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.CONFLICT.value(), response.getBody().errorCode());
         assertEquals(HttpStatus.CONFLICT.getReasonPhrase(), response.getBody().message());
-        assertEquals(REQUEST_URI, response.getBody().path());
-    }
-
-    @Test
-    void shouldMapRuntimeExceptionToInternalServerError() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI(REQUEST_URI);
-
-        var response = restExceptionInterceptor.handleRuntimeException(new RuntimeException("boom"), request);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getBody().errorCode());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
 }
