@@ -40,7 +40,7 @@ public class AuditLoggArkivController {
         this.oversiktService = oversiktService;
     }
 
-    @PostMapping(path = "auditLoggArkiv", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "arkiv", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(OK)
     @Operation(summary = "Registrerer en DB for Audit Log Arkivering")
     public AuditLoggArkivDTO createAuditLoggArkiv(@RequestBody AuditLoggArkivDTO auditLoggArkivDTO) {
@@ -48,7 +48,7 @@ public class AuditLoggArkivController {
         return oversiktService.createAuditLoggArkiv(auditLoggArkivDTO);
     }
 
-    @PutMapping("auditLoggArkiv")
+    @PutMapping("arkiv")
     @ResponseStatus(OK)
     @Operation(summary = "Oppdatere Audit Log Arkivering for en DB")
     public AuditLoggArkivDTO updateAuditLoggArkiv(@RequestBody AuditLoggArkivDTO auditLoggArkivDTO) {
@@ -56,7 +56,7 @@ public class AuditLoggArkivController {
         return oversiktService.updateAuditLoggArkiv(auditLoggArkivDTO);
     }
 
-    @GetMapping("auditLoggArkiv/{naisTeam}")
+    @GetMapping("arkiv/search/naisteam/{naisTeam}")
     @ResponseStatus(OK)
     @Operation(summary = "Finne alle audit logg arkiv for gitt nais team")
     public List<AuditLoggArkivDTO> getAuditLoggArkivByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
