@@ -13,14 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnricher.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostgresLogLineEnricherTest {
+class PostgresLogLineEnrichmentProcessorTest {
 
     private static final String logTime = "time";
     private static final String navIdent = "navIdent";
@@ -54,7 +54,7 @@ class PostgresLogLineEnricherTest {
     LogRoutingAttributesEnricher logRoutingAttributesEnricher;
 
     @InjectMocks
-    PostgresLogLineEnricher postgresLogLineEnricher;
+    PostgresLogLineEnrichmentProcessor postgresLogLineEnrichmentProcessor;
 
     @Test
     void enrich_invalidLogPattern() {
@@ -63,7 +63,7 @@ class PostgresLogLineEnricherTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnricher.enrich(exchange));
+        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -76,7 +76,7 @@ class PostgresLogLineEnricherTest {
 
         when(entraProxyService.getAnsattFromNavIdent("SAMPLE_NAV_IDENT")).thenThrow(entraProxyException);
 
-        EntraProxyDependencyException capturedException = assertThrows(EntraProxyDependencyException.class, () -> postgresLogLineEnricher.enrich(exchange));
+        EntraProxyDependencyException capturedException = assertThrows(EntraProxyDependencyException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
         assertEquals(ENTRA_PROXY_ERROR_MESSAGE, capturedException.getMessage());
         assertEquals(entraProxyException, capturedException.getCause());
     }
@@ -91,7 +91,7 @@ class PostgresLogLineEnricherTest {
 
         when(entraProxyService.getAnsattFromNavIdent("SAMPLE_NAV_IDENT")).thenReturn(null);
 
-        InvalidPostgresLogLineException capturedException = assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnricher.enrich(exchange));
+        InvalidPostgresLogLineException capturedException = assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -107,7 +107,7 @@ class PostgresLogLineEnricherTest {
 
         when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logRoutingAttributes);
 
-        postgresLogLineEnricher.enrich(exchange);
+        postgresLogLineEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<PostgresEnrichmentAttributes> logEnrichmentCaptor = ArgumentCaptor.forClass(PostgresEnrichmentAttributes.class);
         verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());

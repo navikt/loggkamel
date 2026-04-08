@@ -4,7 +4,7 @@ import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnricher.LOG_ENRICHMENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
 
 @Component
 @ConditionalOnLocalOrTest

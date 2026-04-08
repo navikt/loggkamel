@@ -15,8 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class PostgresLogLineEnricher {
-    private static final Logger log = LoggerFactory.getLogger(PostgresLogLineEnricher.class);
+public class PostgresLogLineEnrichmentProcessor {
+    private static final Logger log = LoggerFactory.getLogger(PostgresLogLineEnrichmentProcessor.class);
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
@@ -27,7 +27,7 @@ public class PostgresLogLineEnricher {
     private final LogRoutingAttributesEnricher logRoutingAttributesEnricher;
 
     @Autowired
-    public PostgresLogLineEnricher(EntraProxyService entraProxyService, LogRoutingAttributesEnricher logRoutingAttributesEnricher) {
+    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogRoutingAttributesEnricher logRoutingAttributesEnricher) {
         this.logRoutingAttributesEnricher = logRoutingAttributesEnricher;
         this.entraProxyService = entraProxyService;
     }

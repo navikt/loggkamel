@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.Map;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnricher.LOG_ENRICHMENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
 
 @Component
 @ConditionalOnGCP
