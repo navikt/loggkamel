@@ -1,7 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.InvalidPostgresLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -17,8 +18,8 @@ import java.util.regex.Pattern;
 public class PostgresLogLineEnricher {
     private static final Logger log = LoggerFactory.getLogger(PostgresLogLineEnricher.class);
 
-    static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern";
-    static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching employee info";
+    static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
+    static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
 
     public static final String LOG_ENRICHMENT = "logEnrichment";
 
@@ -57,7 +58,6 @@ public class PostgresLogLineEnricher {
         Matcher matcher = pattern.matcher(body);
 
         if (!matcher.find()) {
-            //TODO: add identifier for the log line that doesn't leak PII here
             log.info(UNEXPECTED_LOG_PATTERN_MESSAGE);
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
@@ -79,16 +79,19 @@ public class PostgresLogLineEnricher {
     }
 
     private String getAnsattEpost(String navIdent) {
+        EntraProxyAnsatt entraProxyAnsatt;
         try {
-            EntraProxyAnsatt entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
-
-            // TODO: on null or empty response, throw exception that will be sent to invalid message queue
-
-            return entraProxyAnsatt.getEpost();
+            entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
         } catch (Exception e) {
-            // TODO: throw exception that will send this message to dead letter queue
-            log.error(ENTRA_PROXY_ERROR_MESSAGE, e);
-            throw new InvalidPostgresLogLineException(ENTRA_PROXY_ERROR_MESSAGE, e);
+            log.warn(ENTRA_PROXY_ERROR_MESSAGE, e);
+            throw new EntraProxyDependencyException(ENTRA_PROXY_ERROR_MESSAGE, e);
         }
+
+        if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
+            log.info("Entra-proxy returned empty response for navIdent {}, sending log to invalid messages", navIdent);
+            throw new InvalidPostgresLogLineException("Entra-proxy returned empty response for navIdent " + navIdent);
+        }
+
+        return entraProxyAnsatt.getEpost();
     }
 }

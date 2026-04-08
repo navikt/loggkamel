@@ -48,7 +48,6 @@ public class OversiktJPAAdapter {
     }
 
     public AuditLoggArkivResponseDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
-        //TODO: wrap in try/catch, convert exceptions to something uniform for route error handling
         return mapper.auditLoggArkivEntityToResponseDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
     }
 

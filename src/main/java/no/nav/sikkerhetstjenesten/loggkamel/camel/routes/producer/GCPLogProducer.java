@@ -8,6 +8,7 @@ import com.google.cloud.logging.LoggingOptions;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.boot.conditionals.ConditionalOnGCP;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +44,10 @@ public class GCPLogProducer extends LogProducer {
                                         .build();
 
                         logging.write(Collections.singleton(entry));
-                    } //TODO: catch general exceptions here, convert to one that will result in dead-letter queue routing
+                    } catch (Exception e) {
+                        log.warn("Error while writing log entry to GCP Logging for file {}, error message: {}", exchange.getMessage().getHeader("CamelFileName", String.class), e.getMessage());
+                        throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + exchange.getMessage().getHeader("CamelFileName", String.class), e);
+                    }
                 });
     }
 }

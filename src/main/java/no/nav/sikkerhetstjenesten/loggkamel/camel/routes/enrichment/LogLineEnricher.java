@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;

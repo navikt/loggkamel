@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
@@ -54,6 +55,18 @@ class LogGroupFilterProcessorTest {
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
         assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+    }
+
+    @Test
+    void errorWhenFetchingAuditLoggArkiv() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+
+        when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+
+        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(DatabaseDependencyException.class, () -> logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
     }
 
     @Test

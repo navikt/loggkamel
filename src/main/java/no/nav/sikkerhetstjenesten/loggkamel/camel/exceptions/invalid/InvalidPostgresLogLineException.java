@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.camel;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid;
 
 public class InvalidPostgresLogLineException extends InvalidLogLineException {
 

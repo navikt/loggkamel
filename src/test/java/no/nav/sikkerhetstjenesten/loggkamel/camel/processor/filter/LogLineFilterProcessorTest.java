@@ -43,7 +43,7 @@ class LogLineFilterProcessorTest {
     }
 
     @Test
-    void isLeseoperasjonerAndRead_passesFilter() {
+    void isLoggingLeseoperasjonerAndRead_passesFilter() {
         when(auditLoggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
         when(logRoutingAttributes.isRead()).thenReturn(true);
 
@@ -51,16 +51,8 @@ class LogLineFilterProcessorTest {
     }
 
     @Test
-    void isArkivAndWrite_passesFilter() {
-        when(auditLoggArkivResponseDTO.getArkiv()).thenReturn(true);
-        when(logRoutingAttributes.isModification()).thenReturn(true);
-
-        assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));
-    }
-
-    @Test
-    void isOkonomiAndWrite_passesFilter() {
-        when(auditLoggArkivResponseDTO.getOkonomi()).thenReturn(true);
+    void isLoggingEndringerAndWrite_passesFilter() {
+        when(auditLoggArkivResponseDTO.getLoggingEndringer()).thenReturn(true);
         when(logRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));

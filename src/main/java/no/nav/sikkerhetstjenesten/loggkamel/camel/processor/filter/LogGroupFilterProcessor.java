@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
@@ -36,7 +37,13 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        AuditLoggArkivResponseDTO auditLoggArkivResponseDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
+        AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
+        try {
+            auditLoggArkivResponseDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
+        } catch (RuntimeException e) {
+            log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}, filtering out log line. Error message: {}", dbname, teknologi.name(), e.getMessage());
+            throw new DatabaseDependencyException("Error while fetching audit logg arkiv for database " + dbname + " and teknologi " + teknologi.name(), e);
+        }
 
         if (auditLoggArkivResponseDTO == null) {
             log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
