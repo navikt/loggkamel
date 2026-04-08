@@ -1,6 +1,18 @@
 {
-  "ingresses": [],
-
+  "ingresses": [
+    "https://loggkamel.intern.nav.no"
+  ],
+  "buckets": [
+    {
+      "name": "loggkamel-prod-postgresql-deadletter"
+    },
+    {
+      "name": "loggkamel-prod-postgresql-invalid-message"
+    },
+    {
+      "name": "loggkamel-prod-postgresql-consumer"
+    }
+  ],
   "inbound": [
     {
       "name": "azure-token-generator",
@@ -15,14 +27,14 @@
     }
   },
   "mem": {
-    "min": "32Mi",
+    "min": "640Mi",
     "max": "1Gi"
   },
   "cpu": {
     "min": "50m"
   },
   "replica": {
-    "min": 2,
-    "max": 2
+    "min": 1,
+    "max": 1
   }
 }

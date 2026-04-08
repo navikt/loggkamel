@@ -21,8 +21,8 @@ management:
 
 routing:
   postgres:
-    consumer: "google-storage://loggkamel-ingress-pg-dev"
-    dead-letter: "google-storage://loggkamel-pg-dead-letter-dev"
-    invalid-message: "google-storage://loggkamel-invalid-message-pg-dev"
+    consumer: "google-storage://loggkamel-dev-postgresql-consumer"
+    dead-letter: "google-storage://loggkamel-dev-postgresql-deadletter"
+    invalid-message: "google-storage://loggkamel-dev-postgresql-invalid-message"
 
 debug: false

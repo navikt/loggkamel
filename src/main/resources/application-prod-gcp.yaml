@@ -1,5 +1,5 @@
 routing:
   postgres:
-    consumer: "google-storage://loggkamel-ingress-pg-prod"
-    dead-letter: "google-storage://loggkamel-pg-dead-letter-prod"
-    invalid-message: "google-storage://loggkamel-invalid-message-pg-prod"
+    consumer: "google-storage://loggkamel-prod-postgresql-consumer"
+    dead-letter: "google-storage://loggkamel-prod-postgresql-deadletter"
+    invalid-message: "google-storage://loggkamel-prod-postgresql-invalid-message"
