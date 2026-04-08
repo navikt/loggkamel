@@ -21,7 +21,7 @@ public class LogLineFilterProcessor {
         AuditLoggArkivResponseDTO auditLoggArkivResponseDTO = exchange.getProperty(AUDIT_LOGG_ARKIV, AuditLoggArkivResponseDTO.class);
         LogRoutingAttributes routingAttributes = exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class);
 
-        if (auditLoggArkivResponseDTO.getPersonvern() && routingAttributes.isRead()) {
+        if (auditLoggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
             return true;
         }
 

@@ -1,0 +1,1 @@
+ALTER TABLE oversikt RENAME COLUMN personvern TO logging_leseoperasjoner;

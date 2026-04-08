@@ -43,8 +43,8 @@ class LogLineFilterProcessorTest {
     }
 
     @Test
-    void isPersonvernAndRead_passesFilter() {
-        when(auditLoggArkivResponseDTO.getPersonvern()).thenReturn(true);
+    void isLeseoperasjonerAndRead_passesFilter() {
+        when(auditLoggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
         when(logRoutingAttributes.isRead()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));

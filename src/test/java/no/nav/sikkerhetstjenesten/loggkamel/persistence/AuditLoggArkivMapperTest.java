@@ -40,7 +40,7 @@ class AuditLoggArkivMapperTest {
         assertEquals(expectedEntity.getDbname(), mappedEntity.getDbname());
         assertEquals(expectedEntity.getOkonomi(), mappedEntity.getOkonomi());
         assertEquals(expectedEntity.getArkiv(), mappedEntity.getArkiv());
-        assertEquals(expectedEntity.getPersonvern(), mappedEntity.getPersonvern());
+        assertEquals(expectedEntity.getLoggingLeseoperasjoner(), mappedEntity.getLoggingLeseoperasjoner());
         assertEquals(expectedEntity.getFiksa(), mappedEntity.getFiksa());
     }
 
@@ -49,10 +49,10 @@ class AuditLoggArkivMapperTest {
         AuditLoggArkivEntity entity = createEntity(true, false, true);
         AuditLoggArkivResponseDTO dto = mapper.auditLoggArkivEntityToResponseDTO(entity);
 
-        assertEquals(createResponseDTO(true, false, true, true, true), dto);
+        assertEquals(createResponseDTO(true, false, true, true), dto);
     }
 
-    private AuditLoggArkivEntity createEntity(boolean arkiv, boolean okonomi, boolean personvern) {
+    private AuditLoggArkivEntity createEntity(boolean arkiv, boolean okonomi, boolean loggingLeseoperasjoner) {
         return AuditLoggArkivEntity.builder()
                 .id(ID)
                 .created(CREATED)
@@ -62,12 +62,12 @@ class AuditLoggArkivMapperTest {
                 .dbname(DBNAME)
                 .arkiv(arkiv)
                 .okonomi(okonomi)
-                .personvern(personvern)
+                .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
                 .build();
     }
 
-    private AuditLoggArkivResponseDTO createResponseDTO(boolean arkiv, boolean okonomi, boolean personvern, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
+    private AuditLoggArkivResponseDTO createResponseDTO(boolean arkiv, boolean okonomi, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
         return AuditLoggArkivResponseDTO.builder()
                 .created(CREATED)
                 .updated(UPDATED)
@@ -76,21 +76,20 @@ class AuditLoggArkivMapperTest {
                 .dbname(DBNAME)
                 .arkiv(arkiv)
                 .okonomi(okonomi)
-                .personvern(personvern)
-                .fiksa(FIKSA)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
+                .fiksa(FIKSA)
                 .loggingEndringer(loggingEndringer)
                 .build();
     }
 
-    private AuditLoggArkivRequestDTO createRequestDTO(boolean arkiv, boolean okonomi, boolean personvern) {
+    private AuditLoggArkivRequestDTO createRequestDTO(boolean arkiv, boolean okonomi, boolean loggingLeseoperasjoner) {
         return AuditLoggArkivRequestDTO.builder()
                 .naisteam(NAISTEAM)
                 .teknologi(TEKNOLOGI)
                 .dbname(DBNAME)
                 .arkiv(arkiv)
                 .okonomi(okonomi)
-                .personvern(personvern)
+                .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
                 .build();
     }

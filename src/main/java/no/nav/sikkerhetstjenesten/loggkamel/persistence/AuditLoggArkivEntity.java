@@ -67,8 +67,8 @@ public class AuditLoggArkivEntity {
     private Boolean arkiv;
 
     @ColumnDefault("false")
-    @Column(name = "personvern")
-    private Boolean personvern;
+    @Column(name = "logging_leseoperasjoner")
+    private Boolean loggingLeseoperasjoner;
 
     @ColumnDefault("false")
     @Column(name = "fiksa")
