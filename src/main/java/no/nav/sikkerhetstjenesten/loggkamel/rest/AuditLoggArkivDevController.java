@@ -4,9 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import no.nav.boot.conditionals.ConditionalOnGCP;
+import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
 import no.nav.boot.conditionals.ConditionalOnProd;
-import no.nav.security.token.support.spring.ProtectedRestController;
+import no.nav.security.token.support.spring.UnprotectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
@@ -26,20 +26,19 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-// TODO: look into input sanitization to avoid sql, log injection
-@ProtectedRestController(value = "/api/v1", issuer = "azuread", claimMap = {})
-@ConditionalOnGCP
+@UnprotectedRestController(value = "/api/v1/dev")
+@ConditionalOnDevOrLocal
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "AuditLoggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
-public class AuditLoggArkivController {
+@Tag(name = "AuditLoggArkivDevController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
+public class AuditLoggArkivDevController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuditLoggArkivController.class);
+    private static final Logger log = LoggerFactory.getLogger(AuditLoggArkivDevController.class);
 
     private final OversiktService oversiktService;
 
     @Autowired
-    public AuditLoggArkivController(OversiktService oversiktService) {
+    public AuditLoggArkivDevController(OversiktService oversiktService) {
         this.oversiktService = oversiktService;
     }
 
@@ -67,3 +66,4 @@ public class AuditLoggArkivController {
         return oversiktService.getAuditLoggArkivByNaisteam(naisTeam);
     }
 }
+

@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -21,8 +22,8 @@ class AuditLoggArkivMapperTest {
 
     @Test
     void dtoToEntity() {
-        AuditLoggArkivDTO dto = createDTO(true, false, true, true, false);
-        AuditLoggArkivEntity mappedEntity = mapper.auditLoggArkivDTOToEntity(dto);
+        AuditLoggArkivRequestDTO dto = createRequestDTO(true, false, true);
+        AuditLoggArkivEntity mappedEntity = mapper.auditLoggArkivRequestDTOToEntity(dto);
 
         AuditLoggArkivEntity expectedEntity = createEntity(true, false, true);
         // null the fields that the mapper ignores
@@ -46,14 +47,14 @@ class AuditLoggArkivMapperTest {
     @Test
     void entityToDTO() {
         AuditLoggArkivEntity entity = createEntity(true, false, true);
-        AuditLoggArkivDTO dto = mapper.auditLoggArkivEntityToDTO(entity);
+        AuditLoggArkivResponseDTO dto = mapper.auditLoggArkivEntityToResponseDTO(entity);
 
-        assertEquals(createDTO(true, false, true, true, true), dto);
+        assertEquals(createResponseDTO(true, false, true, true, true), dto);
     }
 
     private AuditLoggArkivEntity createEntity(boolean arkiv, boolean okonomi, boolean personvern) {
         return AuditLoggArkivEntity.builder()
-                .id(1L)
+                .id(ID)
                 .created(CREATED)
                 .updated(UPDATED)
                 .naisteam(NAISTEAM)
@@ -66,9 +67,8 @@ class AuditLoggArkivMapperTest {
                 .build();
     }
 
-    private AuditLoggArkivDTO createDTO(boolean arkiv, boolean okonomi, boolean personvern, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
-        return AuditLoggArkivDTO.builder()
-                .id(1L)
+    private AuditLoggArkivResponseDTO createResponseDTO(boolean arkiv, boolean okonomi, boolean personvern, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
+        return AuditLoggArkivResponseDTO.builder()
                 .created(CREATED)
                 .updated(UPDATED)
                 .naisteam(NAISTEAM)
@@ -80,6 +80,18 @@ class AuditLoggArkivMapperTest {
                 .fiksa(FIKSA)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .loggingEndringer(loggingEndringer)
+                .build();
+    }
+
+    private AuditLoggArkivRequestDTO createRequestDTO(boolean arkiv, boolean okonomi, boolean personvern) {
+        return AuditLoggArkivRequestDTO.builder()
+                .naisteam(NAISTEAM)
+                .teknologi(TEKNOLOGI)
+                .dbname(DBNAME)
+                .arkiv(arkiv)
+                .okonomi(okonomi)
+                .personvern(personvern)
+                .fiksa(FIKSA)
                 .build();
     }
 

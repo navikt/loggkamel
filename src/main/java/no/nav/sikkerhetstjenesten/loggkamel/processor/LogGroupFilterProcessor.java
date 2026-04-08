@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -36,15 +36,15 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        AuditLoggArkivDTO auditLoggArkivDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
+        AuditLoggArkivResponseDTO auditLoggArkivResponseDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
 
         //TODO: also stop processing here if the backup isn't fiksa, or if all of the backup fields are false
-        if (auditLoggArkivDTO == null) {
+        if (auditLoggArkivResponseDTO == null) {
             log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        exchange.setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivDTO);
+        exchange.setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivResponseDTO);
 
         return true;
     }

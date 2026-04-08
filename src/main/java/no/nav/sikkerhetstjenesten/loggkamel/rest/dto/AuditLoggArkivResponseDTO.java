@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.rest;
+package no.nav.sikkerhetstjenesten.loggkamel.rest.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -14,12 +14,10 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, personvern, arkiv, fiksa"}, example = """
-  {"id": 2, "naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkiv": false, "personvern": false, "fiksa": false, "created": "2026-03-30T10:36:47.331075Z",
+@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, personvern, arkiv, fiksa, created, updated, loggingLeseoperasjoner, loggingEndringer"}, example = """
+  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkiv": false, "personvern": false, "fiksa": false, "created": "2026-03-30T10:36:47.331075Z",
       "updated": "2026-03-30T10:36:47.331075Z", "loggingLeseoperasjoner": false, "loggingEndringer": true}""")
-public class AuditLoggArkivDTO {
-    Long id;
-    
+public class AuditLoggArkivResponseDTO {
     @NonNull
     String naisteam;
     
@@ -41,11 +39,15 @@ public class AuditLoggArkivDTO {
     @NonNull
     Boolean fiksa;
 
+//    @NonNull
     Instant created;
 
+//    @NonNull
     Instant updated;
 
+    @NonNull
     Boolean loggingLeseoperasjoner;
 
+    @NonNull
     Boolean loggingEndringer;
 }

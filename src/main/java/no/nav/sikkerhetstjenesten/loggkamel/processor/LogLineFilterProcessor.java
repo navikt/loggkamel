@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ public class LogLineFilterProcessor {
     public boolean doesLineActionMatchRelevantAuditLoggArkiv(Exchange exchange) {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
-        AuditLoggArkivDTO auditLoggArkivDTO = exchange.getProperty(AUDIT_LOGG_ARKIV, AuditLoggArkivDTO.class);
+        AuditLoggArkivResponseDTO auditLoggArkivResponseDTO = exchange.getProperty(AUDIT_LOGG_ARKIV, AuditLoggArkivResponseDTO.class);
         LogRoutingAttributes routingAttributes = exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class);
 
-        if (auditLoggArkivDTO.getPersonvern() && routingAttributes.isRead()) {
+        if (auditLoggArkivResponseDTO.getPersonvern() && routingAttributes.isRead()) {
             return true;
         }
 
-        if ((auditLoggArkivDTO.getArkiv() || auditLoggArkivDTO.getOkonomi()) && routingAttributes.isModification()) {
+        if ((auditLoggArkivResponseDTO.getArkiv() || auditLoggArkivResponseDTO.getOkonomi()) && routingAttributes.isModification()) {
             return true;
         }
 

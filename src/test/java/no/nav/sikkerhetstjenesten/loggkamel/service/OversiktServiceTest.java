@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.junit.jupiter.api.Test;
@@ -22,10 +23,13 @@ class OversiktServiceTest {
     private static final String NAISTEAM = "naisteam";
 
     @Mock
-    AuditLoggArkivDTO requestAuditLoggArkivDTO;
+    AuditLoggArkivRequestDTO auditLoggArkivRequestDTO;
 
     @Mock
-    AuditLoggArkivDTO responseAuditLoggArkivDTO;
+    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
+
+    @Mock
+    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO2;
 
     @Mock
     OversiktJPAAdapter adapter;
@@ -35,37 +39,37 @@ class OversiktServiceTest {
 
     @Test
     void createAuditLoggArkiv_successful() {
-        when(adapter.createAuditLoggArkiv(requestAuditLoggArkivDTO)).thenReturn(responseAuditLoggArkivDTO);
+        when(adapter.createAuditLoggArkiv(auditLoggArkivRequestDTO)).thenReturn(auditLoggArkivResponseDTO);
 
-        assertEquals(responseAuditLoggArkivDTO, service.createAuditLoggArkiv(requestAuditLoggArkivDTO));
+        assertEquals(auditLoggArkivResponseDTO, service.createAuditLoggArkiv(auditLoggArkivRequestDTO));
     }
 
     @Test
     void createAuditLoggArkiv_exceptionPassesThrough() {
-        when(adapter.createAuditLoggArkiv(requestAuditLoggArkivDTO)).thenThrow(RuntimeException.class);
+        when(adapter.createAuditLoggArkiv(auditLoggArkivRequestDTO)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.createAuditLoggArkiv(requestAuditLoggArkivDTO));
+        assertThrows(RuntimeException.class, () -> service.createAuditLoggArkiv(auditLoggArkivRequestDTO));
     }
 
     @Test
     void updateAuditLoggArkiv_successful() {
-        when(adapter.updateAuditLoggArkiv(requestAuditLoggArkivDTO)).thenReturn(responseAuditLoggArkivDTO);
+        when(adapter.updateAuditLoggArkiv(auditLoggArkivRequestDTO)).thenReturn(auditLoggArkivResponseDTO);
 
-        assertEquals(responseAuditLoggArkivDTO, service.updateAuditLoggArkiv(requestAuditLoggArkivDTO));
+        assertEquals(auditLoggArkivResponseDTO, service.updateAuditLoggArkiv(auditLoggArkivRequestDTO));
     }
 
     @Test
     void updateAuditLoggArkiv_exceptionPassesThrough() {
-        when(adapter.updateAuditLoggArkiv(requestAuditLoggArkivDTO)).thenThrow(RuntimeException.class);
+        when(adapter.updateAuditLoggArkiv(auditLoggArkivRequestDTO)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.updateAuditLoggArkiv(requestAuditLoggArkivDTO));
+        assertThrows(RuntimeException.class, () -> service.updateAuditLoggArkiv(auditLoggArkivRequestDTO));
     }
 
     @Test
     void getAuditLoggArkivByDbnameAndTeknologi_successful() {
-        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(responseAuditLoggArkivDTO);
+        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditLoggArkivResponseDTO);
 
-        assertEquals(responseAuditLoggArkivDTO, service.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertEquals(auditLoggArkivResponseDTO, service.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
@@ -77,9 +81,9 @@ class OversiktServiceTest {
 
     @Test
     void getAuditLoggArkivByNaisteam_successful() {
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(requestAuditLoggArkivDTO, responseAuditLoggArkivDTO));
+        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditLoggArkivResponseDTO, auditLoggArkivResponseDTO2));
 
-        assertEquals(List.of(requestAuditLoggArkivDTO, responseAuditLoggArkivDTO), service.getAuditLoggArkivByNaisteam(NAISTEAM));
+        assertEquals(List.of(auditLoggArkivResponseDTO, auditLoggArkivResponseDTO2), service.getAuditLoggArkivByNaisteam(NAISTEAM));
     }
 
     @Test

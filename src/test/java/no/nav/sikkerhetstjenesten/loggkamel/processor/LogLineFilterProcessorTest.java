@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.LogRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -26,7 +26,7 @@ class LogLineFilterProcessorTest {
     Message message;
 
     @Mock
-    AuditLoggArkivDTO auditLoggArkivDTO;
+    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
 
     @Mock
     LogRoutingAttributes logRoutingAttributes;
@@ -38,13 +38,13 @@ class LogLineFilterProcessorTest {
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
-        when(exchange.getProperty(AUDIT_LOGG_ARKIV, AuditLoggArkivDTO.class)).thenReturn(auditLoggArkivDTO);
+        when(exchange.getProperty(AUDIT_LOGG_ARKIV, AuditLoggArkivResponseDTO.class)).thenReturn(auditLoggArkivResponseDTO);
         when(exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class)).thenReturn(logRoutingAttributes);
     }
 
     @Test
     void isPersonvernAndRead_passesFilter() {
-        when(auditLoggArkivDTO.getPersonvern()).thenReturn(true);
+        when(auditLoggArkivResponseDTO.getPersonvern()).thenReturn(true);
         when(logRoutingAttributes.isRead()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));
@@ -52,7 +52,7 @@ class LogLineFilterProcessorTest {
 
     @Test
     void isArkivAndWrite_passesFilter() {
-        when(auditLoggArkivDTO.getArkiv()).thenReturn(true);
+        when(auditLoggArkivResponseDTO.getArkiv()).thenReturn(true);
         when(logRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));
@@ -60,7 +60,7 @@ class LogLineFilterProcessorTest {
 
     @Test
     void isOkonomiAndWrite_passesFilter() {
-        when(auditLoggArkivDTO.getOkonomi()).thenReturn(true);
+        when(auditLoggArkivResponseDTO.getOkonomi()).thenReturn(true);
         when(logRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditLoggArkiv(exchange));

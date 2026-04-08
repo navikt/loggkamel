@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.processor;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.AuditLoggArkivDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -28,7 +28,7 @@ class LogGroupFilterProcessorTest {
     Message message;
 
     @Mock
-    AuditLoggArkivDTO auditLoggArkivDTO;
+    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
 
     @Mock
     OversiktService oversiktService;
@@ -79,11 +79,11 @@ class LogGroupFilterProcessorTest {
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(auditLoggArkivDTO);
+        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbName, TeknologiEnum.DB2)).thenReturn(auditLoggArkivResponseDTO);
 
         assertTrue(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
 
-        verify(exchange).setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivDTO);
+        verify(exchange).setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivResponseDTO);
     }
 
 }
