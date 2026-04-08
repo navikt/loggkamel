@@ -21,9 +21,9 @@ public class OversiktJPAAdapter {
         this.mapper = mapper;
     }
 
-    public AuditLoggArkivResponseDTO createAuditLoggArkiv(AuditLoggArkivRequestDTO dto) {
-        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(mapper.auditLoggArkivRequestDTOToEntity(dto));
-        return mapper.auditLoggArkivEntityToResponseDTO(savedTask);
+    public AuditLoggArkivResponseDTO createAuditLoggArkiv(AuditLoggArkivRequestDTO arkivToSave) {
+        AuditLoggArkivEntity persistedArkiv = saveAuditLoggArkivEntity(mapper.auditLoggArkivRequestDTOToEntity(arkivToSave));
+        return mapper.auditLoggArkivEntityToResponseDTO(persistedArkiv);
     }
 
     private AuditLoggArkivEntity saveAuditLoggArkivEntity(AuditLoggArkivEntity toSave) {
@@ -34,17 +34,17 @@ public class OversiktJPAAdapter {
         }
     }
 
-    public AuditLoggArkivResponseDTO updateAuditLoggArkiv(AuditLoggArkivRequestDTO dto) {
+    public AuditLoggArkivResponseDTO updateAuditLoggArkiv(AuditLoggArkivRequestDTO arkivToUpdate) {
 
-        AuditLoggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(dto.getDbname(), dto.getTeknologi());
+        AuditLoggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(arkivToUpdate.getDbname(), arkivToUpdate.getTeknologi());
         if (existingArkiv == null) {
-            throw new ForbiddenOperationException("Task with dbname " + dto.getDbname() + " and teknologi " + dto.getTeknologi() + " does not exist");
+            throw new ForbiddenOperationException("Task with dbname " + arkivToUpdate.getDbname() + " and teknologi " + arkivToUpdate.getTeknologi() + " does not exist");
         }
-        AuditLoggArkivEntity updatedArkiv = mapper.auditLoggArkivRequestDTOToEntity(dto);
-        updatedArkiv.setId(existingArkiv.getId());
+        AuditLoggArkivEntity arkivEntityWithUpdatedValues = mapper.auditLoggArkivRequestDTOToEntity(arkivToUpdate);
+        arkivEntityWithUpdatedValues.setId(existingArkiv.getId());
 
-        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(updatedArkiv);
-        return mapper.auditLoggArkivEntityToResponseDTO(savedTask);
+        AuditLoggArkivEntity persistedArkiv = saveAuditLoggArkivEntity(arkivEntityWithUpdatedValues);
+        return mapper.auditLoggArkivEntityToResponseDTO(persistedArkiv);
     }
 
     public AuditLoggArkivResponseDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
