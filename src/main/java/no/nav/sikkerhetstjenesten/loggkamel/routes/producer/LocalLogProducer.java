@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.PostgresLogEnrichmentProcessor.LOG_ENRICHMENT;
@@ -8,6 +9,9 @@ import static no.nav.sikkerhetstjenesten.loggkamel.processor.enrichment.Postgres
 @Component
 @ConditionalOnLocalOrTest
 public class LocalLogProducer extends LogProducer {
+
+    @Value("${routing.postgres.producer}")
+    String producerUri;
 
     @Override
     public void configure() {
