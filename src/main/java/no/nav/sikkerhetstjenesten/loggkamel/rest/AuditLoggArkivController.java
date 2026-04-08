@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.security.token.support.spring.ProtectedRestController;
+import no.nav.security.token.support.spring.UnprotectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,9 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
 // TODO: look into input sanitization to avoid sql, log injection
-@ProtectedRestController(value = "/api/v1", issuer = "azuread", claimMap = {})
-@ConditionalOnGCP
+//@ProtectedRestController(value = "/api/v1", issuer = "azuread", claimMap = {})
+@UnprotectedRestController(value = "/api/v1")
+//@ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "AuditLoggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
@@ -50,7 +52,7 @@ public class AuditLoggArkivController {
 
     @PutMapping("arkiv")
     @ResponseStatus(OK)
-    @Operation(summary = "Oppdatere Audit Log Arkivering for en DB")
+    @Operation(summary = "Oppdatere Audit Log Arkivering for en gitt DB navn og teknologi")
     public AuditLoggArkivDTO updateAuditLoggArkiv(@RequestBody AuditLoggArkivDTO auditLoggArkivDTO) {
         log.debug("Updating audit logg arkiv: {}", auditLoggArkivDTO);
         return oversiktService.updateAuditLoggArkiv(auditLoggArkivDTO);

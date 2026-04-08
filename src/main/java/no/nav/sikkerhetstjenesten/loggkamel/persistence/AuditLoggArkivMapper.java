@@ -16,6 +16,7 @@ public abstract class AuditLoggArkivMapper {
 
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "updated", ignore = true)
+    @Mapping(target = "id", ignore = true)
     public abstract AuditLoggArkivEntity auditLoggArkivDTOToEntity(AuditLoggArkivDTO dto);
 
     //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper

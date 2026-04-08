@@ -22,9 +22,25 @@ class AuditLoggArkivMapperTest {
     @Test
     void dtoToEntity() {
         AuditLoggArkivDTO dto = createDTO(true, false, true, true, false);
-        AuditLoggArkivEntity entity = mapper.auditLoggArkivDTOToEntity(dto);
+        AuditLoggArkivEntity mappedEntity = mapper.auditLoggArkivDTOToEntity(dto);
 
-        assertEquals(createEntity(true, false, true), entity);
+        AuditLoggArkivEntity expectedEntity = createEntity(true, false, true);
+        // null the fields that the mapper ignores
+        expectedEntity.setId(null);
+        expectedEntity.setCreated(null);
+        expectedEntity.setUpdated(null);
+
+        // compare fields directly because entity equals() only compares id
+        assertEquals(expectedEntity.getId(), mappedEntity.getId());
+        assertEquals(expectedEntity.getCreated(), mappedEntity.getCreated());
+        assertEquals(expectedEntity.getUpdated(), mappedEntity.getUpdated());
+        assertEquals(expectedEntity.getNaisteam(), mappedEntity.getNaisteam());
+        assertEquals(expectedEntity.getTeknologi(), mappedEntity.getTeknologi());
+        assertEquals(expectedEntity.getDbname(), mappedEntity.getDbname());
+        assertEquals(expectedEntity.getOkonomi(), mappedEntity.getOkonomi());
+        assertEquals(expectedEntity.getArkiv(), mappedEntity.getArkiv());
+        assertEquals(expectedEntity.getPersonvern(), mappedEntity.getPersonvern());
+        assertEquals(expectedEntity.getFiksa(), mappedEntity.getFiksa());
     }
 
     @Test

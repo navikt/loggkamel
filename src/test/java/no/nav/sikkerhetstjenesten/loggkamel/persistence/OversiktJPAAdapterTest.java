@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OversiktJPAAdapterTest {
 
+    private final static Long ID = 1L;
     private final static String DBNAME = "dbName";
     private final static TeknologiEnum TEKNOLOGI = TeknologiEnum.ORACLE;
     private final static String NAISTEAM = "naisteam";
@@ -61,16 +62,19 @@ class OversiktJPAAdapterTest {
 
     @Test
     void updateAuditLoggArkiv_missingEntityToUpdate() {
-        when(toSaveAuditLoggArkivDTO.getId()).thenReturn(1L);
-        when(repository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(toSaveAuditLoggArkivDTO.getDbname()).thenReturn(DBNAME);
+        when(toSaveAuditLoggArkivDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(null);
 
         assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditLoggArkiv(toSaveAuditLoggArkivDTO));
     }
 
     @Test
     void updateAuditLoggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
-        when(toSaveAuditLoggArkivDTO.getId()).thenReturn(1L);
-        when(repository.findById(1L)).thenReturn(java.util.Optional.of(toSaveAuditLoggArkivEntity));
+        when(toSaveAuditLoggArkivDTO.getDbname()).thenReturn(DBNAME);
+        when(toSaveAuditLoggArkivDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditLoggArkivEntity);
+        when(toSaveAuditLoggArkivEntity.getId()).thenReturn(ID);
 
         when(mapper.auditLoggArkivDTOToEntity(toSaveAuditLoggArkivDTO)).thenReturn(toSaveAuditLoggArkivEntity);
         when(repository.save(toSaveAuditLoggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
@@ -80,8 +84,10 @@ class OversiktJPAAdapterTest {
 
     @Test
     void updateAuditLoggArkiv_successful() {
-        when(toSaveAuditLoggArkivDTO.getId()).thenReturn(1L);
-        when(repository.findById(1L)).thenReturn(java.util.Optional.of(toSaveAuditLoggArkivEntity));
+        when(toSaveAuditLoggArkivDTO.getDbname()).thenReturn(DBNAME);
+        when(toSaveAuditLoggArkivDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditLoggArkivEntity);
+        when(toSaveAuditLoggArkivEntity.getId()).thenReturn(ID);
 
         when(mapper.auditLoggArkivDTOToEntity(toSaveAuditLoggArkivDTO)).thenReturn(toSaveAuditLoggArkivEntity);
         when(repository.save(toSaveAuditLoggArkivEntity)).thenReturn(savedAuditLoggArkivEntity);

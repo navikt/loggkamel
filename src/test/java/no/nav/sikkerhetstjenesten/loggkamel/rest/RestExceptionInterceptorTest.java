@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 class RestExceptionInterceptorTest {
 
     private static final String REQUEST_URI = "some/request/uri";
+    private static final String ERROR_MESSAGE = "error message";
 
     private final RestExceptionInterceptor restExceptionInterceptor = new RestExceptionInterceptor();
 
@@ -22,7 +23,7 @@ class RestExceptionInterceptorTest {
         request.setRequestURI(REQUEST_URI);
 
         HttpMessageNotReadableException mockedException = Mockito.mock(HttpMessageNotReadableException.class);
-        when(mockedException.getMessage()).thenReturn("no");
+        when(mockedException.getMessage()).thenReturn(ERROR_MESSAGE);
         when(mockedException.getLocalizedMessage()).thenReturn("nei");
 
         var response = restExceptionInterceptor.handleHttpMessageNotReadableException(mockedException, request);
@@ -30,7 +31,7 @@ class RestExceptionInterceptorTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getBody().errorCode());
-        assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), response.getBody().message());
+        assertEquals(ERROR_MESSAGE, response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
 
@@ -39,12 +40,12 @@ class RestExceptionInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI(REQUEST_URI);
 
-        var response = restExceptionInterceptor.handleForbiddenOperationException(new ForbiddenOperationException("no"), request);
+        var response = restExceptionInterceptor.handleForbiddenOperationException(new ForbiddenOperationException(ERROR_MESSAGE), request);
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.FORBIDDEN.value(), response.getBody().errorCode());
-        assertEquals(HttpStatus.FORBIDDEN.getReasonPhrase(), response.getBody().message());
+        assertEquals(ERROR_MESSAGE, response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
 
@@ -53,12 +54,12 @@ class RestExceptionInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI(REQUEST_URI);
 
-        var response = restExceptionInterceptor.handleUpdatingNonexistentTaskException(new UpdatingNonexistentTaskException("why"), request);
+        var response = restExceptionInterceptor.handleUpdatingNonexistentTaskException(new UpdatingNonexistentTaskException(ERROR_MESSAGE), request);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.CONFLICT.value(), response.getBody().errorCode());
-        assertEquals(HttpStatus.CONFLICT.getReasonPhrase(), response.getBody().message());
+        assertEquals(ERROR_MESSAGE, response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
 }

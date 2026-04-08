@@ -34,13 +34,15 @@ public class OversiktJPAAdapter {
     }
 
     public AuditLoggArkivDTO updateAuditLoggArkiv(AuditLoggArkivDTO dto) {
-        if (dto.getId() == null || dto.getId() == 0) {
-            throw new ForbiddenOperationException("Id must be provided when updating a task");
+
+        AuditLoggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(dto.getDbname(), dto.getTeknologi());
+        if (existingArkiv == null) {
+            throw new ForbiddenOperationException("Task with dbname " + dto.getDbname() + " and teknologi " + dto.getTeknologi() + " does not exist");
         }
+        AuditLoggArkivEntity updatedArkiv = mapper.auditLoggArkivDTOToEntity(dto);
+        updatedArkiv.setId(existingArkiv.getId());
 
-        repository.findById(dto.getId()).orElseThrow(() -> new ForbiddenOperationException("Task with id " + dto.getId() + " does not exist"));
-
-        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(mapper.auditLoggArkivDTOToEntity(dto));
+        AuditLoggArkivEntity savedTask = saveAuditLoggArkivEntity(updatedArkiv);
         return mapper.auditLoggArkivEntityToDTO(savedTask);
     }
 

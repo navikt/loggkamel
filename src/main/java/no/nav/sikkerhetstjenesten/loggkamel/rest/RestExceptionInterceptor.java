@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 
 @Hidden
-@RestControllerAdvice(basePackages = "no.nav.sikkerhetstjenesten.loggkamel.controller")
+@RestControllerAdvice(basePackages = "no.nav.sikkerhetstjenesten.loggkamel")
 public class RestExceptionInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(RestExceptionInterceptor.class);
@@ -37,7 +37,7 @@ public class RestExceptionInterceptor {
         log.error("REST request failed for path {}", request.getRequestURI(), exception);
         ErrorResponse errorResponse = new ErrorResponse(
                 httpStatus.value(),
-                httpStatus.getReasonPhrase(),
+                exception.getMessage(),
                 request.getRequestURI(),
                 Instant.now()
         );
