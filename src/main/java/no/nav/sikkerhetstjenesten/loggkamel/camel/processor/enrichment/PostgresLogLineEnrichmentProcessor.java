@@ -81,7 +81,7 @@ public class PostgresLogLineEnrichmentProcessor {
     private String getAnsattEpost(String navIdent) {
         EntraProxyAnsatt entraProxyAnsatt;
         try {
-            entraProxyAnsatt = entraProxyService.getAnsattFromNavIdent(navIdent);
+            entraProxyAnsatt = entraProxyService.getAnsattFraNavIdent(navIdent);
         } catch (Exception e) {
             log.warn(ENTRA_PROXY_ERROR_MESSAGE, e);
             throw new EntraProxyDependencyException(ENTRA_PROXY_ERROR_MESSAGE, e);

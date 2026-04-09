@@ -12,7 +12,7 @@ public class EntraProxyMock implements EntraProxyClient {
 
 
     @Override
-    public EntraProxyAnsatt getAnsattMedNavIdent(String navIdent) {
+    public EntraProxyAnsatt getAnsattFraNavIdent(String navIdent) {
         return buildMockAnsatt();
     }
 
@@ -32,7 +32,7 @@ public class EntraProxyMock implements EntraProxyClient {
     }
 
     @Override
-    public EntraProxyAnsatt getAnsattMedTIdent(String tIdent) {
+    public EntraProxyAnsatt getAnsattFraTIdent(String tIdent) {
         return buildMockAnsatt();
     }
 }

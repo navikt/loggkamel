@@ -74,7 +74,7 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        when(entraProxyService.getAnsattFromNavIdent("SAMPLE_NAV_IDENT")).thenThrow(entraProxyException);
+        when(entraProxyService.getAnsattFraNavIdent("SAMPLE_NAV_IDENT")).thenThrow(entraProxyException);
 
         EntraProxyDependencyException capturedException = assertThrows(EntraProxyDependencyException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
         assertEquals(ENTRA_PROXY_ERROR_MESSAGE, capturedException.getMessage());
@@ -89,7 +89,7 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
-        when(entraProxyService.getAnsattFromNavIdent("SAMPLE_NAV_IDENT")).thenReturn(null);
+        when(entraProxyService.getAnsattFraNavIdent("SAMPLE_NAV_IDENT")).thenReturn(null);
 
         InvalidPostgresLogLineException capturedException = assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
@@ -102,7 +102,7 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
         String ePost = "epost";
-        when(entraProxyService.getAnsattFromNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
+        when(entraProxyService.getAnsattFraNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
         when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logRoutingAttributes);

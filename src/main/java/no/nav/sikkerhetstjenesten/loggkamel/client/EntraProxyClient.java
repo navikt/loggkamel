@@ -6,8 +6,8 @@ import org.springframework.web.service.annotation.GetExchange;
 public interface EntraProxyClient {
 
     @GetExchange("/api/v1/ansatt/{navIdent}")
-    EntraProxyAnsatt getAnsattMedNavIdent(@PathVariable("navIdent") String navIdent);
+    EntraProxyAnsatt getAnsattFraNavIdent(@PathVariable("navIdent") String navIdent);
 
     @GetExchange("/api/v1/ansatt/tident/{tIdent}")
-    EntraProxyAnsatt getAnsattMedTIdent(@PathVariable("tIdent") String tIdent);
+    EntraProxyAnsatt getAnsattFraTIdent(@PathVariable("tIdent") String tIdent);
 }
