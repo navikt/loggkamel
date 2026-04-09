@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,80 +24,80 @@ class OversiktJPAAdapterTest {
     private final static String NAISTEAM = "naisteam";
 
     @Mock
-    AuditLoggArkivEntity toSaveAuditLoggArkivEntity;
+    AuditloggArkivEntity toSaveAuditloggArkivEntity;
 
     @Mock
-    AuditLoggArkivEntity savedAuditLoggArkivEntity;
+    AuditloggArkivEntity savedAuditloggArkivEntity;
 
     @Mock
-    AuditLoggArkivRequestDTO auditLoggArkivRequestDTO;
+    AuditloggArkivRequestDTO auditloggArkivRequestDTO;
 
     @Mock
-    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
+    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
 
     @Mock
-    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO2;
+    AuditloggArkivResponseDTO auditloggArkivResponseDTO2;
 
     @Mock
     OversiktRepository repository;
 
     @Mock
-    AuditLoggArkivMapper mapper;
+    AuditloggArkivMapper mapper;
 
     @InjectMocks
     OversiktJPAAdapter adapter;
 
     @Test
-    void createAuditLoggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
-        when(mapper.auditLoggArkivRequestDTOToEntity(auditLoggArkivRequestDTO)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(repository.save(toSaveAuditLoggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
+    void createAuditloggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
+        when(mapper.auditloggArkivRequestDTOToEntity(auditloggArkivRequestDTO)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.createAuditLoggArkiv(auditLoggArkivRequestDTO));
+        assertThrows(ForbiddenOperationException.class, () -> adapter.createAuditloggArkiv(auditloggArkivRequestDTO));
     }
 
     @Test
-    void createAuditLoggArkiv_successful() {
-        when(mapper.auditLoggArkivRequestDTOToEntity(auditLoggArkivRequestDTO)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(repository.save(toSaveAuditLoggArkivEntity)).thenReturn(savedAuditLoggArkivEntity);
-        when(mapper.auditLoggArkivEntityToResponseDTO(savedAuditLoggArkivEntity)).thenReturn(auditLoggArkivResponseDTO);
+    void createAuditloggArkiv_successful() {
+        when(mapper.auditloggArkivRequestDTOToEntity(auditloggArkivRequestDTO)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenReturn(savedAuditloggArkivEntity);
+        when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
 
-        assertEquals(auditLoggArkivResponseDTO, adapter.createAuditLoggArkiv(auditLoggArkivRequestDTO));
+        assertEquals(auditloggArkivResponseDTO, adapter.createAuditloggArkiv(auditloggArkivRequestDTO));
     }
 
     @Test
-    void updateAuditLoggArkiv_missingEntityToUpdate() {
-        when(auditLoggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
-        when(auditLoggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+    void updateAuditloggArkiv_missingEntityToUpdate() {
+        when(auditloggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
+        when(auditloggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
         when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(null);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditLoggArkiv(auditLoggArkivRequestDTO));
+        assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditloggArkiv(auditloggArkivRequestDTO));
     }
 
     @Test
-    void updateAuditLoggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
-        when(auditLoggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
-        when(auditLoggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
-        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(toSaveAuditLoggArkivEntity.getId()).thenReturn(ID);
+    void updateAuditloggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
+        when(auditloggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
+        when(auditloggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggArkivEntity);
+        when(toSaveAuditloggArkivEntity.getId()).thenReturn(ID);
 
-        when(mapper.auditLoggArkivRequestDTOToEntity(auditLoggArkivRequestDTO)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(repository.save(toSaveAuditLoggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
+        when(mapper.auditloggArkivRequestDTOToEntity(auditloggArkivRequestDTO)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditLoggArkiv(auditLoggArkivRequestDTO));
+        assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditloggArkiv(auditloggArkivRequestDTO));
     }
 
     @Test
-    void updateAuditLoggArkiv_successful() {
-        when(auditLoggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
-        when(auditLoggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
-        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(toSaveAuditLoggArkivEntity.getId()).thenReturn(ID);
+    void updateAuditloggArkiv_successful() {
+        when(auditloggArkivRequestDTO.getDbname()).thenReturn(DBNAME);
+        when(auditloggArkivRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggArkivEntity);
+        when(toSaveAuditloggArkivEntity.getId()).thenReturn(ID);
 
-        when(mapper.auditLoggArkivRequestDTOToEntity(auditLoggArkivRequestDTO)).thenReturn(toSaveAuditLoggArkivEntity);
-        when(repository.save(toSaveAuditLoggArkivEntity)).thenReturn(savedAuditLoggArkivEntity);
-        when(mapper.auditLoggArkivEntityToResponseDTO(savedAuditLoggArkivEntity)).thenReturn(auditLoggArkivResponseDTO);
+        when(mapper.auditloggArkivRequestDTOToEntity(auditloggArkivRequestDTO)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenReturn(savedAuditloggArkivEntity);
+        when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
 
-        assertEquals(auditLoggArkivResponseDTO, adapter.updateAuditLoggArkiv(auditLoggArkivRequestDTO));
+        assertEquals(auditloggArkivResponseDTO, adapter.updateAuditloggArkiv(auditloggArkivRequestDTO));
     }
 
     @Test
@@ -109,10 +109,10 @@ class OversiktJPAAdapterTest {
 
     @Test
     void findByDbnameAndTeknologi_successful() {
-        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(savedAuditLoggArkivEntity);
-        when(mapper.auditLoggArkivEntityToResponseDTO(savedAuditLoggArkivEntity)).thenReturn(auditLoggArkivResponseDTO);
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(savedAuditloggArkivEntity);
+        when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
 
-        assertEquals(auditLoggArkivResponseDTO, adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertEquals(auditloggArkivResponseDTO, adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
@@ -124,11 +124,11 @@ class OversiktJPAAdapterTest {
 
     @Test
     void getAllTasksByNaisteam_successful() {
-        when(repository.findAllByNaisteam(NAISTEAM)).thenReturn(List.of(toSaveAuditLoggArkivEntity, savedAuditLoggArkivEntity));
+        when(repository.findAllByNaisteam(NAISTEAM)).thenReturn(List.of(toSaveAuditloggArkivEntity, savedAuditloggArkivEntity));
 
-        when(mapper.auditLoggArkivEntityToResponseDTO(toSaveAuditLoggArkivEntity)).thenReturn(auditLoggArkivResponseDTO);
-        when(mapper.auditLoggArkivEntityToResponseDTO(savedAuditLoggArkivEntity)).thenReturn(auditLoggArkivResponseDTO2);
+        when(mapper.auditloggArkivEntityToResponseDTO(toSaveAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
+        when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO2);
 
-        assertEquals(List.of(auditLoggArkivResponseDTO, auditLoggArkivResponseDTO2), adapter.getAllTasksByNaisteam(NAISTEAM));
+        assertEquals(List.of(auditloggArkivResponseDTO, auditloggArkivResponseDTO2), adapter.getAllTasksByNaisteam(NAISTEAM));
     }
 }

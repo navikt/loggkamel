@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,20 +13,20 @@ import java.util.List;
 public class OversiktJPAAdapter {
 
     private final OversiktRepository repository;
-    private final AuditLoggArkivMapper mapper;
+    private final AuditloggArkivMapper mapper;
 
     @Autowired
-    public OversiktJPAAdapter(OversiktRepository repository, AuditLoggArkivMapper mapper) {
+    public OversiktJPAAdapter(OversiktRepository repository, AuditloggArkivMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
 
-    public AuditLoggArkivResponseDTO createAuditLoggArkiv(AuditLoggArkivRequestDTO arkivToSave) {
-        AuditLoggArkivEntity persistedArkiv = saveAuditLoggArkivEntity(mapper.auditLoggArkivRequestDTOToEntity(arkivToSave));
-        return mapper.auditLoggArkivEntityToResponseDTO(persistedArkiv);
+    public AuditloggArkivResponseDTO createAuditloggArkiv(AuditloggArkivRequestDTO arkivToSave) {
+        AuditloggArkivEntity persistedArkiv = saveAuditloggArkivEntity(mapper.auditloggArkivRequestDTOToEntity(arkivToSave));
+        return mapper.auditloggArkivEntityToResponseDTO(persistedArkiv);
     }
 
-    private AuditLoggArkivEntity saveAuditLoggArkivEntity(AuditLoggArkivEntity toSave) {
+    private AuditloggArkivEntity saveAuditloggArkivEntity(AuditloggArkivEntity toSave) {
         try {
             return repository.save(toSave);
         } catch (DataIntegrityViolationException e) {
@@ -34,27 +34,27 @@ public class OversiktJPAAdapter {
         }
     }
 
-    public AuditLoggArkivResponseDTO updateAuditLoggArkiv(AuditLoggArkivRequestDTO arkivToUpdate) {
+    public AuditloggArkivResponseDTO updateAuditloggArkiv(AuditloggArkivRequestDTO arkivToUpdate) {
 
-        AuditLoggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(arkivToUpdate.getDbname(), arkivToUpdate.getTeknologi());
+        AuditloggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(arkivToUpdate.getDbname(), arkivToUpdate.getTeknologi());
         if (existingArkiv == null) {
             throw new ForbiddenOperationException("Task with dbname " + arkivToUpdate.getDbname() + " and teknologi " + arkivToUpdate.getTeknologi() + " does not exist");
         }
-        AuditLoggArkivEntity arkivEntityWithUpdatedValues = mapper.auditLoggArkivRequestDTOToEntity(arkivToUpdate);
+        AuditloggArkivEntity arkivEntityWithUpdatedValues = mapper.auditloggArkivRequestDTOToEntity(arkivToUpdate);
         arkivEntityWithUpdatedValues.setId(existingArkiv.getId());
 
-        AuditLoggArkivEntity persistedArkiv = saveAuditLoggArkivEntity(arkivEntityWithUpdatedValues);
-        return mapper.auditLoggArkivEntityToResponseDTO(persistedArkiv);
+        AuditloggArkivEntity persistedArkiv = saveAuditloggArkivEntity(arkivEntityWithUpdatedValues);
+        return mapper.auditloggArkivEntityToResponseDTO(persistedArkiv);
     }
 
-    public AuditLoggArkivResponseDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
-        return mapper.auditLoggArkivEntityToResponseDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
+    public AuditloggArkivResponseDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+        return mapper.auditloggArkivEntityToResponseDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
     }
 
-    public List<AuditLoggArkivResponseDTO> getAllTasksByNaisteam(String naisteam) {
-        List<AuditLoggArkivEntity> foundEntities = repository.findAllByNaisteam(naisteam);
+    public List<AuditloggArkivResponseDTO> getAllTasksByNaisteam(String naisteam) {
+        List<AuditloggArkivEntity> foundEntities = repository.findAllByNaisteam(naisteam);
 
-        return foundEntities.stream().map(mapper::auditLoggArkivEntityToResponseDTO).toList();
+        return foundEntities.stream().map(mapper::auditloggArkivEntityToResponseDTO).toList();
     }
 
 }

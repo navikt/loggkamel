@@ -5,10 +5,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnGCP;
-import no.nav.boot.conditionals.ConditionalOnProd;
 import no.nav.security.token.support.spring.ProtectedRestController;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,39 +30,39 @@ import static org.springframework.http.HttpStatus.OK;
 @ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "AuditLoggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
-public class AuditLoggArkivController {
+@Tag(name = "AuditloggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
+public class AuditloggArkivController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuditLoggArkivController.class);
+    private static final Logger log = LoggerFactory.getLogger(AuditloggArkivController.class);
 
     private final OversiktService oversiktService;
 
     @Autowired
-    public AuditLoggArkivController(OversiktService oversiktService) {
+    public AuditloggArkivController(OversiktService oversiktService) {
         this.oversiktService = oversiktService;
     }
 
     @PostMapping(path = "arkiv", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(OK)
     @Operation(summary = "Registrerer en DB for Audit Log Arkivering")
-    public AuditLoggArkivResponseDTO createAuditLoggArkiv(@RequestBody AuditLoggArkivRequestDTO auditLoggArkivRequestDTO) {
-        log.debug("Creating audit logg arkiv: {}", auditLoggArkivRequestDTO);
-        return oversiktService.createAuditLoggArkiv(auditLoggArkivRequestDTO);
+    public AuditloggArkivResponseDTO createAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
+        log.debug("Creating audit logg arkiv: {}", auditloggArkivRequestDTO);
+        return oversiktService.createAuditloggArkiv(auditloggArkivRequestDTO);
     }
 
     @PutMapping("arkiv")
     @ResponseStatus(OK)
     @Operation(summary = "Oppdatere Audit Log Arkivering for en gitt DB navn og teknologi")
-    public AuditLoggArkivResponseDTO updateAuditLoggArkiv(@RequestBody AuditLoggArkivRequestDTO auditLoggArkivRequestDTO) {
-        log.debug("Updating audit logg arkiv: {}", auditLoggArkivRequestDTO);
-        return oversiktService.updateAuditLoggArkiv(auditLoggArkivRequestDTO);
+    public AuditloggArkivResponseDTO updateAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
+        log.debug("Updating audit logg arkiv: {}", auditloggArkivRequestDTO);
+        return oversiktService.updateAuditloggArkiv(auditloggArkivRequestDTO);
     }
 
     @GetMapping("arkiv/search/naisteam/{naisTeam}")
     @ResponseStatus(OK)
     @Operation(summary = "Finne alle audit logg arkiv for gitt nais team")
-    public List<AuditLoggArkivResponseDTO> getAuditLoggArkivByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
+    public List<AuditloggArkivResponseDTO> getAuditloggArkivByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
         log.debug("Getting audit logg arkiv by nais team: {}", naisTeam);
-        return oversiktService.getAuditLoggArkivByNaisteam(naisTeam);
+        return oversiktService.getAuditloggArkivByNaisteam(naisTeam);
     }
 }

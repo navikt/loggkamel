@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.AUDIT_LOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.AUDITLOGG_ARKIV;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -22,7 +22,7 @@ public class LogGroupFilterProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(LogGroupFilterProcessor.class);
 
-    public boolean isMatchingAuditLoggArkivFound(Exchange exchange) {
+    public boolean isMatchingAuditloggArkivFound(Exchange exchange) {
         log.info("LogGroupFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
         String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
@@ -37,25 +37,25 @@ public class LogGroupFilterProcessor {
 
         TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
 
-        AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
+        AuditloggArkivResponseDTO auditloggArkivResponseDTO;
         try {
-            auditLoggArkivResponseDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
+            auditloggArkivResponseDTO = oversiktService.getAuditloggArkivByDbnameAndTeknologi(dbname, teknologi);
         } catch (RuntimeException e) {
             log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while fetching audit logg arkiv for database " + dbname + " and teknologi " + teknologi.name(), e);
         }
 
-        if (auditLoggArkivResponseDTO == null) {
+        if (auditloggArkivResponseDTO == null) {
             log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        if (!auditLoggArkivResponseDTO.getFiksa() || (!auditLoggArkivResponseDTO.getLoggingLeseoperasjoner() && !auditLoggArkivResponseDTO.getLoggingEndringer())) {
+        if (!auditloggArkivResponseDTO.getFiksa() || (!auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && !auditloggArkivResponseDTO.getLoggingEndringer())) {
             log.info("Audit logg arkiv found for database {} and teknologi {}, but arkiv configuration isn't complete or logging isn't enabled, filtering out log line", dbname, teknologi.name());
             return false;
         }
 
-        exchange.setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivResponseDTO);
+        exchange.setProperty(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
 
         return true;
     }

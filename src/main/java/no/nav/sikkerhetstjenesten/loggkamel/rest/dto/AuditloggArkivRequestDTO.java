@@ -15,7 +15,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 @Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkiv, fiksa"}, example = """
   {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkiv": false, "loggingLeseoperasjoner": false, "fiksa": false
   }""")
-public class AuditLoggArkivRequestDTO {
+public class AuditloggArkivRequestDTO {
     @NonNull
     String naisteam;
 

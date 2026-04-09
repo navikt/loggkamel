@@ -17,7 +17,7 @@ import java.time.Instant;
 @Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkiv, fiksa, created, updated, loggingEndringer"}, example = """
   {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkiv": false, "loggingLeseoperasjoner": false, "fiksa": false, "created": "2026-03-30T10:36:47.331075Z",
       "updated": "2026-03-30T10:36:47.331075Z", "loggingEndringer": true}""")
-public class AuditLoggArkivResponseDTO {
+public class AuditloggArkivResponseDTO {
 
     @NonNull
     String naisteam;

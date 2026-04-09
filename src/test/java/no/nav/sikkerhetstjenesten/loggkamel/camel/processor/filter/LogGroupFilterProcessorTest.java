@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditLoggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.AUDIT_LOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.AUDITLOGG_ARKIV;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +33,7 @@ class LogGroupFilterProcessorTest {
     Message message;
 
     @Mock
-    AuditLoggArkivResponseDTO auditLoggArkivResponseDTO;
+    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
 
     @Mock
     OversiktService oversiktService;
@@ -46,7 +46,7 @@ class LogGroupFilterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
@@ -54,75 +54,75 @@ class LogGroupFilterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
-        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
-    void errorWhenFetchingAuditLoggArkiv() {
+    void errorWhenFetchingAuditloggArkiv() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
 
-        assertThrows(DatabaseDependencyException.class, () -> logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertThrows(DatabaseDependencyException.class, () -> logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
-    void noMatchingAuditLoggArkiv() {
+    void noMatchingAuditloggArkiv() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
-        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
-    void matchingAuditLoggArkivButNotFiksa() {
+    void matchingAuditloggArkivButNotFiksa() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditLoggArkivResponseDTO);
-        when(auditLoggArkivResponseDTO.getFiksa()).thenReturn(false);
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(false);
 
-        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
-    void matchingAuditLoggArkivButLoggingNotEnabled() {
+    void matchingAuditloggArkivButLoggingNotEnabled() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditLoggArkivResponseDTO);
-        when(auditLoggArkivResponseDTO.getFiksa()).thenReturn(true);
-        when(auditLoggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(false);
-        when(auditLoggArkivResponseDTO.getLoggingEndringer()).thenReturn(false);
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
+        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(false);
 
-        assertFalse(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertFalse(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
     }
 
     @Test
-    void confirmAuditLoggArkivIsSetAsProperty() {
+    void confirmAuditloggArkivIsSetAsProperty() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditLoggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditLoggArkivResponseDTO);
-        when(auditLoggArkivResponseDTO.getFiksa()).thenReturn(true);
-        when(auditLoggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
+        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
 
-        assertTrue(logGroupFilterProcessor.isMatchingAuditLoggArkivFound(exchange));
+        assertTrue(logGroupFilterProcessor.isMatchingAuditloggArkivFound(exchange));
 
-        verify(exchange).setProperty(AUDIT_LOGG_ARKIV, auditLoggArkivResponseDTO);
+        verify(exchange).setProperty(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
     }
 
 }
