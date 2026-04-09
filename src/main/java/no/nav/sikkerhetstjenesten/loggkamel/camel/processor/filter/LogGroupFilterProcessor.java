@@ -41,7 +41,7 @@ public class LogGroupFilterProcessor {
         try {
             auditLoggArkivResponseDTO = oversiktService.getAuditLoggArkivByDbnameAndTeknologi(dbname, teknologi);
         } catch (RuntimeException e) {
-            log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}, filtering out log line. Error message: {}", dbname, teknologi.name(), e.getMessage());
+            log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while fetching audit logg arkiv for database " + dbname + " and teknologi " + teknologi.name(), e);
         }
 
