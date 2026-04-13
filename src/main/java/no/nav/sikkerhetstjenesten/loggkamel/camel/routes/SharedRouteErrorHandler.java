@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,10 +24,10 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
                 .log("Routing DependencyException to dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .to(deadLetterUri);
 
-        onException(InvalidLogLineException.class)
+        onException(InvalidLogException.class)
                 .maximumRedeliveries(0)
                 .handled(true)
-                .log("Routing InvalidLogLineException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .to(invalidMessageUri);
 
         onException(Exception.class)

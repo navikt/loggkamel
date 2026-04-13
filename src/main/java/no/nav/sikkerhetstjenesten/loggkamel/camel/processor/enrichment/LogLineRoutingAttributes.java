@@ -9,11 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LogRoutingAttributes {
+public class LogLineRoutingAttributes {
 
-    public static String LOG_ROUTING_ATTRIBUTES = "logRoutingAttributes";
+    public static String LOG_ROUTING_ATTRIBUTES = "LogLineRoutingAttributes";
 
     boolean isRead;
     boolean isModification;
-
 }

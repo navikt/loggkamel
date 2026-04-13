@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.LogGroupFilter.LOG_GROUP_FILTER_ROUTE;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.PostgresLogGroupEnricher.POSTGRES_LOG_GROUP_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
@@ -34,6 +34,6 @@ public class PostgresLogConsumer extends SharedRouteErrorHandler {
                     }
                 })
                 .log(LoggingLevel.INFO, "Processing postgres log message from ${header.CamelFileName}")
-                .to(LOG_GROUP_FILTER_ROUTE);
+                .to(POSTGRES_LOG_GROUP_ENRICHER_ROUTE);
     }
 }

@@ -42,7 +42,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     Message message;
 
     @Mock
-    LogRoutingAttributes logRoutingAttributes;
+    LogLineRoutingAttributes logLineRoutingAttributes;
 
     @Mock
     EntraProxyAnsatt entraProxyAnsatt;
@@ -105,13 +105,13 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(entraProxyService.getAnsattFraNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
-        when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logRoutingAttributes);
+        when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logLineRoutingAttributes);
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<PostgresEnrichmentAttributes> logEnrichmentCaptor = ArgumentCaptor.forClass(PostgresEnrichmentAttributes.class);
         verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());
-        verify(exchange).setProperty(eq(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logRoutingAttributes));
+        verify(exchange).setProperty(eq(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logLineRoutingAttributes));
 
         PostgresEnrichmentAttributes capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(), capturedLogEnrichment);

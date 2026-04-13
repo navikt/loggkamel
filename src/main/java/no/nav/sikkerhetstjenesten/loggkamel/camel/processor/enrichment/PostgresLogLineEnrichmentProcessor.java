@@ -21,7 +21,7 @@ public class PostgresLogLineEnrichmentProcessor {
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
 
-    public static final String LOG_ENRICHMENT = "logEnrichment";
+    public static final String LOG_ENRICHMENT = "logLineEnrichment";
 
     private final EntraProxyService entraProxyService;
     private final LogRoutingAttributesEnricher logRoutingAttributesEnricher;
@@ -42,11 +42,10 @@ public class PostgresLogLineEnrichmentProcessor {
 
         PostgresEnrichmentAttributes logEnrichment = extractEnrichmentFromLog(body);
         logEnrichment.setEpost(getAnsattEpost(logEnrichment.getNavIdent()));
-
         exchange.setVariable(LOG_ENRICHMENT, logEnrichment);
 
-        LogRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(logEnrichment.getPgAuditClass());
-        exchange.setProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
+        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(logEnrichment.getPgAuditClass());
+        exchange.setProperty(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
 
         msg.setBody(body);
     }

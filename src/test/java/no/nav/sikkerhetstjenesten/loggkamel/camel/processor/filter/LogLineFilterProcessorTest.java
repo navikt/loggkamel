@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogRoutingAttributes;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,7 @@ class LogLineFilterProcessorTest {
     AuditloggArkivResponseDTO auditloggArkivResponseDTO;
 
     @Mock
-    LogRoutingAttributes logRoutingAttributes;
+    LogLineRoutingAttributes logLineRoutingAttributes;
 
     @InjectMocks
     LogLineFilterProcessor logLineFilterProcessor;
@@ -39,13 +39,13 @@ class LogLineFilterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
         when(exchange.getProperty(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
-        when(exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class)).thenReturn(logRoutingAttributes);
+        when(exchange.getProperty(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class)).thenReturn(logLineRoutingAttributes);
     }
 
     @Test
     void isLoggingLeseoperasjonerAndRead_passesFilter() {
         when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
-        when(logRoutingAttributes.isRead()).thenReturn(true);
+        when(logLineRoutingAttributes.isRead()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
     }
@@ -53,7 +53,7 @@ class LogLineFilterProcessorTest {
     @Test
     void isLoggingEndringerAndWrite_passesFilter() {
         when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(true);
-        when(logRoutingAttributes.isModification()).thenReturn(true);
+        when(logLineRoutingAttributes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
     }

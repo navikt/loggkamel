@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogRoutingAttributes;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineRoutingAttributes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class LogLineFilterProcessor {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getProperty(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
-        LogRoutingAttributes routingAttributes = exchange.getProperty(LogRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogRoutingAttributes.class);
+        LogLineRoutingAttributes routingAttributes = exchange.getProperty(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class);
 
         if (auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
             return true;

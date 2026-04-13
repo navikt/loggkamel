@@ -14,8 +14,8 @@ public class LogRoutingAttributesEnricher {
     private static final List<String> WRITE_CLASSES = List.of(WRITE, ROLE, DDL);
 
 
-    public LogRoutingAttributes constructRoutingAttributesFromAuditClass(String auditClass) {
-        LogRoutingAttributes routingAttributes = new LogRoutingAttributes();
+    public LogLineRoutingAttributes constructRoutingAttributesFromAuditClass(String auditClass) {
+        LogLineRoutingAttributes routingAttributes = new LogLineRoutingAttributes();
 
         if (WRITE_CLASSES.contains(auditClass)) {
             routingAttributes.setModification(true);

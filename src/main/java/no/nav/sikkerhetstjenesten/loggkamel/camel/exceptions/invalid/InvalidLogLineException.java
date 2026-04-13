@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid;
 
-public class InvalidLogLineException extends RuntimeException {
+public class InvalidLogLineException extends InvalidLogException {
 
     public InvalidLogLineException(String message) {
         super(message);
