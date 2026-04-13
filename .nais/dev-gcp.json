@@ -11,7 +11,8 @@
   "db-flags": {
     "pgaudit": {
       "enabled": "on",
-      "logtype": "ddl,role,write"
+      "logtype": "ddl,role,write",
+      "logparameter": "on"
     }
   },
   "buckets": [

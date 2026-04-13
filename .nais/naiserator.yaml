@@ -23,6 +23,8 @@ spec:
             value: "{{db-flags.pgaudit.enabled}}"
           - name: pgaudit.log
             value: "{{db-flags.pgaudit.logtype}}"
+          - name: pgaudit.log_parameter
+            value: "{{db-flags.pgaudit.logparameter}}"
     buckets:
       {{#each buckets as |bucket|}}
           - name: '{{bucket.name}}'

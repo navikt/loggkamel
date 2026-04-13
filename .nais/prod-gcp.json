@@ -2,6 +2,13 @@
   "ingresses": [
     "https://loggkamel.intern.nav.no"
   ],
+  "db-flags": {
+    "pgaudit": {
+      "enabled": "off",
+      "logtype": "ddl,role,write",
+      "logparameter": "off"
+    }
+  },
   "buckets": [
     {
       "name": "loggkamel-prod-postgresql-deadletter"
