@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.config;
 
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
@@ -9,11 +10,11 @@ import org.springframework.web.client.RestClient;
 public class NaisClientConfig {
 
     @Bean
+    @ConditionalOnGCP
     public HttpSyncGraphQlClient naisGraphqlClient() {
         RestClient restClient = RestClient.create("https://console.nav.cloud.nais.io/graphql");
         return HttpSyncGraphQlClient.builder(restClient)
-                //TODO: get token from nais secrets
-                .headers((headers) -> headers.setBearerAuth("PLACEHOLDER_FOR_NAIS_TOKEN"))
+                .headers((headers) -> headers.setBearerAuth(System.getenv("NAIS_CONSOLE_READ_TOKEN")))
                 .build();
     }
 }

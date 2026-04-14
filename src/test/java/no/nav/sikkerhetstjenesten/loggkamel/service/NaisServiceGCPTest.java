@@ -11,14 +11,14 @@ import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import reactor.core.publisher.Mono;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.NaisService.TEAM;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.NaisService.TEAM_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.NaisServiceGCP.TEAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.NaisServiceGCP.TEAM_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NaisServiceTest {
+class NaisServiceGCPTest {
 
     private static final String NAIS_TEAM = "naisteam";
     private static final String GCP_PROJECT_ID = "gcpProjectId";
@@ -42,7 +42,7 @@ class NaisServiceTest {
     HttpSyncGraphQlClient naisGraphqlClient;
 
     @InjectMocks
-    NaisService naisService;
+    NaisServiceGCP naisServiceGCP;
 
     @Test
     void graphQlExceptionConvertedToDependencyException() {
@@ -52,7 +52,7 @@ class NaisServiceTest {
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenThrow(new RuntimeException("GraphQL client error"));
 
-        assertThrows(NaisDependencyException.class, () -> naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(NaisDependencyException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -63,7 +63,7 @@ class NaisServiceTest {
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogGroupException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -75,7 +75,7 @@ class NaisServiceTest {
         when(naisTeamEnvironmentsMono.block()).thenReturn(naisTeamEnvironments);
         when(naisTeamEnvironments.getEnvironments()).thenReturn(java.util.List.of());
 
-        assertThrows(InvalidLogGroupException.class, () -> naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogGroupException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -89,7 +89,7 @@ class NaisServiceTest {
         when(gcpProject.getName()).thenReturn("local");
         when(gcpProject.getGcpProjectID()).thenReturn(GCP_PROJECT_ID);
 
-        assertEquals(GCP_PROJECT_ID, naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertEquals(GCP_PROJECT_ID, naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
 }

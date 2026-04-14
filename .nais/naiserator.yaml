@@ -87,3 +87,5 @@ spec:
       value: {{nais.cluster.type}}
     - name: DB_POOLSIZE
       value: '{{db.poolsize}}'
+  envFrom:
+    - secret: client-tokens

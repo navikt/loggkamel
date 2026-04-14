@@ -51,9 +51,12 @@ public class PostgresLogGroupEnrichmentProcessor {
             throw new InvalidPostgresLogGroupException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
         }
 
+        log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
         exchange.setProperty(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
+        //TODO: change log level to DEBUG after testing
+        log.info("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
         exchange.setProperty(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
