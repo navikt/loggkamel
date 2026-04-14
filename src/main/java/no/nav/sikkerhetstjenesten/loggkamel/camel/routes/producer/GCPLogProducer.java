@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEAM_GCP_PROJECT_ID;
 
 @Component
 @ConditionalOnGCP
@@ -32,7 +33,12 @@ public class GCPLogProducer extends LogProducer {
                 .routeId(POSTGRES_LOG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to GCP Logging")
                 .process(exchange -> {
-                    try (Logging logging = LoggingOptions.getDefaultInstance().getService()) {
+                    String targetGCPProjectId = exchange.getProperty(TEAM_GCP_PROJECT_ID, String.class);
+
+                    try (Logging logging = LoggingOptions.newBuilder()
+                            .setProjectId(targetGCPProjectId)
+                            .build()
+                            .getService()) {
 
                         Map<String, Object> logEnrichmentMap = mapper.convertValue(exchange.getVariables().get(LOG_ENRICHMENT), new TypeReference<>() {});
                         Payload.JsonPayload jsonPayload = Payload.JsonPayload.of(logEnrichmentMap);

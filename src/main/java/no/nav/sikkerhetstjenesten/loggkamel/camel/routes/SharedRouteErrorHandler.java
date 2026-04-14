@@ -18,8 +18,7 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
 
     public void errorHandling() {
         onException(DependencyException.class)
-                .maximumRedeliveries(0) //TODO: re-enable retries after testing
-//                .maximumRedeliveries(3)
+                .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .log("Routing DependencyException to dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")

@@ -55,8 +55,7 @@ public class PostgresLogGroupEnrichmentProcessor {
         exchange.setProperty(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
-        //TODO: change log level to DEBUG after testing
-        log.info("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
+        log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
         exchange.setProperty(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
