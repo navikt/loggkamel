@@ -45,7 +45,7 @@ public class PostgresLogLineEnrichmentProcessor {
         exchange.setVariable(LOG_ENRICHMENT, logEnrichment);
 
         LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(logEnrichment.getPgAuditClass());
-        exchange.setProperty(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
+        exchange.setVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
 
         msg.setBody(body);
     }

@@ -19,7 +19,7 @@ public class LogLineFilterProcessor {
         log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getProperty(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
-        LogLineRoutingAttributes routingAttributes = exchange.getProperty(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class);
+        LogLineRoutingAttributes routingAttributes = exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class);
 
         if (auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
             return true;
