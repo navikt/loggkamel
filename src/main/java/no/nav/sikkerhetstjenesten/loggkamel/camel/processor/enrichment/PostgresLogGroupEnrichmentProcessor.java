@@ -30,7 +30,7 @@ public class PostgresLogGroupEnrichmentProcessor {
     }
 
     public void enrich(Exchange exchange) {
-        log.info("LogGroupFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
+        log.info("PostgresLogGroupEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
         String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 
