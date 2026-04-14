@@ -75,6 +75,8 @@ spec:
           namespace: nais-system
         - application: entra-proxy
           namespace: sikkerhetstjenesten
+      external:
+        - host: console.nav.cloud.nais.io
     inbound:
       rules:
         {{#each inbound as |app|}}
