@@ -16,6 +16,9 @@ public class NaisService {
 
     private static final Logger log = LoggerFactory.getLogger(NaisService.class);
 
+    static final String TEAM_NAME = "teamName";
+    static final String TEAM = "team";
+
     @Autowired
     HttpSyncGraphQlClient naisGraphqlClient;
 
@@ -34,13 +37,17 @@ public class NaisService {
         NaisTeamEnvironments naisTeamEnvironments;
         try {
             naisTeamEnvironments = naisGraphqlClient.document(query)
-                    .variable("teamName", naisTeam)
-                    .retrieve("team")
+                    .variable(TEAM_NAME, naisTeam)
+                    .retrieve(TEAM)
                     .toEntity(NaisTeamEnvironments.class)
                     .block();
         } catch (Exception e) {
             log.info("Feil ved kall mot nais graphql api for team {}, message: {}", naisTeam, e.getMessage());
             throw new NaisDependencyException("Feil ved kall mot nais graphql api for team " + naisTeam, e);
+        }
+
+        if (naisTeamEnvironments == null) {
+            throw new InvalidLogGroupException("Fant ingen GCP Projecter for team " + naisTeam + " i nais api response");
         }
 
         String currentCluster = Cluster.currentCluster().clusterName();
