@@ -109,17 +109,17 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
-        ArgumentCaptor<PostgresEnrichmentAttributes> logEnrichmentCaptor = ArgumentCaptor.forClass(PostgresEnrichmentAttributes.class);
+        ArgumentCaptor<EnrichedLogMessage> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedLogMessage.class);
         verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());
         verify(exchange).setVariable(eq(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logLineRoutingAttributes));
 
-        PostgresEnrichmentAttributes capturedLogEnrichment = logEnrichmentCaptor.getValue();
+        EnrichedLogMessage capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(), capturedLogEnrichment);
 
     }
 
-    private PostgresEnrichmentAttributes expectedLogEnrichment() {
-        return PostgresEnrichmentAttributes.builder()
+    private EnrichedLogMessage expectedLogEnrichment() {
+        return EnrichedLogMessage.builder()
                 .logTime(logTime)
                 .navIdent(navIdent)
                 .dbName(dbName)

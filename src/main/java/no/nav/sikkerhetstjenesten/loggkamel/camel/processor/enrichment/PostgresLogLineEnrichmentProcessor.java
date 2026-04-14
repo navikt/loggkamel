@@ -40,17 +40,18 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException("Audit log message is blank");
         }
 
-        PostgresEnrichmentAttributes logEnrichment = extractEnrichmentFromLog(body);
-        logEnrichment.setEpost(getAnsattEpost(logEnrichment.getNavIdent()));
-        exchange.setVariable(LOG_ENRICHMENT, logEnrichment);
+        EnrichedLogMessage enrichedLogMessage = extractEnrichmentFromLog(body);
+        enrichedLogMessage.setEpost(getAnsattEpost(enrichedLogMessage.getNavIdent()));
+//        msg.setBody(enrichedLogMessage, EnrichedLogMessage.class);
+        exchange.setVariable(LOG_ENRICHMENT, enrichedLogMessage);
 
-        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(logEnrichment.getPgAuditClass());
+        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(enrichedLogMessage.getPgAuditClass());
         exchange.setVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
 
-        msg.setBody(body);
+//        msg.setBody(body);
     }
 
-    private PostgresEnrichmentAttributes extractEnrichmentFromLog(String body) {
+    private EnrichedLogMessage extractEnrichmentFromLog(String body) {
         String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
@@ -61,7 +62,7 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
-        return PostgresEnrichmentAttributes.builder()
+        return EnrichedLogMessage.builder()
                 .logTime(matcher.group(1))
                 .navIdent(matcher.group(2))
                 .dbName(matcher.group(3))

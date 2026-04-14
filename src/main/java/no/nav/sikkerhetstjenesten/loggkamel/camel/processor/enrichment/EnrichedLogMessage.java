@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostgresEnrichmentAttributes {
+public class EnrichedLogMessage {
 
     //TODO: add validation on individual fields given what we can safely assume about them
 
@@ -26,4 +26,6 @@ public class PostgresEnrichmentAttributes {
     private String sqlStatement;
     private String sqlParameters;
     private String epost;
+
+    //TODO: add "request.type = dbAuditEntry" field here, see how to handle nesting
 }

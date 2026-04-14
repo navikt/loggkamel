@@ -9,6 +9,7 @@ import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedLogMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +41,11 @@ public class GCPLogProducer extends LogProducer {
                             .build()
                             .getService()) {
 
-                        Map<String, Object> logEnrichmentMap = mapper.convertValue(exchange.getVariables().get(LOG_ENRICHMENT), new TypeReference<>() {});
-                        Payload.JsonPayload jsonPayload = Payload.JsonPayload.of(logEnrichmentMap);
+                        Map<String, Object> logMessageAsMap = mapper.convertValue(exchange.getVariables().get(LOG_ENRICHMENT), new TypeReference<>() {});
+                        Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 
                         LogEntry entry =
-                                LogEntry.newBuilder(jsonPayload)
+                                LogEntry.newBuilder(logMessageAsJsonPayload)
                                         .setSeverity(Severity.INFO)
                                         .setLogName("loggkamel-arkiv")
                                         .build();
