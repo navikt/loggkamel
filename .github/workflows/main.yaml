@@ -60,7 +60,7 @@ jobs:
     needs: test-build-deploy
     strategy:
       matrix:
-        cluster: [ dev-gcp ] #[ dev-gcp, prod-gcp ]
+        cluster: [ dev-gcp, prod-gcp ]
     name: Deploy to ${{ matrix.cluster }}
     environment: ${{ matrix.cluster }}:sikkerhetstjenesten
     steps:
