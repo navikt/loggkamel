@@ -19,6 +19,7 @@ public class NaisClientConfig {
     public HttpSyncGraphQlClient naisGraphqlClient() {
 
         //TODO: remove after troubleshooting
+        log.info("Confirming that nais console token is set");
         String naisToken = System.getenv("NAIS_CONSOLE_READ_TOKEN");
         if (naisToken == null || naisToken.isEmpty()) {
             log.error("NAIS_CONSOLE_READ_TOKEN er ikke satt i miljøvariabler. GraphQL klienten vil ikke kunne autentisere mot NAIS Console API.");
