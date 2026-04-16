@@ -10,7 +10,17 @@ https://confluence.adeo.no/spaces/TM/pages/760453055/Loggtransport
 Slackkanal:
 #team-sikkerhetstjenesten
 
-## Swagger
+## Program design and intent
+
+
+
+TODO: diagram of arkiv flow
+
+## Arkiv Controller
+
+TODO
+
+### Swagger
 
 DEV: https://loggkamel.intern.dev.nav.no/swagger-ui/index.html#/
 
