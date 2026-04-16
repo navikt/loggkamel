@@ -10,21 +10,25 @@ https://confluence.adeo.no/spaces/TM/pages/760453055/Loggtransport
 Slackkanal:
 #team-sikkerhetstjenesten
 
+## Usage (for other teams)
+
+TODO: expectations re: input file format, entry location for pushed logs, etc
+
 ## Program design and intent
-
-
 
 TODO: diagram of arkiv flow
 
+TODO: high level description of intended flow
+
 ## Arkiv Controller
 
-TODO
+TODO: description of what the controller is intended for, how it is intended to be used, etc
 
 ### Swagger
 
 DEV: https://loggkamel.intern.dev.nav.no/swagger-ui/index.html#/
 
-PROD: TODO
+PROD: https://loggkamel.intern.nav.no/swagger-ui/index.html#/
 
 ## Kjore lokalt med PostgreSQL
 
