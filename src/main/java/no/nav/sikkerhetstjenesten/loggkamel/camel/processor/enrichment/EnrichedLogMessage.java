@@ -29,6 +29,4 @@ public class EnrichedLogMessage {
     private String sqlParameters;
     private String epost;
     private String requestType;
-
-    //TODO: add "request.type = dbAuditEntry" field here, see how to handle nesting
 }
