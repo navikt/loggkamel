@@ -13,6 +13,8 @@ public class EnrichedLogMessage {
 
     //TODO: add validation on individual fields given what we can safely assume about them
 
+    private String originalMessage;
+
     private String logTime;
     private String navIdent;
     private String dbName;
@@ -26,6 +28,7 @@ public class EnrichedLogMessage {
     private String sqlStatement;
     private String sqlParameters;
     private String epost;
+    private String requestType;
 
     //TODO: add "request.type = dbAuditEntry" field here, see how to handle nesting
 }

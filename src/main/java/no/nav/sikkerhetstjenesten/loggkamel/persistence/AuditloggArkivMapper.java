@@ -22,7 +22,7 @@ public abstract class AuditloggArkivMapper {
     //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
     @Named("loggingEndringer")
     public boolean loggingEndringer(AuditloggArkivEntity entity) {
-        return entity.getOkonomi() || entity.getLoggingLeseoperasjoner();
+        return entity.getOkonomi() || entity.getArkivlov();
     }
 
 }

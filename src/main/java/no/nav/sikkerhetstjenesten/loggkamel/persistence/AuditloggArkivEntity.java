@@ -63,8 +63,8 @@ public class AuditloggArkivEntity {
     private Boolean okonomi;
 
     @ColumnDefault("false")
-    @Column(name = "arkiv")
-    private Boolean arkiv;
+    @Column(name = "arkivlov")
+    private Boolean arkivlov;
 
     @ColumnDefault("false")
     @Column(name = "logging_leseoperasjoner")

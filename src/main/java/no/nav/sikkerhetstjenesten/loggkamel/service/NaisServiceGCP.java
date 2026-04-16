@@ -37,6 +37,7 @@ public class NaisServiceGCP implements NaisService {
                  }
                 """;
 
+        //TODO: set up caching for requests to the nais console client
         NaisTeamEnvironments naisTeamEnvironments;
         try {
             naisTeamEnvironments = naisGraphqlClient.document(query)

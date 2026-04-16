@@ -84,14 +84,13 @@ class PostgresLogLineEnrichmentProcessorTest {
     @Test
     void enrich_noEmployeeInfo() {
         String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLE_NAV_IDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
-        RuntimeException entraProxyException = new RuntimeException("Something went wrong, panic!");
 
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn(logMessageBody);
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLE_NAV_IDENT")).thenReturn(null);
 
-        InvalidPostgresLogLineException capturedException = assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -114,12 +113,14 @@ class PostgresLogLineEnrichmentProcessorTest {
         verify(exchange).setVariable(eq(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logLineRoutingAttributes));
 
         EnrichedLogMessage capturedLogEnrichment = logEnrichmentCaptor.getValue();
-        assertEquals(expectedLogEnrichment(), capturedLogEnrichment);
+        assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);
 
     }
 
-    private EnrichedLogMessage expectedLogEnrichment() {
+    private EnrichedLogMessage expectedLogEnrichment(String logMessageBody) {
         return EnrichedLogMessage.builder()
+                .originalMessage(logMessageBody)
+                .requestType(DB_AUDIT_ENTRY_REQUEST_TYPE)
                 .logTime(logTime)
                 .navIdent(navIdent)
                 .dbName(dbName)

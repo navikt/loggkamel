@@ -1,0 +1,1 @@
+ALTER TABLE oversikt RENAME COLUMN arkiv TO arkivlov;

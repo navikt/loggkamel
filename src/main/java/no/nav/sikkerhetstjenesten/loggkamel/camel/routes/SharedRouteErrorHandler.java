@@ -16,6 +16,7 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
 
     public abstract void configure();
 
+    //TODO: currently this sends all errors to the postgres-specific channels, want technologi-specific channels instead
     public void errorHandling() {
         onException(DependencyException.class)
                 .maximumRedeliveries(3)

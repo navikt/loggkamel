@@ -32,7 +32,7 @@ public class AuditloggArkivResponseDTO {
     Boolean okonomi;
     
     @NonNull
-    Boolean arkiv;
+    Boolean arkivlov;
     
     @NonNull
     Boolean loggingLeseoperasjoner;

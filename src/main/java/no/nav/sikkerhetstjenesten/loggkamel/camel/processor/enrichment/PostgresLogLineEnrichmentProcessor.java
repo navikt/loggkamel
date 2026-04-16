@@ -22,6 +22,7 @@ public class PostgresLogLineEnrichmentProcessor {
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
 
     public static final String LOG_ENRICHMENT = "logLineEnrichment";
+    static final String DB_AUDIT_ENTRY_REQUEST_TYPE = "dbAuditEntry";
 
     private final EntraProxyService entraProxyService;
     private final LogRoutingAttributesEnricher logRoutingAttributesEnricher;
@@ -42,13 +43,10 @@ public class PostgresLogLineEnrichmentProcessor {
 
         EnrichedLogMessage enrichedLogMessage = extractEnrichmentFromLog(body);
         enrichedLogMessage.setEpost(getAnsattEpost(enrichedLogMessage.getNavIdent()));
-//        msg.setBody(enrichedLogMessage, EnrichedLogMessage.class);
         exchange.setVariable(LOG_ENRICHMENT, enrichedLogMessage);
 
         LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(enrichedLogMessage.getPgAuditClass());
         exchange.setVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
-
-//        msg.setBody(body);
     }
 
     private EnrichedLogMessage extractEnrichmentFromLog(String body) {
@@ -63,6 +61,8 @@ public class PostgresLogLineEnrichmentProcessor {
         }
 
         return EnrichedLogMessage.builder()
+                .originalMessage(body)
+                .requestType(DB_AUDIT_ENTRY_REQUEST_TYPE)
                 .logTime(matcher.group(1))
                 .navIdent(matcher.group(2))
                 .dbName(matcher.group(3))
