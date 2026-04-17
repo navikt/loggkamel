@@ -12,25 +12,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
-public class PostgresLogGroupEnrichmentProcessor {
+public class LogGroupEnrichmentProcessor {
 
-    private static final Logger log = LoggerFactory.getLogger(PostgresLogGroupEnrichmentProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LogGroupEnrichmentProcessor.class);
 
     private final NaisService naisService;
     private final OversiktService oversiktService;
 
     @Autowired
-    public PostgresLogGroupEnrichmentProcessor(NaisService naisService, OversiktService oversiktService) {
+    public LogGroupEnrichmentProcessor(NaisService naisService, OversiktService oversiktService) {
         this.naisService = naisService;
         this.oversiktService = oversiktService;
     }
 
     public void enrich(Exchange exchange) {
-        log.info("PostgresLogGroupEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
+        log.info("LogGroupEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
         String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 
@@ -42,7 +42,7 @@ public class PostgresLogGroupEnrichmentProcessor {
         //database name is the first part of the filename, before the first period
         String dbname = filename.split("\\.")[0];
 
-        TeknologiEnum teknologi = exchange.getProperty(TEKNOLOGI, TeknologiEnum.class);
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
 
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = getAuditloggArkiv(dbname, teknologi);
 
@@ -52,11 +52,12 @@ public class PostgresLogGroupEnrichmentProcessor {
         }
 
         log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
-        exchange.setProperty(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
         log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
-        exchange.setProperty(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
+
+        exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
+        exchange.setVariable(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
     private AuditloggArkivResponseDTO getAuditloggArkiv(String dbname, TeknologiEnum teknologi) {

@@ -6,6 +6,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPost
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,6 +43,9 @@ class PostgresLogLineEnrichmentProcessorTest {
     Message message;
 
     @Mock
+    AuditloggLineMessage auditloggLineMessage;
+
+    @Mock
     LogLineRoutingAttributes logLineRoutingAttributes;
 
     @Mock
@@ -56,12 +60,17 @@ class PostgresLogLineEnrichmentProcessorTest {
     @InjectMocks
     PostgresLogLineEnrichmentProcessor postgresLogLineEnrichmentProcessor;
 
+    @BeforeEach
+    void setup() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
+    }
+
     @Test
     void enrich_invalidLogPattern() {
         String logMessageBody = "blah";
 
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody(String.class)).thenReturn(logMessageBody);
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
         assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
@@ -71,8 +80,7 @@ class PostgresLogLineEnrichmentProcessorTest {
         String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLE_NAV_IDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
         RuntimeException entraProxyException = new RuntimeException("Something went wrong, panic!");
 
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody(String.class)).thenReturn(logMessageBody);
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLE_NAV_IDENT")).thenThrow(entraProxyException);
 
@@ -85,8 +93,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     void enrich_noEmployeeInfo() {
         String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLE_NAV_IDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
 
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody(String.class)).thenReturn(logMessageBody);
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLE_NAV_IDENT")).thenReturn(null);
 
@@ -97,8 +104,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     void enrich_happyPath() {
         String logMessageBody = String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter);
 
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody(String.class)).thenReturn(logMessageBody);
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
         String ePost = "epost";
         when(entraProxyService.getAnsattFraNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
@@ -108,17 +114,17 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
-        ArgumentCaptor<EnrichedLogMessage> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedLogMessage.class);
+        ArgumentCaptor<EnrichedAuditlogg> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedAuditlogg.class);
         verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());
         verify(exchange).setVariable(eq(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logLineRoutingAttributes));
 
-        EnrichedLogMessage capturedLogEnrichment = logEnrichmentCaptor.getValue();
+        EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);
 
     }
 
-    private EnrichedLogMessage expectedLogEnrichment(String logMessageBody) {
-        return EnrichedLogMessage.builder()
+    private EnrichedAuditlogg expectedLogEnrichment(String logMessageBody) {
+        return EnrichedAuditlogg.builder()
                 .originalMessage(logMessageBody)
                 .requestType(DB_AUDIT_ENTRY_REQUEST_TYPE)
                 .logTime(logTime)

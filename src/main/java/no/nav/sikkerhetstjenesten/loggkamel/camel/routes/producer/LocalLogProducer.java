@@ -21,7 +21,7 @@ public class LocalLogProducer extends LogProducer {
                 .routeId(POSTGRES_LOG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to local log")
                 .process(exchange -> {
-                    exchange.getMessage().setBody(exchange.getMessage().getBody() + ", enriched log info: " + exchange.getVariables().get(LOG_ENRICHMENT));
+                    exchange.getMessage().setBody(exchange.getVariables().get(LOG_ENRICHMENT).toString());
                 })
                 .toD(producerUri);
     }

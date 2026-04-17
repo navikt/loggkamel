@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EnrichedLogMessage {
+public class EnrichedAuditlogg {
 
     //TODO: add validation on individual fields given what we can safely assume about them
 

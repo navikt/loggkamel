@@ -9,15 +9,14 @@ import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedLogMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEAM_GCP_PROJECT_ID;
 
 @Component
 @ConditionalOnGCP
@@ -34,7 +33,7 @@ public class GCPLogProducer extends LogProducer {
                 .routeId(POSTGRES_LOG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to GCP Logging")
                 .process(exchange -> {
-                    String targetGCPProjectId = exchange.getProperty(TEAM_GCP_PROJECT_ID, String.class);
+                    String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
 
                     try (Logging logging = LoggingOptions.newBuilder()
                             .setProjectId(targetGCPProjectId)

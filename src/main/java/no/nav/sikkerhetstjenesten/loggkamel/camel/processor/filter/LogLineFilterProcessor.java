@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
@@ -16,9 +16,9 @@ public class LogLineFilterProcessor {
     private static final Logger log = LoggerFactory.getLogger(LogLineFilterProcessor.class);
 
     public boolean doesLineActionMatchRelevantAuditloggArkiv(Exchange exchange) {
-        log.info("LogFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
+        log.info("LogLineFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
-        AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getProperty(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
+        AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
         LogLineRoutingAttributes routingAttributes = exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class);
 
         if (auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {

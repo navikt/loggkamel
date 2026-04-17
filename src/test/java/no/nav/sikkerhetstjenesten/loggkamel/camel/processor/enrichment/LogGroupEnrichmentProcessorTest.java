@@ -14,13 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostgresLogGroupEnrichmentProcessorTest {
+class LogGroupEnrichmentProcessorTest {
 
     private static final String DBNAME = "dbname";
     private static final String EXTENSION = "extension";
@@ -44,14 +44,14 @@ class PostgresLogGroupEnrichmentProcessorTest {
     NaisService naisService;
 
     @InjectMocks
-    PostgresLogGroupEnrichmentProcessor postgresLogGroupEnrichmentProcessor;
+    LogGroupEnrichmentProcessor logGroupEnrichmentProcessor;
 
     @Test
     void fileNameNotSet() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -59,7 +59,7 @@ class PostgresLogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -67,11 +67,11 @@ class PostgresLogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
-        when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
 
-        assertThrows(DatabaseDependencyException.class, () -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(DatabaseDependencyException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -79,11 +79,11 @@ class PostgresLogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
-        when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -91,7 +91,7 @@ class PostgresLogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
-        when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
 
@@ -99,7 +99,7 @@ class PostgresLogGroupEnrichmentProcessorTest {
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenThrow(new RuntimeException("Nais service error"));
 
-        assertThrows(RuntimeException.class, () -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(RuntimeException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -107,7 +107,7 @@ class PostgresLogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
-        when(exchange.getProperty(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
 
@@ -115,7 +115,7 @@ class PostgresLogGroupEnrichmentProcessorTest {
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn(GCP_PROJECT_ID);
 
-        assertDoesNotThrow(() -> postgresLogGroupEnrichmentProcessor.enrich(exchange));
+        assertDoesNotThrow(() -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
 }

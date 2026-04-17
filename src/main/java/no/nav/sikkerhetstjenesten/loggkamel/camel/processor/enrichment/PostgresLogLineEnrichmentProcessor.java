@@ -5,7 +5,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,22 +33,22 @@ public class PostgresLogLineEnrichmentProcessor {
     }
 
     public void enrich(Exchange exchange) {
-        Message msg = exchange.getMessage();
-        String body = msg.getBody(String.class);
+        String body = exchange.getMessage().getBody(AuditloggLineMessage.class).getBody();
 
         if (body == null || body.isBlank()) {
             throw new InvalidPostgresLogLineException("Audit log message is blank");
         }
 
-        EnrichedLogMessage enrichedLogMessage = extractEnrichmentFromLog(body);
-        enrichedLogMessage.setEpost(getAnsattEpost(enrichedLogMessage.getNavIdent()));
-        exchange.setVariable(LOG_ENRICHMENT, enrichedLogMessage);
+        EnrichedAuditlogg enrichedAuditlogg = extractEnrichmentFromLog(body);
+        enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
+        enrichedAuditlogg.setRequestType(DB_AUDIT_ENTRY_REQUEST_TYPE);
+        exchange.setVariable(LOG_ENRICHMENT, enrichedAuditlogg);
 
-        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(enrichedLogMessage.getPgAuditClass());
+        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
         exchange.setVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
     }
 
-    private EnrichedLogMessage extractEnrichmentFromLog(String body) {
+    private EnrichedAuditlogg extractEnrichmentFromLog(String body) {
         String regex = "^(.*)\\(\\d+\\):v-oidc-(.*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
@@ -60,9 +59,8 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
-        return EnrichedLogMessage.builder()
+        return EnrichedAuditlogg.builder()
                 .originalMessage(body)
-                .requestType(DB_AUDIT_ENTRY_REQUEST_TYPE)
                 .logTime(matcher.group(1))
                 .navIdent(matcher.group(2))
                 .dbName(matcher.group(3))

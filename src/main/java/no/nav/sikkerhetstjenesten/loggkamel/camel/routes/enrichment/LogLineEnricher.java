@@ -1,12 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogEnrichmentValues.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.PostgresLogLineEnricher.POSTGRES_LOG_ENRICH_ROUTE;
 
 @Component
@@ -23,10 +24,12 @@ public class LogLineEnricher extends SharedRouteErrorHandler {
                 .routeId(LOG_LINE_ENRICHER_ID)
                 .log(LoggingLevel.INFO, "Determining which teknologi-specific enricher to use for ${header.CamelFileName}")
                 .choice()
-                    .when(exchangeProperty(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
+                    //TODO: In the log line consumer, pull teknologi from the message body and set as header variable
+                    .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
+                        .log(LoggingLevel.INFO, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
                         .to(POSTGRES_LOG_ENRICH_ROUTE)
                     .otherwise()
-                        .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${header.TEKNOLOGI} in file ${header.CamelFileName}, sending to invalid message queue")
-                        .throwException(new InvalidLogLineException("Could not determine which enricher to use for log message ${header.CamelFileName} with teknologi ${header.TEKNOLOGI}"));
+                        .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${variable.Teknologi} in file ${header.CamelFileName}, sending to invalid message queue")
+                        .throwException(new InvalidLogLineException("Could not determine which enricher to use for log message ${header.CamelFileName} with teknologi ${variable.Teknologi}"));
     }
 }
