@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -44,10 +45,8 @@ class LogLineFilterProcessorTest {
     @BeforeEach
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
-        when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
-        when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
+        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
         when(exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class)).thenReturn(logLineRoutingAttributes);
     }
 
