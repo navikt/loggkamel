@@ -6,7 +6,7 @@ import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -31,10 +31,12 @@ public class LogLineMessageConsumer extends SharedRouteErrorHandler {
                 }
             })
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-            .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
+            .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
             .process(exchange -> {
                 AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
                 exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
+                exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
+                exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
                 exchange.getMessage().setBody(loggLineMessage, AuditloggLineMessage.class);
             })
             .to(LOG_LINE_ENRICHER_ROUTE);

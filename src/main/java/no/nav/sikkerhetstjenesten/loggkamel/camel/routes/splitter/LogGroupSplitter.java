@@ -1,16 +1,11 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.splitter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.LogLineMessageProducer.LOG_LINE_MESSAGE_PRODUCER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -36,17 +31,6 @@ public class LogGroupSplitter extends SharedRouteErrorHandler {
 
                 log.info("New filename being assigned: {}", filenameWithUUID);
                 exchange.getIn().setHeader(FILE_NAME, filenameWithUUID);
-            })
-            .process(exchange -> {
-                AuditloggLineMessage auditloggLineMessage = AuditloggLineMessage.builder()
-                        .body(exchange.getMessage().getBody(String.class))
-                        .header(AuditloggLineMessageHeader.builder()
-                                .teknologi(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class))
-                                .teamGcpProjectId(exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class))
-                                .auditloggArkivResponseDTO(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class))
-                                .build())
-                        .build();
-                exchange.getMessage().setBody(auditloggLineMessage, AuditloggLineMessage.class);
             })
             .to(LOG_LINE_MESSAGE_PRODUCER_ROUTE);
     }

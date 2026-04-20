@@ -1,10 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
 
 @Component
 @ConditionalOnLocalOrTest
@@ -21,7 +20,7 @@ public class LocalArkivLoggProducer extends ArkivLoggProducer {
                 .routeId(ARKIVLOGG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to local log")
                 .process(exchange -> {
-                    exchange.getMessage().setBody(exchange.getVariables().get(LOG_ENRICHMENT).toString());
+                    exchange.getMessage().setBody(objectMapper.writeValueAsString(exchange.getMessage().getBody(EnrichedAuditlogg.class)));
                 })
                 .toD(producerUri);
     }

@@ -9,6 +9,7 @@ import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.LOG_ENRICHMENT;
 
 @Component
 @ConditionalOnGCP
@@ -40,7 +40,7 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
                             .build()
                             .getService()) {
 
-                        Map<String, Object> logMessageAsMap = mapper.convertValue(exchange.getVariables().get(LOG_ENRICHMENT), new TypeReference<>() {});
+                        Map<String, Object> logMessageAsMap = mapper.convertValue(exchange.getMessage().getBody(EnrichedAuditlogg.class), new TypeReference<>() {});
                         Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 
                         LogEntry entry =

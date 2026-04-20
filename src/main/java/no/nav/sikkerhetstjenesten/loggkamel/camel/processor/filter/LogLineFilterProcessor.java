@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineRoutingAttributes;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOperationTypes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +19,8 @@ public class LogLineFilterProcessor {
     public boolean doesLineActionMatchRelevantAuditloggArkiv(Exchange exchange) {
         log.info("LogLineFilterProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME));
 
-        AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getMessage().getBody(AuditloggLineMessage.class).getHeader().getAuditloggArkivResponseDTO();
-        LogLineRoutingAttributes routingAttributes = exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class);
+        AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
+        LogLineOperationTypes routingAttributes = exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class);
 
         if (auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
             return true;

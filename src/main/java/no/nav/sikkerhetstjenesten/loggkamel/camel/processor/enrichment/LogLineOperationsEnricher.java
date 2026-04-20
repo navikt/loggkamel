@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class LogRoutingAttributesEnricher {
+public class LogLineOperationsEnricher {
     public static final String WRITE = "WRITE";
     public static final String ROLE = "ROLE";
     public static final String DDL = "DDL";
@@ -14,8 +14,8 @@ public class LogRoutingAttributesEnricher {
     private static final List<String> WRITE_CLASSES = List.of(WRITE, ROLE, DDL);
 
 
-    public LogLineRoutingAttributes constructRoutingAttributesFromAuditClass(String auditClass) {
-        LogLineRoutingAttributes routingAttributes = new LogLineRoutingAttributes();
+    public LogLineOperationTypes constructOperationTypesFromAuditClass(String auditClass) {
+        LogLineOperationTypes routingAttributes = new LogLineOperationTypes();
 
         if (WRITE_CLASSES.contains(auditClass)) {
             routingAttributes.setModification(true);

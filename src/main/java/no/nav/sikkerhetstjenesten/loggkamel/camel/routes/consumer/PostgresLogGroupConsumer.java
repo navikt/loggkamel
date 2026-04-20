@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
@@ -47,7 +47,7 @@ public class PostgresLogGroupConsumer extends SharedRouteErrorHandler {
                         .unmarshal().gzipDeflater()
                         .endDoTry()
                     .doCatch(Exception.class)
-                        .throwException(new InvalidLogGroupException("Failed to decompress gzip file ${header.CamelFileName}, error: ${exception.message}"))
+                        .throwException(new InvalidPostgresLogGroupException("Failed to decompress gzip file ${header.CamelFileName}, error: ${exception.message}"))
                     .end()
                     .process(exchange -> {
                         String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);

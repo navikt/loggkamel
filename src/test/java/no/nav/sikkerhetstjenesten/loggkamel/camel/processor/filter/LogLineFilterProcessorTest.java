@@ -1,9 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineRoutingAttributes;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOperationTypes;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,16 +26,10 @@ class LogLineFilterProcessorTest {
     Message message;
 
     @Mock
-    AuditloggLineMessage auditloggLineMessage;
-
-    @Mock
-    AuditloggLineMessageHeader auditloggLineMessageHeader;
-
-    @Mock
     AuditloggArkivResponseDTO auditloggArkivResponseDTO;
 
     @Mock
-    LogLineRoutingAttributes logLineRoutingAttributes;
+    LogLineOperationTypes logLineOperationTypes;
 
     @InjectMocks
     LogLineFilterProcessor logLineFilterProcessor;
@@ -46,16 +38,14 @@ class LogLineFilterProcessorTest {
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
-        when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
-        when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
-        when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
-        when(exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class)).thenReturn(logLineRoutingAttributes);
+        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
+        when(exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class)).thenReturn(logLineOperationTypes);
     }
 
     @Test
     void isLoggingLeseoperasjonerAndRead_passesFilter() {
         when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
-        when(logLineRoutingAttributes.isRead()).thenReturn(true);
+        when(logLineOperationTypes.isRead()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
     }
@@ -63,7 +53,7 @@ class LogLineFilterProcessorTest {
     @Test
     void isLoggingEndringerAndWrite_passesFilter() {
         when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(true);
-        when(logLineRoutingAttributes.isModification()).thenReturn(true);
+        when(logLineOperationTypes.isModification()).thenReturn(true);
 
         assertTrue(logLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
     }

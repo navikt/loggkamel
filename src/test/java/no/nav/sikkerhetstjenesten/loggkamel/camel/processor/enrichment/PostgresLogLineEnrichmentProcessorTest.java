@@ -46,7 +46,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     AuditloggLineMessage auditloggLineMessage;
 
     @Mock
-    LogLineRoutingAttributes logLineRoutingAttributes;
+    LogLineOperationTypes logLineOperationTypes;
 
     @Mock
     EntraProxyAnsatt entraProxyAnsatt;
@@ -55,7 +55,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     EntraProxyService entraProxyService;
 
     @Mock
-    LogRoutingAttributesEnricher logRoutingAttributesEnricher;
+    LogLineOperationsEnricher logLineOperationsEnricher;
 
     @InjectMocks
     PostgresLogLineEnrichmentProcessor postgresLogLineEnrichmentProcessor;
@@ -110,13 +110,13 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(entraProxyService.getAnsattFraNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
 
-        when(logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(pgAuditClass)).thenReturn(logLineRoutingAttributes);
+        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(pgAuditClass)).thenReturn(logLineOperationTypes);
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<EnrichedAuditlogg> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedAuditlogg.class);
-        verify(exchange).setVariable(eq(LOG_ENRICHMENT), logEnrichmentCaptor.capture());
-        verify(exchange).setVariable(eq(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES), eq(logLineRoutingAttributes));
+        verify(message).setBody(logEnrichmentCaptor.capture());
+        verify(exchange).setVariable(eq(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES), eq(logLineOperationTypes));
 
         EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);

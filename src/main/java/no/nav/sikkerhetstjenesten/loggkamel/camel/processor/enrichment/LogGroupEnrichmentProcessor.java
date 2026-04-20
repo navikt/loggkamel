@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
@@ -36,7 +36,7 @@ public class LogGroupEnrichmentProcessor {
 
         if (filename == null || !filename.contains(".")) {
             log.warn("Filename header is missing or does not contain expected format: {}", filename);
-            throw new InvalidPostgresLogGroupException("Filename header is missing or does not contain expected format: " + filename);
+            throw new InvalidLogGroupException("Filename header is missing or does not contain expected format: " + filename);
         }
 
         //database name is the first part of the filename, before the first period
@@ -48,7 +48,7 @@ public class LogGroupEnrichmentProcessor {
 
         if (auditloggArkivResponseDTO == null) {
             log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
-            throw new InvalidPostgresLogGroupException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
+            throw new InvalidLogGroupException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
         }
 
         log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);

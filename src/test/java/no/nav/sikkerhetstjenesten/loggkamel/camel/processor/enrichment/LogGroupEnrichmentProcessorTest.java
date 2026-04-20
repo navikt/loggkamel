@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
@@ -51,7 +52,7 @@ class LogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -59,7 +60,7 @@ class LogGroupEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -83,7 +84,7 @@ class LogGroupEnrichmentProcessorTest {
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
     }
 
     @Test

@@ -24,11 +24,11 @@ public class PostgresLogLineEnrichmentProcessor {
     static final String DB_AUDIT_ENTRY_REQUEST_TYPE = "dbAuditEntry";
 
     private final EntraProxyService entraProxyService;
-    private final LogRoutingAttributesEnricher logRoutingAttributesEnricher;
+    private final LogLineOperationsEnricher logLineOperationsEnricher;
 
     @Autowired
-    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogRoutingAttributesEnricher logRoutingAttributesEnricher) {
-        this.logRoutingAttributesEnricher = logRoutingAttributesEnricher;
+    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogLineOperationsEnricher logLineOperationsEnricher) {
+        this.logLineOperationsEnricher = logLineOperationsEnricher;
         this.entraProxyService = entraProxyService;
     }
 
@@ -42,10 +42,10 @@ public class PostgresLogLineEnrichmentProcessor {
         EnrichedAuditlogg enrichedAuditlogg = extractEnrichmentFromLog(body);
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
         enrichedAuditlogg.setRequestType(DB_AUDIT_ENTRY_REQUEST_TYPE);
-        exchange.setVariable(LOG_ENRICHMENT, enrichedAuditlogg);
+        exchange.getMessage().setBody(enrichedAuditlogg);
 
-        LogLineRoutingAttributes routingAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
-        exchange.setVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, routingAttributes);
+        LogLineOperationTypes logLineOperationTypes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
+        exchange.setVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, logLineOperationTypes);
     }
 
     private EnrichedAuditlogg extractEnrichmentFromLog(String body) {

@@ -10,17 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-class LogLineRoutingAttributesEnricherTest {
+class LogLineOperationTypesEnricherTest {
 
     @Mock
-    LogLineRoutingAttributes routingAttributes;
+    LogLineOperationTypes routingAttributes;
 
     @InjectMocks
-    LogRoutingAttributesEnricher logRoutingAttributesEnricher;
+    LogLineOperationsEnricher logLineOperationsEnricher;
 
     @Test
     void auditClassWrite_setsModificationTrue() {
-        LogLineRoutingAttributes constructedAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(LogRoutingAttributesEnricher.WRITE);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.WRITE);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -28,7 +28,7 @@ class LogLineRoutingAttributesEnricherTest {
 
     @Test
     void auditClassRole_setsModificationTrue() {
-        LogLineRoutingAttributes constructedAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(LogRoutingAttributesEnricher.ROLE);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.ROLE);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -36,7 +36,7 @@ class LogLineRoutingAttributesEnricherTest {
 
     @Test
     void auditClassDdl_setsModificationTrue() {
-        LogLineRoutingAttributes constructedAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(LogRoutingAttributesEnricher.DDL);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.DDL);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -44,7 +44,7 @@ class LogLineRoutingAttributesEnricherTest {
 
     @Test
     void auditClassRead_setsReadTrue() {
-        LogLineRoutingAttributes constructedAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass(LogRoutingAttributesEnricher.READ);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.READ);
 
         assertFalse(constructedAttributes.isModification());
         assertTrue(constructedAttributes.isRead());
@@ -52,7 +52,7 @@ class LogLineRoutingAttributesEnricherTest {
 
     @Test
     void auditClassOther_doesNotSetAnyFlags() {
-        LogLineRoutingAttributes constructedAttributes = logRoutingAttributesEnricher.constructRoutingAttributesFromAuditClass("OTHER");
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass("OTHER");
 
         assertFalse(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
