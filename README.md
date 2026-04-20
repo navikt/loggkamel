@@ -38,13 +38,6 @@ PROD: https://loggkamel.intern.nav.no/swagger-ui/index.html#/
 
 TODO: diagram of arkiv flow
 
-Loggkamel is intended as a pathway from on-prem databases to GCP, leveraging as much of the existing arkiv infrastructure
-already set up for GCP projects as possible. Depending on the database technology being archived the relevant logs may be
-pushed by owning DBAs to Loggkamel's consumer buckets, or actively pulled by Loggkamel and configured as arkiv log inputs.
-For each incoming LogGroup loggkamel will use the same routes, doing some initial filtering on LogGroup to remove logs
-that do not correspond to any configured backup task, that correspond to a backup task that isn't ready to enable, or that
-correspond to a backup task that doesn't specify any arkiv requirements.
-
 The log archiving process goes through the following steps:
 1. Ingress
 2. Group Enrichment
