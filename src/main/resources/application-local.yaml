@@ -34,10 +34,12 @@ spring:
 routing:
   postgres:
     consumer: "file:src/main/resources/files"
-    dead-letter: "file:src/main/resources/files/output/dead-letter?fileExist=Append"
-    invalid-message: "file:src/main/resources/files/output/invalid-messages?fileExist=Append"
+    dead-letter: "file:src/main/resources/files/postgres/dead-letter?fileExist=Append"
+    invalid-message: "file:src/main/resources/files/postgres/invalid-messages?fileExist=Append"
   loggline:
     bucket: "file:src/main/resources/files/intermediate"
+    dead-letter: "file:src/main/resources/files/intermediate/dead-letter?fileExist=Append"
+    invalid-message: "file:src/main/resources/files/intermediate/invalid-messages?fileExist=Append"
   arkiv:
     producer: "file:src/main/resources/files/output?fileExist=Append"
 

@@ -27,6 +27,12 @@
     },
     {
       "name": "loggkamel-prod-logglines"
+    },
+    {
+      "name": "loggkamel-prod-logglines-deadletter"
+    },
+    {
+      "name": "loggkamel-prod-logglines-invalid-message"
     }
   ],
   "inbound": [

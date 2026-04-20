@@ -22,9 +22,6 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 @ConditionalOnGCP
 public class GCPArkivLoggProducer extends ArkivLoggProducer {
 
-    @Autowired
-    ObjectMapper mapper;
-
     @Override
     public void configure() {
         super.errorHandling();
@@ -40,7 +37,7 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
                             .build()
                             .getService()) {
 
-                        Map<String, Object> logMessageAsMap = mapper.convertValue(exchange.getMessage().getBody(EnrichedAuditlogg.class), new TypeReference<>() {});
+                        Map<String, Object> logMessageAsMap = objectMapper.convertValue(exchange.getMessage().getBody(EnrichedAuditlogg.class), new TypeReference<>() {});
                         Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 
                         LogEntry entry =

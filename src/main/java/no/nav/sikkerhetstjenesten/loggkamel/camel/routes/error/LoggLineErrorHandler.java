@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.camel.routes;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
@@ -8,12 +8,12 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-public abstract class SharedRouteErrorHandler extends RouteBuilder {
+public abstract class LoggLineErrorHandler extends RouteBuilder {
 
-    @Value("${routing.postgres.dead-letter}")
+    @Value("${routing.loggline.dead-letter}")
     protected String deadLetterUri;
 
-    @Value("${routing.postgres.invalid-message}")
+    @Value("${routing.loggline.invalid-message}")
     protected String invalidMessageUri;
 
     @Autowired
@@ -21,7 +21,6 @@ public abstract class SharedRouteErrorHandler extends RouteBuilder {
 
     public abstract void configure();
 
-    //TODO: currently this sends all errors to the postgres-specific channels, want technologi-specific channels instead
     public void errorHandling() {
         onException(DependencyException.class)
                 .useOriginalMessage()

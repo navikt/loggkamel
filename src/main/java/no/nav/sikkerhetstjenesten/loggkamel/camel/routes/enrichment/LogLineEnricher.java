@@ -1,9 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +10,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.PostgresLogLineEnricher.POSTGRES_LOG_ENRICH_ROUTE;
 
 @Component
-public class LogLineEnricher extends SharedRouteErrorHandler {
+public class LogLineEnricher extends LoggLineErrorHandler {
 
     public static String LOG_LINE_ENRICHER_ID = "generic-log-line-enricher";
     public static String LOG_LINE_ENRICHER_ROUTE = "direct:" + LOG_LINE_ENRICHER_ID;

@@ -1,14 +1,14 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.LogLineFilter.LOG_LINE_FILTER_ROUTE;
 
 @Component
-public class PostgresLogLineEnricher extends SharedRouteErrorHandler {
+public class PostgresLogLineEnricher extends LoggLineErrorHandler {
 
     public static String POSTGRES_LOG_ENRICH_ID = "postgres-log-line-enricher";
     public static String POSTGRES_LOG_ENRICH_ROUTE = "direct:" + POSTGRES_LOG_ENRICH_ID;

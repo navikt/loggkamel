@@ -5,3 +5,5 @@ routing:
     invalid-message: "google-storage://loggkamel-prod-postgresql-invalid-message"
   loggline:
     bucket: "google-storage://loggkamel-prod-logglines"
+    dead-letter: "google-storage://loggkamel-prod-logglines-deadletter"
+    invalid-message: "google-storage://loggkamel-prod-logglines-invalid-message"

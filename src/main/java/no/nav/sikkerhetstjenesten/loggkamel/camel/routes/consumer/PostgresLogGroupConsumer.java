@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGr
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
-public class PostgresLogGroupConsumer extends SharedRouteErrorHandler {
+public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
     public static String POSTGRES_LOG_CONSUMER_ID = "postgres-log-consumer";
 
@@ -23,10 +23,11 @@ public class PostgresLogGroupConsumer extends SharedRouteErrorHandler {
     public void configure() {
         super.errorHandling();
 
-        //from("quartz://myGroup/myTestTimer?cron=*/10+*+*+*+*+?")
-
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
+            .process(exchange -> {
+                exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
+            })
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
@@ -35,10 +36,6 @@ public class PostgresLogGroupConsumer extends SharedRouteErrorHandler {
             })
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
-            .process(exchange -> {
-                exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
-            })
-            .log(LoggingLevel.INFO, "Conditionally decompressing log message ${header.CamelFileName}")
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")

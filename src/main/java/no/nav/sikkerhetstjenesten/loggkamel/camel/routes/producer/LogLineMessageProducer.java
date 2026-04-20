@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 
 @Component
-public class LogLineMessageProducer extends SharedRouteErrorHandler {
+public class LogLineMessageProducer extends LoggGroupErrorHandler {
 
     @Value("${routing.loggline.bucket}")
     String logLineMessageBucketUri;

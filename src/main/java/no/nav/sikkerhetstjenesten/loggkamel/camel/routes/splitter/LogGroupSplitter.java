@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.splitter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.LogLine
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
-public class LogGroupSplitter extends SharedRouteErrorHandler {
+public class LogGroupSplitter extends LoggGroupErrorHandler {
 
     public static String LOG_GROUP_SPLITTER_ID = "log-group-splitter";
     public static String LOG_GROUP_SPLITTER_ROUTE = "direct:" + LOG_GROUP_SPLITTER_ID;

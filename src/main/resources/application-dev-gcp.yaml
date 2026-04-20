@@ -26,5 +26,7 @@ routing:
     invalid-message: "google-storage://loggkamel-dev-postgresql-invalid-message"
   loggline:
     bucket: "google-storage://loggkamel-dev-logglines"
+    dead-letter: "google-storage://loggkamel-dev-logglines-deadletter"
+    invalid-message: "google-storage://loggkamel-dev-logglines-invalid-message"
 
 debug: false

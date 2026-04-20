@@ -1,14 +1,14 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter.LogLineFilterProcessor;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.ArkivLoggProducer.ARKIVLOGG_PRODUCER_ROUTE;
 
 @Component
-public class LogLineFilter extends SharedRouteErrorHandler {
+public class LogLineFilter extends LoggLineErrorHandler {
 
     public static String LOG_LINE_FILTER_ID = "log-line-filter";
     public static String LOG_LINE_FILTER_ROUTE = "direct:" + LOG_LINE_FILTER_ID;
