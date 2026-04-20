@@ -46,7 +46,9 @@ class LogLineFilterProcessorTest {
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
-        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
+        when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
+        when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
+        when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
         when(exchange.getVariable(LogLineRoutingAttributes.LOG_ROUTING_ATTRIBUTES, LogLineRoutingAttributes.class)).thenReturn(logLineRoutingAttributes);
     }
 

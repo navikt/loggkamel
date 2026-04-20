@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.LogLineMessageProducer.LOG_LINE_MESSAGE_PRODUCER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
@@ -48,6 +48,6 @@ public class LogGroupSplitter extends SharedRouteErrorHandler {
                         .build();
                 exchange.getMessage().setBody(auditloggLineMessage, AuditloggLineMessage.class);
             })
-            .to(LOG_LINE_ENRICHER_ROUTE);
+            .to(LOG_LINE_MESSAGE_PRODUCER_ROUTE);
     }
 }

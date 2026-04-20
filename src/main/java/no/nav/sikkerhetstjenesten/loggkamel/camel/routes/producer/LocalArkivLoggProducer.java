@@ -8,17 +8,17 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Po
 
 @Component
 @ConditionalOnLocalOrTest
-public class LocalLogProducer extends LogProducer {
+public class LocalArkivLoggProducer extends ArkivLoggProducer {
 
-    @Value("${routing.postgres.producer}")
+    @Value("${routing.arkiv.producer}")
     String producerUri;
 
     @Override
     public void configure() {
         super.errorHandling();
 
-        from(POSTGRES_LOG_PRODUCER_ROUTE)
-                .routeId(POSTGRES_LOG_PRODUCER_ID)
+        from(ARKIVLOGG_PRODUCER_ROUTE)
+                .routeId(ARKIVLOGG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to local log")
                 .process(exchange -> {
                     exchange.getMessage().setBody(exchange.getVariables().get(LOG_ENRICHMENT).toString());

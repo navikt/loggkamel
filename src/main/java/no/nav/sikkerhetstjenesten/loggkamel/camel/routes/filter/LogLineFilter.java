@@ -5,7 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.SharedRouteErrorHandler
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.LogProducer.POSTGRES_LOG_PRODUCER_ROUTE;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.ArkivLoggProducer.ARKIVLOGG_PRODUCER_ROUTE;
 
 @Component
 public class LogLineFilter extends SharedRouteErrorHandler {
@@ -23,6 +23,6 @@ public class LogLineFilter extends SharedRouteErrorHandler {
                 .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
                 .filter().method(LogLineFilterProcessor.class)
                 .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
-                .to(POSTGRES_LOG_PRODUCER_ROUTE);
+                .to(ARKIVLOGG_PRODUCER_ROUTE);
     }
 }

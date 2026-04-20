@@ -24,7 +24,6 @@ public class LogLineEnricher extends SharedRouteErrorHandler {
                 .routeId(LOG_LINE_ENRICHER_ID)
                 .log(LoggingLevel.INFO, "Determining which teknologi-specific enricher to use for ${header.CamelFileName}")
                 .choice()
-                    //TODO: In the log line consumer, pull teknologi from the message body and set as header variable
                     .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
                         .log(LoggingLevel.INFO, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
                         .to(POSTGRES_LOG_ENRICH_ROUTE)

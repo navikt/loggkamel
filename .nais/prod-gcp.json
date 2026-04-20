@@ -24,6 +24,9 @@
     },
     {
       "name": "loggkamel-prod-postgresql-consumer"
+    },
+    {
+      "name": "loggkamel-prod-logglines"
     }
   ],
   "inbound": [

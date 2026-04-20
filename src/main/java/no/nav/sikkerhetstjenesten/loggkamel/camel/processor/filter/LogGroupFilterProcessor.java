@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;

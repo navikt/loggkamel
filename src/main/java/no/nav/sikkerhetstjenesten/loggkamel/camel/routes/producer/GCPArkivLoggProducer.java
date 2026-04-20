@@ -20,7 +20,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Po
 
 @Component
 @ConditionalOnGCP
-public class GCPLogProducer extends LogProducer {
+public class GCPArkivLoggProducer extends ArkivLoggProducer {
 
     @Autowired
     ObjectMapper mapper;
@@ -29,8 +29,8 @@ public class GCPLogProducer extends LogProducer {
     public void configure() {
         super.errorHandling();
 
-        from(POSTGRES_LOG_PRODUCER_ROUTE)
-                .routeId(POSTGRES_LOG_PRODUCER_ID)
+        from(ARKIVLOGG_PRODUCER_ROUTE)
+                .routeId(ARKIVLOGG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to GCP Logging")
                 .process(exchange -> {
                     String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
