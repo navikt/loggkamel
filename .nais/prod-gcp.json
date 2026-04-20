@@ -26,6 +26,9 @@
       "name": "loggkamel-prod-postgresql-consumer"
     },
     {
+      "name": "loggkamel-prod-fallback-invalid-message"
+    },
+    {
       "name": "loggkamel-prod-logglines"
     },
     {

@@ -20,6 +20,8 @@ management:
       enabled: true
 
 routing:
+  fallback:
+    invalid-message: "google-storage://loggkamel-dev-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-dev-postgresql-consumer"
     dead-letter: "google-storage://loggkamel-dev-postgresql-deadletter"

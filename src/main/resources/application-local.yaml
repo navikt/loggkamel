@@ -32,8 +32,10 @@ spring:
     enabled: false
 
 routing:
+  fallback:
+    invalid-message: "file:src/main/resources/files/fallback/invalid-messages?fileExist=Append"
   postgres:
-    consumer: "file:src/main/resources/files"
+    consumer: "file:src/main/resources/files/postgres"
     dead-letter: "file:src/main/resources/files/postgres/dead-letter?fileExist=Append"
     invalid-message: "file:src/main/resources/files/postgres/invalid-messages?fileExist=Append"
   loggline:

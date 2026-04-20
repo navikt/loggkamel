@@ -1,4 +1,6 @@
 routing:
+  fallback:
+    invalid-message: "google-storage://loggkamel-prod-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-prod-postgresql-consumer"
     dead-letter: "google-storage://loggkamel-prod-postgresql-deadletter"
