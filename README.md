@@ -8,7 +8,7 @@ Dokumentasjon:
 https://confluence.adeo.no/spaces/TM/pages/760453055/Loggtransport
 
 Slackkanal:
-#team-sikkerhetstjenesten
+[#team-sikkerhetstjenesten](https://nav-it.slack.com/archives/C09KKNS0RJS)
 
 ## Usage (for other teams)
 
