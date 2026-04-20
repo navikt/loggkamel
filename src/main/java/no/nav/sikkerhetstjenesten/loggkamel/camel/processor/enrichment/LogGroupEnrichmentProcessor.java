@@ -54,6 +54,7 @@ public class LogGroupEnrichmentProcessor {
         log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
+        //TODO: throw invalid exception on null teamGcpProjectId
         log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
 
         exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
