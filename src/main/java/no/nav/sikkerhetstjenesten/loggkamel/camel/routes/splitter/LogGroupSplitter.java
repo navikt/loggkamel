@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.LogLineMessageProducer.LOG_LINE_MESSAGE_PRODUCER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class LogGroupSplitter extends LoggGroupErrorHandler {
@@ -31,6 +32,7 @@ public class LogGroupSplitter extends LoggGroupErrorHandler {
 
                 log.info("New filename being assigned: {}", filenameWithUUID);
                 exchange.getIn().setHeader(FILE_NAME, filenameWithUUID);
+                exchange.getIn().setHeader(OBJECT_NAME, filenameWithUUID);
             })
             .to(LOG_LINE_MESSAGE_PRODUCER_ROUTE);
     }

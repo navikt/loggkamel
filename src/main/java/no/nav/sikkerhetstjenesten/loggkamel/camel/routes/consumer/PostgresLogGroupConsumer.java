@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGroupEnricher.LOG_GROUP_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
@@ -31,7 +32,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
-                    exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
+                    exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
                 }
             })
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
