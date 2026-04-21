@@ -36,17 +36,11 @@ PROD: https://loggkamel.intern.nav.no/swagger-ui/index.html#/
 
 ## Program design and intent
 
-TODO: diagram of arkiv flow
+![Nav audit project diagram](src/main/resources/tegning/Nav_audit_project.png)
+
+![Loggkamel Routes](src/main/resources/tegning/Loggkamel%20Routes.png)
 
 The log archiving process goes through the following steps:
-1. Ingress
-2. Group Enrichment
-3. Group Filtering
-4. Splitting
-5. Log Line Bucket
-6. Line Enrichment
-7. Line Filtering
-8. Publishing
 
 ### Ingress
 
