@@ -94,6 +94,10 @@ line is discarded at this step.
 Log lines that are relevant for archiving are published to the default log bucket of the owning team's GCP project.
 The Loggkamel IAM user must have "Log Writer" permissions in the owning team's GCP project for this to work.
 
+TODO: Add description of the backout queues
+
+TODO: Add description of graceful shutdown, transactional assurances
+
 ## Kjore lokalt (for development)
 
 Applikasjonen er satt opp til a bruke en PostgreSQL proxy i `local`-profilen, det bruker den DEV Loggkamel DB.
