@@ -17,12 +17,22 @@ public abstract class AuditloggArkivMapper {
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "updated", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "fiksa", source = "teknologi", qualifiedByName = "setFiksaByTeknologi")
     public abstract AuditloggArkivEntity auditloggArkivRequestDTOToEntity(AuditloggArkivRequestDTO dto);
 
     //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
     @Named("loggingEndringer")
     public boolean loggingEndringer(AuditloggArkivEntity entity) {
         return entity.getOkonomi() || entity.getArkivlov();
+    }
+
+    @Named("setFiksaByTeknologi")
+    public boolean setFiksaByTeknologi(TeknologiEnum teknologiEnum) {
+        if (teknologiEnum == TeknologiEnum.POSTGRESQL || teknologiEnum == TeknologiEnum.DB2) {
+            return true;
+        }
+
+        return false;
     }
 
 }

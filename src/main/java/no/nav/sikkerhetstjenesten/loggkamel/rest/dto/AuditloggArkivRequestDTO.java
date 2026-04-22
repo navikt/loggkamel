@@ -13,7 +13,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 @Jacksonized
 @AllArgsConstructor
 @Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkivlov, fiksa"}, example = """
-  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkivlov": false, "loggingLeseoperasjoner": false, "fiksa": false
+  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkivlov": false, "loggingLeseoperasjoner": false
   }""")
 public class AuditloggArkivRequestDTO {
     @NonNull
@@ -33,7 +33,4 @@ public class AuditloggArkivRequestDTO {
 
     @NonNull
     Boolean loggingLeseoperasjoner;
-
-    @NonNull
-    Boolean fiksa;
 }

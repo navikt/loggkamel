@@ -41,7 +41,7 @@ class AuditloggArkivMapperTest {
         assertEquals(expectedEntity.getOkonomi(), mappedEntity.getOkonomi());
         assertEquals(expectedEntity.getArkivlov(), mappedEntity.getArkivlov());
         assertEquals(expectedEntity.getLoggingLeseoperasjoner(), mappedEntity.getLoggingLeseoperasjoner());
-        assertEquals(expectedEntity.getFiksa(), mappedEntity.getFiksa());
+        assertEquals(false, mappedEntity.getFiksa());
     }
 
     @Test
@@ -90,7 +90,6 @@ class AuditloggArkivMapperTest {
                 .arkivlov(arkivlov)
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
-                .fiksa(FIKSA)
                 .build();
     }
 
