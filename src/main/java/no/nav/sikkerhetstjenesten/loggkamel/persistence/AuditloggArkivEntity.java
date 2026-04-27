@@ -75,7 +75,7 @@ public class AuditloggArkivEntity {
     private Boolean fiksa;
 
     @ColumnDefault("false")
-    @Column(name = "funnetLogger")
+    @Column(name = "funnet_logger")
     private Boolean funnetLogger;
 
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended
