@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LogGroupEnrichmentProcessorTest {
@@ -88,6 +88,19 @@ class LogGroupEnrichmentProcessorTest {
     }
 
     @Test
+    void errorWhenRegisteringReceivedLogsForAuditloggArkiv() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        doThrow(new RuntimeException("Database error")).when(oversiktService).registerLogsReceivedForAuditloggArkiv(DBNAME, TeknologiEnum.DB2);
+
+        assertThrows(DatabaseDependencyException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
+    }
+
+    @Test
     void exceptionCallingNaisService_exceptionPassesThrough() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
@@ -117,6 +130,8 @@ class LogGroupEnrichmentProcessorTest {
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn(GCP_PROJECT_ID);
 
         assertDoesNotThrow(() -> logGroupEnrichmentProcessor.enrich(exchange));
+
+        verify(oversiktService).registerLogsReceivedForAuditloggArkiv(DBNAME, TeknologiEnum.DB2);
     }
 
 }

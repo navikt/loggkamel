@@ -30,6 +30,10 @@ public class OversiktService {
         return adapter.findByDbnameAndTeknologi(dbname, teknologi);
     }
 
+    public void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
+        adapter.registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
+    }
+
     public List<AuditloggArkivResponseDTO> getAuditloggArkivByNaisteam(String naisteam) {
         return adapter.getAllTasksByNaisteam(naisteam);
     }

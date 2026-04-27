@@ -51,6 +51,12 @@ public class OversiktJPAAdapter {
         return mapper.auditloggArkivEntityToResponseDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
     }
 
+    public void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
+        AuditloggArkivEntity toUpdate = repository.findByDbnameAndTeknologi(dbname, teknologi);
+        toUpdate.setFunnetLogger(true);
+        saveAuditloggArkivEntity(toUpdate);
+    }
+
     public List<AuditloggArkivResponseDTO> getAllTasksByNaisteam(String naisteam) {
         List<AuditloggArkivEntity> foundEntities = repository.findAllByNaisteam(naisteam);
 

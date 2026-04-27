@@ -52,6 +52,7 @@ public class LogGroupEnrichmentProcessor {
         }
 
         log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
+        registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
         //TODO: throw invalid exception on null teamGcpProjectId
@@ -67,6 +68,15 @@ public class LogGroupEnrichmentProcessor {
         } catch (RuntimeException e) {
             log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while fetching audit logg arkiv for database " + dbname + " and teknologi " + teknologi.name(), e);
+        }
+    }
+
+    private void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
+        try {
+            oversiktService.registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
+        } catch (RuntimeException e) {
+            log.warn("Error while registering logs received for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
+            throw new DatabaseDependencyException("Error while registering logs received for database " + dbname + " and teknologi " + teknologi.name(), e);
         }
     }
 }

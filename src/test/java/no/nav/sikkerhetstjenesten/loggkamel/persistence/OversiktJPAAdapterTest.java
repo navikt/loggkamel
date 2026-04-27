@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,6 +114,30 @@ class OversiktJPAAdapterTest {
         when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
 
         assertEquals(auditloggArkivResponseDTO, adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+    }
+
+    @Test
+    void registerLogsReceivedForAuditloggArkiv_exceptionPassesThrough() {
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> adapter.registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI));
+    }
+
+    @Test
+    void registerLogsReceivedForAuditloggArkiv_forbiddenOperationExceptionOnDataIntegrityViolation() {
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenThrow(DataIntegrityViolationException.class);
+
+        assertThrows(ForbiddenOperationException.class, () -> adapter.registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI));
+    }
+
+    @Test
+    void registerLogsReceivedForAuditloggArkiv_successful() {
+        when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggArkivEntity);
+        when(repository.save(toSaveAuditloggArkivEntity)).thenReturn(savedAuditloggArkivEntity);
+
+        assertDoesNotThrow(() -> adapter.registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI));
+        verify(toSaveAuditloggArkivEntity).setFunnetLogger(true);
     }
 
     @Test

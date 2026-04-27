@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,6 +79,20 @@ class OversiktServiceTest {
         when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenThrow(RuntimeException.class);
 
         assertThrows(RuntimeException.class, () -> service.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+    }
+
+    @Test
+    void registerLogsReceivedForAuditloggArkiv_successful() {
+        assertDoesNotThrow(() -> service.registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI));
+
+        verify(adapter).registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI);
+    }
+
+    @Test
+    void registerLogsReceivedForAuditloggArkiv_exceptionPassesThrough() {
+        doThrow(RuntimeException.class).when(adapter).registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI);
+
+        assertThrows(RuntimeException.class, () -> service.registerLogsReceivedForAuditloggArkiv(DBNAME, TEKNOLOGI));
     }
 
     @Test
