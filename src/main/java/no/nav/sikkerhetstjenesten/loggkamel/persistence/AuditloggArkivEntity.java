@@ -74,6 +74,10 @@ public class AuditloggArkivEntity {
     @Column(name = "fiksa")
     private Boolean fiksa;
 
+    @ColumnDefault("false")
+    @Column(name = "funnetLogger")
+    private Boolean funnetLogger;
+
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended
     @Override
     public final boolean equals(Object o) {

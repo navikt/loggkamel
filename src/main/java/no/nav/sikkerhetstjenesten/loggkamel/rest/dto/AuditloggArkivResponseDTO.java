@@ -46,4 +46,7 @@ public class AuditloggArkivResponseDTO {
 
     @NonNull
     Boolean loggingEndringer;
+
+    @NonNull
+    Boolean funnetLogger;
 }
