@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
+import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.INTERMEDIATE_LOG_LINE_ACTION;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
@@ -32,6 +33,9 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
             })
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
+            .process(exchange -> {
+                INTERMEDIATE_LOG_LINE_ACTION.labelValues("consumed").inc();
+            })
             .process(exchange -> {
                 AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
                 exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());

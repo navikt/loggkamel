@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.INTERMEDIATE_LOG_LINE_ACTION;
 
 @Component
 public class LogLineMessageProducer extends LoggGroupErrorHandler {
@@ -27,6 +28,9 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
         from(LOG_LINE_MESSAGE_PRODUCER_ROUTE)
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
                 .log("Producing loggline message ${header.CamelFileName} to log line endpoint")
+                .process(exchange -> {
+                    INTERMEDIATE_LOG_LINE_ACTION.labelValues("produced").inc();
+                })
                 .process(exchange -> {
                     AuditloggLineMessage auditloggLineMessage = AuditloggLineMessage.builder()
                             .body(exchange.getMessage().getBody(String.class))

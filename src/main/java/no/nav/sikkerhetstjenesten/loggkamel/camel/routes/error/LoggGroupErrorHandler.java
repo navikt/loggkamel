@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE;
 
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
@@ -34,6 +35,9 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .process(exchange -> {
+                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("postgres", "dead_letter").inc();
+                })
                 .to(postgresDeadLetterUri);
 
         // Other teknologi-specific dead letter queues go here
@@ -43,6 +47,9 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .process(exchange -> {
+                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("postgres", "invalid").inc();
+                })
                 .to(postgresInvalidMessageUri);
 
         // Other teknologi-specific invalid message queues go here
@@ -52,6 +59,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log(LoggingLevel.WARN, "Routing unhandled exception to fallback invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
+                .process(exchange -> {
+                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("fallback", "unhandled").inc();
+                })
                 .to(fallbackInvalidMessageUri);
     }
 }
