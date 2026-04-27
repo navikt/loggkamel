@@ -17,6 +17,7 @@ class AuditloggArkivMapperTest {
     private final static TeknologiEnum TEKNOLOGI = TeknologiEnum.ORACLE;
     private final static String DBNAME = "testdb";
     private static final Boolean FIKSA = true;
+    private static final Boolean FUNNET_LOGGER = true;
 
     AuditloggArkivMapper mapper = new AuditloggArkivMapperImpl();
 
@@ -64,6 +65,7 @@ class AuditloggArkivMapperTest {
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
+                .funnetLogger(FUNNET_LOGGER)
                 .build();
     }
 
@@ -79,6 +81,7 @@ class AuditloggArkivMapperTest {
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
                 .loggingEndringer(loggingEndringer)
+                .funnetLogger(FUNNET_LOGGER)
                 .build();
     }
 
