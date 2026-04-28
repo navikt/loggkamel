@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGroupEnricher.LOG_GROUP_ENRICHER_ROUTE;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.LOG_GROUP_CONSUMED;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
@@ -39,7 +38,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
             .process(exchange -> {
-                LOG_GROUP_CONSUMED.labelValues("postgres").inc();
+                metrics.logsPostgresConsumed.increment();
             })
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))

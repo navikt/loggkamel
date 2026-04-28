@@ -3,16 +3,20 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.INTERMEDIATE_LOG_LINE_ACTION;
 
 @Component
 public class LogLineMessageProducer extends LoggGroupErrorHandler {
+
+    @Autowired
+    private Metrics metrics;
 
     @Value("${routing.loggline.bucket}")
     String logLineMessageBucketUri;
@@ -29,7 +33,7 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
                 .log("Producing loggline message ${header.CamelFileName} to log line endpoint")
                 .process(exchange -> {
-                    INTERMEDIATE_LOG_LINE_ACTION.labelValues("produced").inc();
+                    metrics.intermediateLogProduced.increment();
                 })
                 .process(exchange -> {
                     AuditloggLineMessage auditloggLineMessage = AuditloggLineMessage.builder()

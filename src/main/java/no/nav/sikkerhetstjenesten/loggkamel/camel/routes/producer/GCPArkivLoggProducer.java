@@ -9,17 +9,21 @@ import com.google.cloud.logging.Severity;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.ENRICHED_LOG_PUBLISHED;
 
 @Component
 @ConditionalOnGCP
 public class GCPArkivLoggProducer extends ArkivLoggProducer {
+
+    @Autowired
+    private Metrics metrics;
 
     @Override
     public void configure() {
@@ -29,7 +33,7 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
             .routeId(ARKIVLOGG_PRODUCER_ID)
             .log("Producing log message ${header.CamelFileName} to GCP Logging")
             .process(exchange -> {
-                ENRICHED_LOG_PUBLISHED.inc();
+                metrics.enrichedLogPublished.increment();
             })
             .process(exchange -> {
                 String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);

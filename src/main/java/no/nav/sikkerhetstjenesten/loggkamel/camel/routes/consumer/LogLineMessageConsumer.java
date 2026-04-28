@@ -2,17 +2,21 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.INTERMEDIATE_LOG_LINE_ACTION;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Component
 public class LogLineMessageConsumer extends LoggLineErrorHandler {
+
+    @Autowired
+    private Metrics metrics;
 
     public static String LOG_LINE_MESSAGE_CONSUMER_ID = "log-line-message-consumer";
 
@@ -34,7 +38,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
             .process(exchange -> {
-                INTERMEDIATE_LOG_LINE_ACTION.labelValues("consumed").inc();
+                metrics.intermediateLogConsumed.increment();
             })
             .process(exchange -> {
                 AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);

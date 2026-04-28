@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE;
 
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
@@ -26,6 +26,9 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @Autowired
+    protected Metrics metrics;
+
     public abstract void configure();
 
     public void errorHandling() {
@@ -36,7 +39,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .handled(true)
                 .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
-                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("postgres", "dead_letter").inc();
+                    metrics.logsPostgresDeadletter.increment();
                 })
                 .to(postgresDeadLetterUri);
 
@@ -48,7 +51,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .handled(true)
                 .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
-                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("postgres", "invalid").inc();
+                    metrics.logsPostgresInvalid.increment();
                 })
                 .to(postgresInvalidMessageUri);
 
@@ -61,7 +64,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.WARN, "Routing unhandled exception to fallback invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
                 .process(exchange -> {
-                    LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE.labelValues("fallback", "unhandled").inc();
+                    metrics.logsFallbackInvalid.increment();
                 })
                 .to(fallbackInvalidMessageUri);
     }

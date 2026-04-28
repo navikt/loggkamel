@@ -1,30 +1,45 @@
 package no.nav.sikkerhetstjenesten.loggkamel.observability;
 
-import io.prometheus.metrics.core.metrics.Counter;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.stereotype.Component;
 
-public final class Metrics {
+@Component
+public class Metrics {
 
-    public static final Counter LOG_GROUP_CONSUMED = Counter.builder()
-            .name("log_groups_consumed_total")
-            .labelNames("teknologi")
-            .help("Number of Log Group files consumed").register();
+    private static final String LOGGKAMEL_APP_PREFIX = "loggkamel.";
 
-    public static final Counter INTERMEDIATE_LOG_LINE_ACTION = Counter.builder()
-            .name("intermediate_log_lines_total")
-            .labelNames("action")
-            .help("Number of Log Line files published").register();
+    private final MeterRegistry meterRegistry;
+    public final Counter enrichedLogPublished;
+    public final Counter logsPostgresConsumed;
 
-    public static final Counter ENRICHED_LOG_PUBLISHED = Counter.builder()
-            .name("enriched_logs_published_total")
-            .help("Number of enriched auditlogg lines published").register();
+    public final Counter intermediateLogConsumed;
+    public final Counter intermediateLogProduced;
 
-    public static final Counter LOG_GROUP_PUBLISHED_TO_BACKOUT_QUEUE = Counter.builder()
-            .name("log_groups_published_to_backout_queue_total")
-            .labelNames("teknologi", "queue")
-            .help("Number of log group files published to backout queues").register();
+    public final Counter logsPostgresInvalid;
+    public final Counter logsPostgresDeadletter;
+    public final Counter logsFallbackInvalid;
 
-    public static final Counter LOG_LINE_PUBLISHED_TO_BACKOUT_QUEUE = Counter.builder()
-            .name("log_lines_published_to_backout_queue_total")
-            .labelNames("teknologi", "queue")
-            .help("Number of log line files published to backout queues").register();
+    public final Counter logPostgresInvalid;
+    public final Counter logPostgresDeadletter;
+    public final Counter logFallbackInvalid;
+
+    public Metrics(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+
+        this.enrichedLogPublished = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.enriched.published", "enriched", "published");
+        this.logsPostgresConsumed = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.consumed", "postgres", "consumed");
+
+        this.intermediateLogConsumed = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.intermediate.consumed", "intermediate", "consumed");
+        this.intermediateLogProduced = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.intermediate.produced", "intermediate", "produced");
+
+        this.logsPostgresInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.invalid", "postgres", "backout", "invalid");
+        this.logsPostgresDeadletter = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.deadletter", "postgres", "backout", "deadletter");
+        this.logsFallbackInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.fallback.invalid", "fallback", "backout", "invalid");
+
+        this.logPostgresInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.postgres.invalid", "postgres", "backout", "invalid");
+        this.logPostgresDeadletter = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.postgres.deadletter", "postgres", "backout", "deadletter");
+        this.logFallbackInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.fallback.invalid", "fallback", "backout", "invalid");
+    }
+
 }

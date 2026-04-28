@@ -3,13 +3,14 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
-import static no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics.LOG_LINE_PUBLISHED_TO_BACKOUT_QUEUE;
 
 public abstract class LoggLineErrorHandler extends RouteBuilder {
 
@@ -22,6 +23,9 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @Autowired
+    protected Metrics metrics;
+
     public abstract void configure();
 
     public void errorHandling() {
@@ -32,7 +36,10 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .handled(true)
                 .log("Routing DependencyException to dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
-                    LOG_LINE_PUBLISHED_TO_BACKOUT_QUEUE.labelValues(exchange.getVariable(TEKNOLOGI, String.class), "dead_letter").inc();
+                    switch (exchange.getVariable(TEKNOLOGI)) {
+                        case TeknologiEnum.POSTGRESQL -> metrics.logPostgresInvalid.increment();
+                        default -> log.error("Unknown teknologi for DependencyException: {}", exchange.getVariable(TEKNOLOGI));
+                    }
                 })
                 .to(deadLetterUri);
 
@@ -42,7 +49,10 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .handled(true)
                 .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
-                    LOG_LINE_PUBLISHED_TO_BACKOUT_QUEUE.labelValues(exchange.getVariable(TEKNOLOGI, String.class), "invalid").inc();
+                    switch (exchange.getVariable(TEKNOLOGI)) {
+                        case TeknologiEnum.POSTGRESQL -> metrics.logPostgresDeadletter.increment();
+                        default -> log.error("Unknown teknologi for InvalidLogException: {}", exchange.getVariable(TEKNOLOGI));
+                    }
                 })
                 .to(invalidMessageUri);
 
@@ -52,7 +62,10 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .handled(true)
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
-                    LOG_LINE_PUBLISHED_TO_BACKOUT_QUEUE.labelValues(exchange.getVariable(TEKNOLOGI, String.class), "unhandled").inc();
+                    switch (exchange.getVariable(TEKNOLOGI)) {
+                        case TeknologiEnum.POSTGRESQL -> metrics.logFallbackInvalid.increment();
+                        default -> log.error("Unknown teknologi for unhandled exception: {}", exchange.getVariable(TEKNOLOGI));
+                    }
                 })
                 .to(invalidMessageUri);
     }
