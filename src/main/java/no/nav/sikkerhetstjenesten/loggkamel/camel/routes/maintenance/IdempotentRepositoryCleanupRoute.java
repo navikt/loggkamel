@@ -11,12 +11,10 @@ public class IdempotentRepositoryCleanupRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-//        from("quartz:" + CLEANUP_ROUTE_ID + "?cron=0+0+*+*+*+?") // every hour, on the hour
-        from("quartz:" + CLEANUP_ROUTE_ID + "?cron=0+*+*+*+*+?") // every minute, on the minute
+        from("quartz:" + CLEANUP_ROUTE_ID + "?cron=0+0+*+*+*+?") // every hour, on the hour
             .routeId(CLEANUP_ROUTE_ID)
             .log(LoggingLevel.INFO, "Running cleanup of expired idempotent repository entries")
-//            .setBody(constant("DELETE FROM CAMEL_MESSAGEPROCESSED WHERE createdAt < NOW() - INTERVAL '1 hour'"))
-            .setBody(constant("DELETE FROM CAMEL_MESSAGEPROCESSED WHERE createdAt < NOW() - INTERVAL '1 minute'"))
+            .setBody(constant("DELETE FROM CAMEL_MESSAGEPROCESSED WHERE createdAt < NOW() - INTERVAL '1 hour'"))
             .to("spring-jdbc:default")
             .log(LoggingLevel.INFO, "Idempotent repository cleanup complete");
     }
