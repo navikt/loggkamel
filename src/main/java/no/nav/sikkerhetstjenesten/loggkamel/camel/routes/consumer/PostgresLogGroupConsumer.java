@@ -51,6 +51,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")
+                .log("AHHHHHH")
                     // if log file is compressed, decompress and remove the compression extension from the filename
                     .doTry()
                         .unmarshal().gzipDeflater()
