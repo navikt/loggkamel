@@ -4,6 +4,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPost
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,10 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
 
+    @Autowired
+    @Qualifier("postgresLogGroupIdempotentRepository")
+    private JdbcMessageIdRepository idempotentRepository;
+
     @Override
     public void configure() {
         super.errorHandling();
@@ -35,6 +42,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
                 }
             })
+            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
             .process(exchange -> {

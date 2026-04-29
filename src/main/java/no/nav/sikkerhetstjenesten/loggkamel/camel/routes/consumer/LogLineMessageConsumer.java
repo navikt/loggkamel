@@ -4,7 +4,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Auditlogg
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,10 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
     @Autowired
     private Metrics metrics;
+
+    @Autowired
+    @Qualifier("logLineMessageIdempotentRepository")
+    private JdbcMessageIdRepository idempotentRepository;
 
     public static String LOG_LINE_MESSAGE_CONSUMER_ID = "log-line-message-consumer";
 
@@ -35,6 +41,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
                     exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
                 }
             })
+            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
             .process(exchange -> {
