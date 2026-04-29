@@ -44,9 +44,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
-            .process(exchange -> {
-                metrics.intermediateLogConsumed.increment();
-            })
+            .process(exchange -> metrics.intermediateLogConsumed.increment())
             .process(exchange -> {
                 AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
                 exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());

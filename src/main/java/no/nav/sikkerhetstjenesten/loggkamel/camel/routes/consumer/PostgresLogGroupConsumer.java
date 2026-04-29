@@ -33,9 +33,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .process(exchange -> {
-                exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
-            })
+            .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
@@ -45,9 +43,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
-            .process(exchange -> {
-                metrics.logsPostgresConsumed.increment();
-            })
+            .process(exchange -> metrics.logsPostgresConsumed.increment())
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")
