@@ -16,7 +16,7 @@ public abstract class AuditloggArkivMapper {
 
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "updated", ignore = true)
-    @Mapping(target = "funnetLogger", ignore = true)
+    @Mapping(target = "funnetLogger", constant = "false")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "fiksa", source = "teknologi", qualifiedByName = "setFiksaByTeknologi")
     public abstract AuditloggArkivEntity auditloggArkivRequestDTOToEntity(AuditloggArkivRequestDTO dto);

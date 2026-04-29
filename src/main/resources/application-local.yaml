@@ -30,6 +30,7 @@ spring:
       maximum-pool-size: 5
   flyway:
     enabled: false
+
 management:
   endpoint:
     env:

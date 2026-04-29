@@ -43,7 +43,6 @@ public class AuditloggArkivEntity {
     private Instant updated;
 
     @Size(max = 100)
-    @NotNull
     @Column(name = "naisteam", nullable = false, length = 100)
     private String naisteam;
 
