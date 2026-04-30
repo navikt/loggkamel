@@ -1,30 +1,31 @@
 # Loggkamel
 
 Loggkamel overfører logger fra on-prem databaser til GCP.
+Generert med [Kameleon](https://kameleon.dev).
 
-Generert med https://kameleon.dev
-
-Dokumentasjon:
-https://confluence.adeo.no/spaces/TM/pages/760453055/Loggtransport
+[Roadmap på Confluence](https://confluence.adeo.no/spaces/TM/pages/809435585/Loggkamel+roadmap)
 
 Slackkanal:
 [#team-sikkerhetstjenesten](https://nav-it.slack.com/archives/C09KKNS0RJS)
 
 ## Usage (for other teams)
 
-In order for Loggkamel to arkiv audit logs from an on-prem database, the following is required:
+In order for Loggkamel to transfer/archive audit logs from an on-prem database to the Nais audit log archive, the following is required:
 * Database logs must be sent to the appropriate destination bucket in GCP, for technologies where we use a push model
   * PostgreSQL
-  * TBD
-* Loggkamel must have read access to the appropriate database, for technologies where we use a pull model
+* Loggkamel must have read access to the appropriate database(s), for technologies where we use a pull model
   * Oracle
-  * TBD
-* A corresponding Arkiv task must be configured via the AuditloggArkivController, which is intended to be accessed via a frontend in GAAL.
-* The configured Arkiv task must be marked as "fiksa" (asserting all configuration is completed), and must have one of the applicable arkiv requirements enabled
+  * DB2
+* A corresponding Arkiv task must be configured via the AuditloggArkivController, which is intended to be accessed via a frontend in [Gjennomgang av auditlogger (GAAL)](https://audit-approval.iap.nav.cloud.nais.io/) ([source code](https://github.com/nais/audit-approval)).
+* The Arkiv task must have at least one of the applicable flags be true:
+  * okonomi for [økonomireglementet 4.3.6](https://www.regjeringen.no/globalassets/upload/fin/vedlegg/okstyring/reglement_for_okonomistyring_i_staten.pdf),
+  * arkivlov for [arkivforskrifta §5](https://lovdata.no/nav/forskrift/2025-12-17-2647/), and/or
+  * loggingLeseoperasjoner if SELECT logs needs to be archived for e.g. personvernshensyn.
+* The flag "fiksa" asserts whether all configuration needed is completed.
 
 ## AuditloggArkiv Controller
 
-The AuditloggArkiv controller is intended to be used via an integrated frontend in GAAL. It allows a new Arkiv task to
+The AuditloggArkiv controller is intended to be used via an integrated frontend in [GAAL](https://audit-approval.iap.nav.cloud.nais.io/). It allows a new Arkiv task to
 be created for a given database and owning naisteam (the combination of these two values must be unique), or an existing
 Arkiv task to be updated. The controller also allows for retrieval of all Arkiv tasks for a given Naisteam.
 
@@ -109,7 +110,7 @@ removed from the origin queue once processing is complete, so no messages will b
 abruptly, the message will not be removed from the origin queue and will be processed by another instance of loggkamel
 after the lock on it has expired.
 
-## Kjore lokalt (for development)
+## Kjøre lokalt (for development)
 
 Applikasjonen er satt opp til a bruke en PostgreSQL proxy i `local`-profilen, det bruker den DEV Loggkamel DB.
 
