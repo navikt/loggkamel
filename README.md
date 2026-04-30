@@ -94,9 +94,20 @@ line is discarded at this step.
 Log lines that are relevant for archiving are published to the default log bucket of the owning team's GCP project.
 The Loggkamel IAM user must have "Log Writer" permissions in the owning team's GCP project for this to work.
 
-TODO: Add description of the backout queues
+## Backout Queues
 
-TODO: Add description of graceful shutdown, transactional assurances
+Log files that fail processing are sent to a backout queue specific to the technology that produced the log, so that
+they may be redriven by being moved back to the consumer directory. Failures stemming from dependencies are retried
+several times first and moved to a "dead letter" queue, failures that are not expected to succeed on a retry are
+moved to an "invalid message" queue.
+
+## Graceful Termination
+
+Graceful termination is handled by default Spring Boot behavior. On receiving a shutdown signal individual routes will
+finish their current message processing before shutting down, and no new messages will be taken in. Messages are only
+removed from the origin queue once processing is complete, so no messages will be lost. If the service shuts down
+abruptly, the message will not be removed from the origin queue and will be processed by another instance of loggkamel
+after the lock on it has expired.
 
 ## Kjore lokalt (for development)
 
