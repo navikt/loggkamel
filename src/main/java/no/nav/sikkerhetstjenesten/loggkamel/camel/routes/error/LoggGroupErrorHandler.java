@@ -37,7 +37,6 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
-                // TODO: fix filename logging when CamelFileName isn't set, which happens for GCP bucket uploads
                 .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
                     metrics.logsPostgresDeadletter.increment();
