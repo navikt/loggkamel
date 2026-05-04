@@ -51,13 +51,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     // if log file is compressed, decompress and remove the compression extension from the filename
                     .doTry()
                         .unmarshal().gzipDeflater()
-                        //TODO: confirm this works with repeatedly backed out messages, either remove comment or remove code if does not fix issue
-                        .process(exchange -> {
-                            // Force body materialization to byte array to ensure the decompressed stream is fully consumed
-                            // and captured in-memory, preventing issues with stream references becoming stale in error handling
-                            byte[] body = exchange.getIn().getBody(byte[].class);
-                            exchange.getIn().setBody(body);
-                        })
                         .endDoTry()
                     .doCatch(Exception.class)
                         .process(exchange -> {
