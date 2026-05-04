@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGroupEnricher.LOG_GROUP_ENRICHER_ROUTE;
+import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
@@ -52,7 +53,15 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                         .unmarshal().gzipDeflater()
                         .endDoTry()
                     .doCatch(Exception.class)
-                        .throwException(new InvalidPostgresLogGroupException("Failed to decompress gzip file ${header.CamelFileName}, error: ${exception.message}"))
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader(FILE_NAME, String.class);
+                            Exception cause = exchange.getProperty(EXCEPTION_CAUGHT, Exception.class);
+                            String errorMessage = cause != null ? cause.getMessage() : "unknown error";
+
+                            throw new InvalidPostgresLogGroupException(
+                                "Failed to decompress gzip file " + (fileName != null ? fileName : "unknown") + ", error: " + errorMessage
+                            );
+                        })
                     .end()
                     .process(exchange -> {
                         String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
