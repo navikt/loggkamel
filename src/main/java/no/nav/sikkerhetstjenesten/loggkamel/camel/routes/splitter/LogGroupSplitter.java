@@ -32,7 +32,7 @@ public class LogGroupSplitter extends LoggGroupErrorHandler {
                 String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
                 String fileExtension = originalFileName.contains(".") ? originalFileName.substring(originalFileName.lastIndexOf('.')) : "";
                 String fileBeforeExtension = fileExtension.isEmpty() ? originalFileName : originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-                String filenameWithUUID = fileBeforeExtension + "." + UUID.randomUUID() + fileExtension;
+                String filenameWithUUID = fileBeforeExtension + "." + UUID.randomUUID() + fileExtension + ".logline";
 
                 log.info("New filename being assigned: {}", filenameWithUUID);
                 exchange.getIn().setHeader(FILE_NAME, filenameWithUUID);

@@ -99,7 +99,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         // TODO: fix filename reading for messages from GCP, as they do not have CamelFileName initialized
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
                 .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .useOriginalMessage()
+                .useOriginalBody()
                 .process(exchange -> {
                     log.warn("[DIAGNOSTIC-ERROR] DependencyException caught for file: {}",
                         exchange.getIn().getHeader(FILE_NAME, String.class));
@@ -118,7 +118,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
         onException(InvalidLogException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
                 .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .useOriginalMessage()
+                .useOriginalBody()
                 .process(exchange -> {
                     log.warn("[DIAGNOSTIC-ERROR] InvalidLogException caught for file: {}",
                         exchange.getIn().getHeader(FILE_NAME, String.class));
@@ -137,7 +137,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         onException(Exception.class)
                 .log(LoggingLevel.WARN, "Routing unhandled exception to fallback invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
-                .useOriginalMessage()
+                .useOriginalBody()
                 .process(exchange -> {
                     log.warn("[DIAGNOSTIC-ERROR] Generic Exception caught for file: {}",
                         exchange.getIn().getHeader(FILE_NAME, String.class));

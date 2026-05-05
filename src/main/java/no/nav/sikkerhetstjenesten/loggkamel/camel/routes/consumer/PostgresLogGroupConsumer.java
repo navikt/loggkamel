@@ -95,8 +95,8 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
         super.errorHandling();
 
         from(consumerUri)
-            .streamCache(true)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
+            .convertBodyTo(byte[].class)
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
@@ -140,12 +140,12 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                             );
                         })
                     .end()
-                    .process(exchange -> {
-                        String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
-                        String newFileName = originalFileName.substring(0, originalFileName.length() - 3);
-
-                        exchange.getIn().setHeader(FILE_NAME, newFileName);
-                    })
+//                    .process(exchange -> {
+//                        String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
+//                        String newFileName = originalFileName.substring(0, originalFileName.length() - 3);
+//
+//                        exchange.getIn().setHeader(FILE_NAME, newFileName);
+//                    })
                 .end()
             .to(LOG_GROUP_ENRICHER_ROUTE);
     }
