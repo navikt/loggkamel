@@ -51,17 +51,17 @@ management:
 
 routing:
   fallback:
-    invalid-message: "file:src/main/resources/files/fallback/invalid-messages?fileExist=Append"
+    invalid-message: "file:src/main/resources/files/fallback/invalid-messages"
   postgres:
     consumer: "file:src/main/resources/files/postgres"
-    dead-letter: "file:src/main/resources/files/postgres/dead-letter?fileExist=Append"
-    invalid-message: "file:src/main/resources/files/postgres/invalid-messages?fileExist=Append"
+    dead-letter: "file:src/main/resources/files/postgres/dead-letter"
+    invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
   loggline:
     bucket: "file:src/main/resources/files/intermediate"
-    dead-letter: "file:src/main/resources/files/intermediate/dead-letter?fileExist=Append"
-    invalid-message: "file:src/main/resources/files/intermediate/invalid-messages?fileExist=Append"
+    dead-letter: "file:src/main/resources/files/intermediate/dead-letter"
+    invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
   arkiv:
-    producer: "file:src/main/resources/files/output?fileExist=Append"
+    producer: "file:src/main/resources/files/output"
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"

@@ -7,16 +7,12 @@ import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
-
-    private static final Logger log = LoggerFactory.getLogger(LoggGroupErrorHandler.class);
 
     @Value("${routing.postgres.dead-letter}")
     protected String postgresDeadLetterUri;

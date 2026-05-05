@@ -43,7 +43,9 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-//            .convertBodyTo(byte[].class)
+            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
+            .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
+            .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
@@ -51,14 +53,11 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
                 }
             })
-            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
-            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-            .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
+            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true) //Prevent multiple instances of loggkamel from processing the same file
             .process(exchange -> metrics.logsPostgresConsumed.increment())
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")
-                    // if log file is compressed, decompress and remove the compression extension from the filename
                     .doTry()
                         .unmarshal().gzipDeflater()
                         .endDoTry()
