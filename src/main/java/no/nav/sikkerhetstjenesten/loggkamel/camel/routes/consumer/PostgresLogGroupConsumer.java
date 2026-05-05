@@ -95,6 +95,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
         super.errorHandling();
 
         from(consumerUri)
+            .streamCache(true)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
