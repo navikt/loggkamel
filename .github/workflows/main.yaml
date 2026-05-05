@@ -8,6 +8,11 @@ on:
 
 jobs:
   test-build-deploy:
+    permissions:
+      actions: read
+      contents: write
+      security-events: write
+      id-token: write
     uses: ./.github/workflows/build-and-push.yml
   deploy:
     runs-on: ubuntu-latest

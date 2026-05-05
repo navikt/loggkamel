@@ -8,8 +8,15 @@ on:
 
 jobs:
   test-build-deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    permissions:
+      actions: read
+      contents: write
+      security-events: write
+      id-token: write
     uses: ./.github/workflows/build-and-push.yml
   deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
