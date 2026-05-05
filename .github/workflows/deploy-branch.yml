@@ -1,6 +1,6 @@
 name: Build and deploy main
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths-ignore:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   test-build-deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     permissions:
       actions: read
       contents: write
@@ -15,14 +16,15 @@ jobs:
       id-token: write
     uses: ./.github/workflows/build-and-push.yml
   deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     permissions:
-        contents: read
-        id-token: write
+      contents: read
+      id-token: write
     needs: test-build-deploy
     strategy:
       matrix:
-        cluster: [ dev-gcp, prod-gcp ]
+        cluster: [ dev-gcp ]
     name: Deploy to ${{ matrix.cluster }}
     environment: ${{ matrix.cluster }}:sikkerhetstjenesten
     steps:
