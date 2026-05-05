@@ -95,6 +95,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     public void errorHandling() {
         // Allows use of original message in exception handlers for cases where the message is an InputStream, as happens with GCP buckets
         getContext().setStreamCaching(true);
+        getContext().setAllowUseOriginalMessage(true);
 
         // TODO: fix filename reading for messages from GCP, as they do not have CamelFileName initialized
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))

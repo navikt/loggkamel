@@ -31,6 +31,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public void errorHandling() {
         // Allows use of original message in exception handlers for cases where the message is an InputStream, as happens with GCP buckets
         getContext().setStreamCaching(true);
+        getContext().setAllowUseOriginalMessage(true);
 
         onException(DependencyException.class)
                 .useOriginalBody()
