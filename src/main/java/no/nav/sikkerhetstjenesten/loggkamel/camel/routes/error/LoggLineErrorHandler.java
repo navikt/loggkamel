@@ -29,8 +29,12 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
+        // Allows use of original message in exception handlers for cases where the message is an InputStream, as happens with GCP buckets
+        getContext().setStreamCaching(true);
+        getContext().setAllowUseOriginalMessage(true);
+
         onException(DependencyException.class)
-                .useOriginalMessage()
+                .useOriginalBody()
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
@@ -44,7 +48,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .to(deadLetterUri);
 
         onException(InvalidLogException.class)
-                .useOriginalMessage()
+                .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
@@ -57,7 +61,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .to(invalidMessageUri);
 
         onException(Exception.class)
-                .useOriginalMessage()
+                .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")

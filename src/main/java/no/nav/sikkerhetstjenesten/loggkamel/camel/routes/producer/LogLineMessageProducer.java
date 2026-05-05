@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
@@ -28,7 +29,6 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
     public void configure() {
         super.errorHandling();
 
-        //TODO: update filename to make clear that you are producing a log line message, not the original file
         from(LOG_LINE_MESSAGE_PRODUCER_ROUTE)
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
                 .log("Producing loggline message ${header.CamelFileName} to log line endpoint")

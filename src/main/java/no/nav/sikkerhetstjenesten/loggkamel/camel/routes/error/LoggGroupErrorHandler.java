@@ -32,12 +32,16 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
+        // Allows use of original message in exception handlers for cases where the message is an InputStream, as happens with GCP buckets
+        getContext().setStreamCaching(true);
+        getContext().setAllowUseOriginalMessage(true);
+
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .useOriginalMessage()
+                .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .useOriginalBody()
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
-                .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
                     metrics.logsPostgresDeadletter.increment();
                 })
@@ -46,10 +50,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         // Other teknologi-specific dead letter queues go here
 
         onException(InvalidLogException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .useOriginalMessage()
+                .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
-                .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
                     metrics.logsPostgresInvalid.increment();
                 })
@@ -58,11 +62,11 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         // Other teknologi-specific invalid message queues go here
 
         onException(Exception.class)
-                .useOriginalMessage()
-                .maximumRedeliveries(0)
-                .handled(true)
                 .log(LoggingLevel.WARN, "Routing unhandled exception to fallback invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
+                .useOriginalBody()
+                .maximumRedeliveries(0)
+                .handled(true)
                 .process(exchange -> {
                     metrics.logsFallbackInvalid.increment();
                 })

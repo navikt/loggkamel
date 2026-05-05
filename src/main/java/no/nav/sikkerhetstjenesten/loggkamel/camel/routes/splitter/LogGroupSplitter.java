@@ -2,6 +2,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.splitter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import org.apache.camel.LoggingLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -12,6 +14,8 @@ import static org.apache.camel.component.google.storage.GoogleCloudStorageConsta
 
 @Component
 public class LogGroupSplitter extends LoggGroupErrorHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(LogGroupSplitter.class);
 
     public static String LOG_GROUP_SPLITTER_ID = "log-group-splitter";
     public static String LOG_GROUP_SPLITTER_ROUTE = "direct:" + LOG_GROUP_SPLITTER_ID;
@@ -28,7 +32,7 @@ public class LogGroupSplitter extends LoggGroupErrorHandler {
                 String originalFileName = exchange.getIn().getHeader(FILE_NAME, String.class);
                 String fileExtension = originalFileName.contains(".") ? originalFileName.substring(originalFileName.lastIndexOf('.')) : "";
                 String fileBeforeExtension = fileExtension.isEmpty() ? originalFileName : originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-                String filenameWithUUID = fileBeforeExtension + "." + UUID.randomUUID() + fileExtension;
+                String filenameWithUUID = fileBeforeExtension + "." + UUID.randomUUID() + fileExtension + ".logline";
 
                 log.info("New filename being assigned: {}", filenameWithUUID);
                 exchange.getIn().setHeader(FILE_NAME, filenameWithUUID);
