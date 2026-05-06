@@ -21,14 +21,7 @@ import static org.apache.camel.component.google.storage.GoogleCloudStorageConsta
 @Component
 public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(PostgresLogGroupConsumer.class);
     public static String POSTGRES_LOG_CONSUMER_ID = "postgres-log-consumer";
-    private static final String BODY_HASH_PRE_DECOMPRESS = "BODY_HASH_PRE_DECOMPRESS";
-    private static final String BODY_SIZE_PRE_DECOMPRESS = "BODY_SIZE_PRE_DECOMPRESS";
-    private static final String BODY_TYPE_PRE_DECOMPRESS = "BODY_TYPE_PRE_DECOMPRESS";
-    private static final String BODY_HASH_POST_DECOMPRESS = "BODY_HASH_POST_DECOMPRESS";
-    private static final String BODY_SIZE_POST_DECOMPRESS = "BODY_SIZE_POST_DECOMPRESS";
-    private static final String BODY_TYPE_POST_DECOMPRESS = "BODY_TYPE_POST_DECOMPRESS";
 
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
@@ -43,8 +36,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-            .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
@@ -53,6 +44,8 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
                 }
             })
+            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
+            .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true) //Prevent multiple instances of loggkamel from processing the same file
             .process(exchange -> metrics.logsPostgresConsumed.increment())
             .choice()
