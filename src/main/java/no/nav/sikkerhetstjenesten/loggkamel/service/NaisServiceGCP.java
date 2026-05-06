@@ -4,9 +4,11 @@ import no.nav.boot.conditionals.Cluster;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class NaisServiceGCP implements NaisService {
     HttpSyncGraphQlClient naisGraphqlClient;
 
     @Override
+    @Cacheable(cacheNames = CacheConfig.NAIS_GCP_PROJECT_BY_TEAM, key = "#naisTeam", sync = true)
     public String getCurrentEnvGCPIDForTeam(String naisTeam) {
         String query = """
                 query Team($teamName: Slug!) {
@@ -37,7 +40,6 @@ public class NaisServiceGCP implements NaisService {
                  }
                 """;
 
-        //TODO: set up caching for requests to the nais console client
         NaisTeamEnvironments naisTeamEnvironments;
         try {
             naisTeamEnvironments = naisGraphqlClient.document(query)

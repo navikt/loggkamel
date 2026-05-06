@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
-import no.nav.sikkerhetstjenesten.loggkamel.config.EntraProxyCacheConfig;
+import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {
         EntraProxyService.class,
-        EntraProxyCacheConfig.class,
+        CacheConfig.class,
         EntraProxyServiceCacheIntegrationTest.TestConfig.class
 })
 class EntraProxyServiceCacheIntegrationTest {
@@ -48,8 +48,8 @@ class EntraProxyServiceCacheIntegrationTest {
     @BeforeEach
     void setUp() {
         reset(client);
-        clearCache(EntraProxyCacheConfig.ENTRA_PROXY_BY_NAV_IDENT);
-        clearCache(EntraProxyCacheConfig.ENTRA_PROXY_BY_T_IDENT);
+        clearCache(CacheConfig.ENTRA_PROXY_BY_NAV_IDENT);
+        clearCache(CacheConfig.ENTRA_PROXY_BY_T_IDENT);
     }
 
     @Test
