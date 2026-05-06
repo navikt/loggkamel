@@ -21,14 +21,7 @@ import static org.apache.camel.component.google.storage.GoogleCloudStorageConsta
 @Component
 public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(PostgresLogGroupConsumer.class);
     public static String POSTGRES_LOG_CONSUMER_ID = "postgres-log-consumer";
-    private static final String BODY_HASH_PRE_DECOMPRESS = "BODY_HASH_PRE_DECOMPRESS";
-    private static final String BODY_SIZE_PRE_DECOMPRESS = "BODY_SIZE_PRE_DECOMPRESS";
-    private static final String BODY_TYPE_PRE_DECOMPRESS = "BODY_TYPE_PRE_DECOMPRESS";
-    private static final String BODY_HASH_POST_DECOMPRESS = "BODY_HASH_POST_DECOMPRESS";
-    private static final String BODY_SIZE_POST_DECOMPRESS = "BODY_SIZE_POST_DECOMPRESS";
-    private static final String BODY_TYPE_POST_DECOMPRESS = "BODY_TYPE_POST_DECOMPRESS";
 
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
