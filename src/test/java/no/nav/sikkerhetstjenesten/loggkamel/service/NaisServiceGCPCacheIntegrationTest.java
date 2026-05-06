@@ -116,10 +116,3 @@ class NaisServiceGCPCacheIntegrationTest {
         }
     }
 }
-
-
-
-
-
-
-
