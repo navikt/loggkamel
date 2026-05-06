@@ -55,7 +55,10 @@ public class LogGroupEnrichmentProcessor {
         registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
-        //TODO: throw invalid exception on null teamGcpProjectId
+        if (teamGcpProjectId == null || teamGcpProjectId.isEmpty()) {
+            log.info("Could not find GCP project id for naisteam {}, sending log message to backout queue", auditloggArkivResponseDTO.getNaisteam());
+            throw new InvalidLogGroupException("Could not find GCP project id for naisteam " + auditloggArkivResponseDTO.getNaisteam());
+        }
         log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
 
         exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);

@@ -43,8 +43,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-            .log(LoggingLevel.INFO, "Consuming postgres log messages from ${header.CamelFileName}")
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
@@ -53,6 +51,8 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
                 }
             })
+            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
+            .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true) //Prevent multiple instances of loggkamel from processing the same file
             .process(exchange -> metrics.logsPostgresConsumed.increment())
             .choice()

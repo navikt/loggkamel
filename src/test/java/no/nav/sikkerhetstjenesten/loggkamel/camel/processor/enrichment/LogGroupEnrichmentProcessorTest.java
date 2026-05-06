@@ -117,6 +117,22 @@ class LogGroupEnrichmentProcessorTest {
     }
 
     @Test
+    void emptyNaisteamGCPProjectId() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+
+        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+
+        when(auditloggArkivResponseDTO.getNaisteam()).thenReturn(NAIS_TEAM);
+
+        when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn("");
+
+        assertThrows(InvalidLogGroupException.class, () -> logGroupEnrichmentProcessor.enrich(exchange));
+    }
+
+    @Test
     void happyPath() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
