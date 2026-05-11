@@ -35,6 +35,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         from(consumerUri)
             .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
+            .autoStartup(false)
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
