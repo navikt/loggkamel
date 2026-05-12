@@ -13,9 +13,6 @@ public class UnleashClientConfig {
 
     @Bean
     public Unleash unleash() {
-        //TODO: remove after establishing that unleash server api url is available
-        log.info("Unleash server api url: {}", System.getenv("UNLEASH_SERVER_API_URL"));
-
         UnleashConfig config = UnleashConfig.builder()
                 .appName("loggkamel")
                 .unleashAPI(System.getenv("UNLEASH_SERVER_API_URL") + "/api")
