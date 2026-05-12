@@ -10,13 +10,14 @@ import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Map;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 
 @Component
 @ConditionalOnGCP
@@ -33,7 +34,9 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
             .routeId(ARKIVLOGG_PRODUCER_ID)
             .log("Producing log message ${header.CamelFileName} to GCP Logging")
             .process(exchange -> {
-                metrics.enrichedLogPublished.increment();
+                metrics.incrementHappyPath(Metrics.Multiplicity.single,  exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.produced);
+                String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
+                metrics.incrementDatabaseSpecificAction(dbName,  exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.produced);
             })
             .process(exchange -> {
                 String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);

@@ -43,7 +43,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .process(exchange -> {
-                    metrics.logsPostgresDeadletter.increment();
+                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, "postgres", Metrics.BackoutQueueType.deadletter);
                 })
                 .to(postgresDeadLetterUri);
 
@@ -55,7 +55,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .process(exchange -> {
-                    metrics.logsPostgresInvalid.increment();
+                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, "postgres", Metrics.BackoutQueueType.invalid);
                 })
                 .to(postgresInvalidMessageUri);
 
@@ -68,7 +68,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .process(exchange -> {
-                    metrics.logsFallbackInvalid.increment();
+                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, "fallback", Metrics.BackoutQueueType.invalid);
                 })
                 .to(fallbackInvalidMessageUri);
     }

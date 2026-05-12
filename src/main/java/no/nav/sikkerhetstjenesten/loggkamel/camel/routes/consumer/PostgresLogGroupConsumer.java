@@ -2,11 +2,10 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +46,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true) //Prevent multiple instances of loggkamel from processing the same file
-            .process(exchange -> metrics.logsPostgresConsumed.increment())
+            .process(exchange -> metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed))
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
                     .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")

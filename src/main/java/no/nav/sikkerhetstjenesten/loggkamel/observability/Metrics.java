@@ -1,42 +1,38 @@
 package no.nav.sikkerhetstjenesten.loggkamel.observability;
 
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
 @Component
 public class Metrics {
 
-    private static final String LOGGKAMEL_APP_PREFIX = "loggkamel.";
+    private static final String LOGGKAMEL_APP_PREFIX = "loggkamel.auditlogs.";
 
-    public final Counter enrichedLogPublished;
-    public final Counter logsPostgresConsumed;
+    public enum Action {produced, consumed}
 
-    public final Counter intermediateLogConsumed;
-    public final Counter intermediateLogProduced;
+    public enum Multiplicity {grouped, single}
 
-    public final Counter logsPostgresInvalid;
-    public final Counter logsPostgresDeadletter;
-    public final Counter logsFallbackInvalid;
+    public enum BackoutQueueType {invalid, deadletter};
 
-    public final Counter logPostgresInvalid;
-    public final Counter logPostgresDeadletter;
-    public final Counter logFallbackInvalid;
+    private final MeterRegistry meterRegistry;
 
     public Metrics(MeterRegistry meterRegistry) {
-        this.enrichedLogPublished = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.enriched.published", "type", "enriched", "action", "published");
-        this.logsPostgresConsumed = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.consumed", "type", "postgres", "action", "consumed");
+        this.meterRegistry = meterRegistry;
+    }
 
-        this.intermediateLogConsumed = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.intermediate.consumed", "type", "intermediate", "action", "consumed");
-        this.intermediateLogProduced = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.intermediate.produced", "type", "intermediate", "action", "produced");
+    public void incrementHappyPath(Multiplicity multiplicity, String teknologi, Action action) {
+        String logName = LOGGKAMEL_APP_PREFIX + "happy";
+        meterRegistry.counter(logName, "multiplicity", multiplicity.name(), "teknologi", teknologi, "action", action.name()).increment();
+    }
 
-        this.logsPostgresInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.invalid", "type", "postgres", "queue", "invalid");
-        this.logsPostgresDeadletter = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.postgres.deadletter", "type", "postgres", "queue", "deadletter");
-        this.logsFallbackInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "logs.fallback.invalid", "type", "fallback", "queue", "invalid");
+    public void incrementUnhappyPath(Multiplicity multiplicity, String teknologi, BackoutQueueType backoutQueueType) {
+        String logName = LOGGKAMEL_APP_PREFIX + "backout";
+        meterRegistry.counter(logName, "multiplicity", multiplicity.name(), "teknologi", teknologi, "queue", backoutQueueType.name()).increment();
+    }
 
-        this.logPostgresInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.postgres.invalid", "type", "postgres", "queue", "invalid");
-        this.logPostgresDeadletter = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.postgres.deadletter", "type", "postgres", "queue", "deadletter");
-        this.logFallbackInvalid = meterRegistry.counter(LOGGKAMEL_APP_PREFIX + "log.fallback.invalid", "type", "fallback", "queue", "invalid");
+    public void incrementDatabaseSpecificAction(String databaseName, String teknologi, Action action) {
+        String logName = LOGGKAMEL_APP_PREFIX + "unik";
+        meterRegistry.counter(logName, "teknologi", teknologi, "action", action.name(), "database", databaseName).increment();
     }
 
 }

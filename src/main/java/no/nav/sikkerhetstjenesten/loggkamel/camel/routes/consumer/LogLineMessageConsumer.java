@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +45,17 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
-            .process(exchange -> metrics.intermediateLogConsumed.increment())
             .process(exchange -> {
                 AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
                 exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
                 exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
                 exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
                 exchange.getMessage().setBody(loggLineMessage, AuditloggLineMessage.class);
+            })
+            .process(exchange -> {
+                metrics.incrementHappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.consumed);
+                String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
+                metrics.incrementDatabaseSpecificAction(dbName,  exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.consumed);
             })
             .to(LOG_LINE_ENRICHER_ROUTE);
     }
