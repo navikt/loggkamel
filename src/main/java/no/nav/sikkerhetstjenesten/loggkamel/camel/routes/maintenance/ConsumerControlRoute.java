@@ -15,6 +15,9 @@ public class ConsumerControlRoute extends RouteBuilder {
     @Autowired
     private Unleash unleash;
 
+    private static final String POSTGRES_LOGS_FEATURE_FLAG = "consume-postgres-logs";
+    private static final String LOG_LINES_FEATURE_FLAG = "consume-log-lines";
+
     public static final String CONSUMER_CONTROL_ROUTE_ID = "consumer-control-route";
 
     @Override
@@ -23,7 +26,7 @@ public class ConsumerControlRoute extends RouteBuilder {
                 .routeId(CONSUMER_CONTROL_ROUTE_ID)
                 .log(LoggingLevel.INFO, "Checking whether to disable consumer routes based on feature flags")
                 .process(exchange -> {
-                    boolean consumePostgresLogs = unleash.isEnabled("consume-postgres-logs", false);
+                    boolean consumePostgresLogs = unleash.isEnabled(POSTGRES_LOGS_FEATURE_FLAG, false);
                     if (consumePostgresLogs && exchange.getContext().getRouteController().getRouteStatus(POSTGRES_LOG_CONSUMER_ID).isStopped()) {
                         log.info("Feature flag 'consume-postgres-logs' is enabled, starting route {}", POSTGRES_LOG_CONSUMER_ID);
                         exchange.getContext().getRouteController().startRoute(POSTGRES_LOG_CONSUMER_ID);
@@ -33,7 +36,7 @@ public class ConsumerControlRoute extends RouteBuilder {
                     }
                 })
                 .process(exchange -> {
-                    boolean consumeLogLines = unleash.isEnabled("consume-log-lines", false);
+                    boolean consumeLogLines = unleash.isEnabled(LOG_LINES_FEATURE_FLAG, false);
                     if (consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(LOG_LINE_MESSAGE_CONSUMER_ID).isStopped()) {
                         log.info("Feature flag 'consume-log-lines' is enabled, starting route {}", LOG_LINE_MESSAGE_CONSUMER_ID);
                         exchange.getContext().getRouteController().startRoute(LOG_LINE_MESSAGE_CONSUMER_ID);
