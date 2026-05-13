@@ -38,7 +38,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .log("Routing DependencyException to dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class), Metrics.BackoutQueueType.deadletter))
+                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.BackoutQueueType.deadletter))
                 .to(deadLetterUri);
 
         onException(InvalidLogException.class)
@@ -46,7 +46,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class), Metrics.BackoutQueueType.invalid))
+                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.BackoutQueueType.invalid))
                 .to(invalidMessageUri);
 
         onException(Exception.class)

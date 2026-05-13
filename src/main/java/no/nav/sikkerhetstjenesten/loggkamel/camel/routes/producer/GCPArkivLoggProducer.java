@@ -34,9 +34,9 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
             .routeId(ARKIVLOGG_PRODUCER_ID)
             .log("Producing log message ${header.CamelFileName} to GCP Logging")
             .process(exchange -> {
-                metrics.incrementHappyPath(Metrics.Multiplicity.single,  exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.produced);
+                metrics.incrementHappyPath(Metrics.Multiplicity.single,  exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.Action.produced);
                 String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
-                metrics.incrementDatabaseSpecificAction(dbName,  exchange.getVariable(TEKNOLOGI, String.class), Metrics.Action.produced);
+                metrics.incrementDatabaseSpecificAction(dbName,  exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.Action.produced);
             })
             .process(exchange -> {
                 String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
