@@ -18,7 +18,7 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
     @Autowired
     private Metrics metrics;
 
-    @Value("${routing.loggline.bucket}")
+    @Value("${routing.loggline.queue.write}")
     String logLineMessageBucketUri;
 
     public static String LOG_LINE_MESSAGE_PRODUCER = "loggline-producer";
@@ -31,6 +31,7 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
         from(LOG_LINE_MESSAGE_PRODUCER_ROUTE)
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
                 .log("Producing loggline message ${header.CamelFileName} to log line endpoint")
+                .log("endpoint being sent to is: " + logLineMessageBucketUri) //DEBUG, REMOVE LATER
                 .process(exchange -> {
                     metrics.incrementHappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.Action.produced);
                 })

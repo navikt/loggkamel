@@ -19,6 +19,7 @@ public class LocalArkivLoggProducer extends ArkivLoggProducer {
         from(ARKIVLOGG_PRODUCER_ROUTE)
                 .routeId(ARKIVLOGG_PRODUCER_ID)
                 .log("Producing log message ${header.CamelFileName} to local log")
+                .log("endpoint being sent to is: " + producerUri) //DEBUG, REMOVE LATER
                 .process(exchange -> {
                     exchange.getMessage().setBody(objectMapper.writeValueAsString(exchange.getMessage().getBody(EnrichedAuditlogg.class)));
                 })

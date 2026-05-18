@@ -17,25 +17,7 @@
   },
   "buckets": [
     {
-      "name": "loggkamel-prod-postgresql-deadletter"
-    },
-    {
-      "name": "loggkamel-prod-postgresql-invalid-message"
-    },
-    {
-      "name": "loggkamel-prod-postgresql-consumer"
-    },
-    {
-      "name": "loggkamel-prod-fallback-invalid-message"
-    },
-    {
-      "name": "loggkamel-prod-logglines"
-    },
-    {
-      "name": "loggkamel-prod-logglines-deadletter"
-    },
-    {
-      "name": "loggkamel-prod-logglines-invalid-message"
+      "name": "loggkamel-prod"
     }
   ],
   "inbound": [

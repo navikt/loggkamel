@@ -50,18 +50,21 @@ management:
       enabled: true
 
 routing:
+  root: "file:src/main/resources/files"
   fallback:
-    invalid-message: "file:src/main/resources/files/fallback/invalid-messages"
+    invalid-message: "${routing.root}/fallback/invalid-messages"
   postgres:
-    consumer: "file:src/main/resources/files/postgres"
-    dead-letter: "file:src/main/resources/files/postgres/dead-letter"
-    invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
+    consumer: "${routing.root}/postgres"
+    dead-letter: "${routing.root}/postgres/dead-letter"
+    invalid-message: "${routing.root}/postgres/invalid-messages"
   loggline:
-    bucket: "file:src/main/resources/files/intermediate"
-    dead-letter: "file:src/main/resources/files/intermediate/dead-letter"
-    invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
+    queue:
+      read: "${routing.root}/logglines"
+      write: "${routing.root}/logglines"
+    dead-letter: "${routing.root}/logglines/dead-letter"
+    invalid-message: "${routing.root}/logglines/invalid-messages"
   arkiv:
-    producer: "file:src/main/resources/files/output"
+    producer: "${routing.root}/output"
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"

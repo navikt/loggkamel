@@ -64,3 +64,17 @@ springdoc:
       client-id: ${azure.app.client.id}
     csrf:
       enabled: true
+
+routing:
+  fallback:
+    invalid-message: "${routing.root}?prefix=fallback-invalid-message/"
+  postgres:
+    consumer: "${routing.root}?prefix=postgres/"
+    dead-letter: "${routing.root}?prefix=postgres-deadletter/"
+    invalid-message: "${routing.root}?prefix=postgres-invalid-message/"
+  loggline:
+    queue:
+      read: "${routing.root}?prefix=logglines/"
+      write: "${routing.root}?prefix=logglines/"
+    dead-letter: "${routing.root}?prefix=logglines-deadletter/"
+    invalid-message: "${routing.root}?prefix=logglines-invalid-message/"

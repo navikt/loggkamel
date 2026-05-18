@@ -20,15 +20,18 @@ management:
       enabled: true
 
 routing:
-  fallback:
-    invalid-message: "google-storage://loggkamel-dev-fallback-invalid-message"
-  postgres:
-    consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=true"
-    dead-letter: "google-storage://loggkamel-dev-postgresql-deadletter"
-    invalid-message: "google-storage://loggkamel-dev-postgresql-invalid-message"
-  loggline:
-    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=true"
-    dead-letter: "google-storage://loggkamel-dev-logglines-deadletter"
-    invalid-message: "google-storage://loggkamel-dev-logglines-invalid-message"
+  root: "google-storage://loggkamel-dev"
+#  fallback:
+#    invalid-message: "${routing.root}-fallback-invalid-message/"
+#  postgres:
+#    consumer: "${routing.root}-postgres-consumer/"
+#    dead-letter: "${routing.root}-postgres-deadletter/"
+#    invalid-message: "${routing.root}-postgres-invalid-message/"
+#  loggline:
+#    queue:
+#      read: "${routing.root}-logglines/"
+#      write: "${routing.root}-logglines/"
+#    dead-letter: "${routing.root}-logglines-deadletter/"
+#    invalid-message: "${routing.root}-logglines-invalid-message/"
 
 debug: false
