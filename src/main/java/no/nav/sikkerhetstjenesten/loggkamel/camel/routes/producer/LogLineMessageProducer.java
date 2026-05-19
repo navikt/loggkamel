@@ -54,6 +54,13 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
                 .process(exchange -> {
                     metrics.incrementHappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.Action.produced);
                 })
+                //DEBUG
+                .process(exchange -> {
+                    log.info("Message being sent to log line endpoint");
+                    log.info("message headers: " + exchange.getIn().getHeaders().toString());
+                    log.info("message body: " + exchange.getIn().getBody().toString());
+                    log.info("message destination: " + postgresInvalidMessageUri);
+                })
                 .toD(logLineMessageBucketUri);
     }
 }
