@@ -9,7 +9,7 @@
     </appender>
 
     <springProfile name="dev">
-        <logger name="no.nav.sikkerhetstjenesten" level="trace"/>
+        <logger name="no.nav.sikkerhetstjenesten" level="info"/>
     </springProfile>
 
     <springProfile name="local | test">
@@ -36,7 +36,7 @@
         </turboFilter>
     </springProfile>
 
-    <root level="info">
+    <root level="trace">
         <appender-ref ref="otel"/>
     </root>
 </configuration>
