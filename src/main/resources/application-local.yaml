@@ -54,26 +54,26 @@ routing:
   fallback:
     invalid-message:
       write: "${routing.root}/fallback/invalid-messages"
-      prefix: "fallback-invalid-message/"
+      prefix: ""
   postgres:
     consumer: "${routing.root}/postgres"
     dead-letter:
       write: "${routing.root}/postgres/dead-letter"
-      prefix: "postgres-deadletter/"
+      prefix: ""
     invalid-message:
       write: "${routing.root}/postgres/invalid-messages"
-      prefix: "postgres-invalid-message/"
+      prefix: ""
   loggline:
     queue:
-      prefix: "logglines/"
+      prefix: ""
       read: "${routing.root}/logglines"
       write: "${routing.root}/logglines"
     dead-letter:
       write: "${routing.root}/logglines/dead-letter"
-      prefix: "logglines-deadletter/"
+      prefix: ""
     invalid-message:
       write: "${routing.root}/logglines/invalid-messages"
-      prefix: "logglines-invalid-message/"
+      prefix: ""
   arkiv:
     producer: "${routing.root}/output"
 

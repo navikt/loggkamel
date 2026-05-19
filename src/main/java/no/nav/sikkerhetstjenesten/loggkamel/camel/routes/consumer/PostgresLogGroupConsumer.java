@@ -35,7 +35,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-//            .autoStartup(false)
+            .autoStartup(false)
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
