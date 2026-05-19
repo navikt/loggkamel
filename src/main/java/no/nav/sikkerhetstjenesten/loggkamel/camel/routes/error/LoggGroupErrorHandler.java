@@ -73,6 +73,13 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                     // Set directory prefix as part of the GCP filename, so that the file is written to the right target directory
                     exchange.getIn().setHeader(OBJECT_NAME, postgresInvalidMessagePrefix + exchange.getIn().getHeader(FILE_NAME, String.class));
                 })
+                //DEBUG
+                .process(exchange -> {
+                    log.info("Message being sent to invalid log line directory");
+                    log.info("message headers: " + exchange.getIn().getHeaders().toString());
+                    log.info("message body: " + exchange.getIn().getBody().toString());
+                    log.info("message destination: " + postgresInvalidMessageUri);
+                })
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.BackoutQueueType.invalid);
                 })
