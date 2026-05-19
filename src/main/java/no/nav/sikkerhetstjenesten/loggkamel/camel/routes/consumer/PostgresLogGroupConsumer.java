@@ -48,7 +48,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             })
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
-            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true) //Prevent multiple instances of loggkamel from processing the same file
+            .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
             .process(exchange -> metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed))
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
