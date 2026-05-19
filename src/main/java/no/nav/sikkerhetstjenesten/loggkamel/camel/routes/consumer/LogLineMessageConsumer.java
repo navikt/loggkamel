@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class LogLineMessageConsumer extends LoggLineErrorHandler {
@@ -40,7 +41,9 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
-                    exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader("CamelGoogleCloudStorageObjectName", String.class));
+                    String[] filenameSplitByDirectories = exchange.getIn().getHeader(OBJECT_NAME, String.class).split("/");
+                    String filenameWithoutDirectories = filenameSplitByDirectories[filenameSplitByDirectories.length - 1];
+                    exchange.getIn().setHeader(FILE_NAME, filenameWithoutDirectories);
                 }
             })
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true)

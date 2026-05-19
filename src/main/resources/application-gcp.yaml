@@ -74,7 +74,8 @@ routing:
     invalid-message: "${routing.root}?prefix=postgres-invalid-message/"
   loggline:
     queue:
-      read: "${routing.root}?prefix=logglines/"
-      write: "${routing.root}?prefix=logglines/"
+      prefix: "logglines/"
+      read: "${routing.root}?prefix=${routing.loggline.queue.prefix}"
+      write: "${routing.root}?prefix=${routing.loggline.queue.prefix}"
     dead-letter: "${routing.root}?prefix=logglines-deadletter/"
     invalid-message: "${routing.root}?prefix=logglines-invalid-message/"
