@@ -62,6 +62,13 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                     // Set directory prefix as part of the GCP filename, so that the file is written to the right target directory
                     exchange.getIn().setHeader(OBJECT_NAME, invalidMessagePrefix + exchange.getIn().getHeader(FILE_NAME, String.class));
                 })
+                //DEBUG
+                .process(exchange -> {
+                    log.info("Message being sent to invalid log line directory");
+                    log.info("message headers: " + exchange.getIn().getHeaders().toString());
+                    log.info("message body: " + exchange.getIn().getBody().toString());
+                    log.info("message destination: " + invalidMessageUri);
+                })
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.BackoutQueueType.invalid))
                 .to(invalidMessageUri);
 
