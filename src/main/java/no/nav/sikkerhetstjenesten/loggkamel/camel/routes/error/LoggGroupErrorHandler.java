@@ -11,17 +11,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static org.apache.camel.component.file.FileConstants.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
-    @Value("${routing.postgres.dead-letter}")
+    @Value("${routing.postgres.dead-letter.write}")
     protected String postgresDeadLetterUri;
 
-    @Value("${routing.postgres.invalid-message}")
+    @Value("${routing.postgres.dead-letter.prefix}")
+    protected String postgresDeadLetterPrefix;
+
+    @Value("${routing.postgres.invalid-message.write}")
     protected String postgresInvalidMessageUri;
 
-    @Value("${routing.fallback.invalid-message}")
+    @Value("${routing.postgres.invalid-message.prefix}")
+    protected String postgresInvalidMessagePrefix;
+
+    @Value("${routing.fallback.invalid-message.write}")
     protected String fallbackInvalidMessageUri;
+
+    @Value("${routing.fallback.invalid-message.write}")
+    protected String fallbackInvalidMessagePrefix;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -43,6 +54,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .process(exchange -> {
+                    // Set directory prefix as part of the GCP filename, so that the file is written to the right target directory
+                    exchange.getIn().setHeader(OBJECT_NAME, postgresDeadLetterPrefix + exchange.getIn().getHeader(FILE_NAME, String.class));
+                })
+                .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.BackoutQueueType.deadletter);
                 })
                 .to(postgresDeadLetterUri);
@@ -54,6 +69,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
+                .process(exchange -> {
+                    // Set directory prefix as part of the GCP filename, so that the file is written to the right target directory
+                    exchange.getIn().setHeader(OBJECT_NAME, postgresInvalidMessagePrefix + exchange.getIn().getHeader(FILE_NAME, String.class));
+                })
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.BackoutQueueType.invalid);
                 })
@@ -67,6 +86,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
+                .process(exchange -> {
+                    // Set directory prefix as part of the GCP filename, so that the file is written to the right target directory
+                    exchange.getIn().setHeader(OBJECT_NAME, fallbackInvalidMessagePrefix + exchange.getIn().getHeader(FILE_NAME, String.class));
+                })
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, "fallback", Metrics.BackoutQueueType.invalid);
                 })

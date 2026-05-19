@@ -21,17 +21,5 @@ management:
 
 routing:
   root: "google-storage://loggkamel-dev"
-#  fallback:
-#    invalid-message: "${routing.root}-fallback-invalid-message/"
-#  postgres:
-#    consumer: "${routing.root}-postgres-consumer/"
-#    dead-letter: "${routing.root}-postgres-deadletter/"
-#    invalid-message: "${routing.root}-postgres-invalid-message/"
-#  loggline:
-#    queue:
-#      read: "${routing.root}-logglines/"
-#      write: "${routing.root}-logglines/"
-#    dead-letter: "${routing.root}-logglines-deadletter/"
-#    invalid-message: "${routing.root}-logglines-invalid-message/"
 
 debug: false

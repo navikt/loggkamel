@@ -1,14 +1,2 @@
 routing:
   root: "google-storage://loggkamel-prod"
-#  fallback:
-#    invalid-message: "${routing.root}-fallback-invalid-message/"
-#  postgres:
-#    consumer: "${routing.root}-postgresql-consumer/"
-#    dead-letter: "${routing.root}-postgresql-deadletter/"
-#    invalid-message: "${routing.root}-postgresql-invalid-message/"
-#  loggline:
-#    queue:
-#      read: "${routing.root}-logglines/"
-#      write: "${routing.root}-logglines/"
-#    dead-letter: "${routing.root}-logglines-deadletter/"
-#    invalid-message: "${routing.root}-logglines-invalid-message/"

@@ -67,15 +67,25 @@ springdoc:
 
 routing:
   fallback:
-    invalid-message: "${routing.root}?prefix=fallback-invalid-message/"
+    invalid-message:
+      write: "${routing.root}"
+      prefix: "fallback-invalid-message/"
   postgres:
     consumer: "${routing.root}?prefix=postgres/"
-    dead-letter: "${routing.root}?prefix=postgres-deadletter/"
-    invalid-message: "${routing.root}?prefix=postgres-invalid-message/"
+    dead-letter:
+      write: "${routing.root}"
+      prefix: "postgres-deadletter/"
+    invalid-message:
+      write: "${routing.root}"
+      prefix: "postgres-invalid-message/"
   loggline:
     queue:
       prefix: "logglines/"
       read: "${routing.root}?prefix=${routing.loggline.queue.prefix}"
-      write: "${routing.root}?prefix=${routing.loggline.queue.prefix}"
-    dead-letter: "${routing.root}?prefix=logglines-deadletter/"
-    invalid-message: "${routing.root}?prefix=logglines-invalid-message/"
+      write: "${routing.root}"
+    dead-letter:
+      write: "${routing.root}"
+      prefix: "logglines-deadletter/"
+    invalid-message:
+      write: "${routing.root}"
+      prefix: "logglines-invalid-message/"

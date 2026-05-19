@@ -39,7 +39,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
-                // If the file comes from a bucket instead of local storage, still populate the filename. Remove the consumer bucket prefix.
+                // If the file comes from a bucket instead of local storage, populate the filename from the name within the bucket. Remove the directory prefixes
                 if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
                     String[] filenameSplitByDirectories = exchange.getIn().getHeader(OBJECT_NAME, String.class).split("/");
                     String filenameWithoutDirectories = filenameSplitByDirectories[filenameSplitByDirectories.length - 1];

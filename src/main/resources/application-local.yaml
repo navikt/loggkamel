@@ -52,17 +52,28 @@ management:
 routing:
   root: "file:src/main/resources/files"
   fallback:
-    invalid-message: "${routing.root}/fallback/invalid-messages"
+    invalid-message:
+      write: "${routing.root}/fallback/invalid-messages"
+      prefix: "fallback-invalid-message/"
   postgres:
     consumer: "${routing.root}/postgres"
-    dead-letter: "${routing.root}/postgres/dead-letter"
-    invalid-message: "${routing.root}/postgres/invalid-messages"
+    dead-letter:
+      write: "${routing.root}/postgres/dead-letter"
+      prefix: "postgres-deadletter/"
+    invalid-message:
+      write: "${routing.root}/postgres/invalid-messages"
+      prefix: "postgres-invalid-message/"
   loggline:
     queue:
+      prefix: "logglines/"
       read: "${routing.root}/logglines"
       write: "${routing.root}/logglines"
-    dead-letter: "${routing.root}/logglines/dead-letter"
-    invalid-message: "${routing.root}/logglines/invalid-messages"
+    dead-letter:
+      write: "${routing.root}/logglines/dead-letter"
+      prefix: "logglines-deadletter/"
+    invalid-message:
+      write: "${routing.root}/logglines/invalid-messages"
+      prefix: "logglines-invalid-message/"
   arkiv:
     producer: "${routing.root}/output"
 
