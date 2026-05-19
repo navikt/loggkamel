@@ -9,7 +9,7 @@
     </appender>
 
     <springProfile name="dev">
-        <logger name="no.nav.sikkerhetstjenesten" level="info"/>
+        <logger name="no.nav.sikkerhetstjenesten" level="trace"/>
     </springProfile>
 
     <springProfile name="local | test">
