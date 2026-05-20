@@ -10,7 +10,6 @@ spec:
     application:
       enabled: true
       allowAllUsers: true
-  leaderElection: true
   gcp:
     sqlInstances:
       - type: {{db.type}}
