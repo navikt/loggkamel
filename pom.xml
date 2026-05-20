@@ -30,6 +30,7 @@
     <spring.boot-version>4.0.6</spring.boot-version>
     <camel-version>4.20.0</camel-version>
     <nav.boot-version>6.0.5</nav.boot-version>
+    <nav.security-version>6.0.7</nav.security-version>
     <java-version>21</java-version>
     <mapstruct-version>1.6.3</mapstruct-version>
   </properties>
@@ -199,12 +200,12 @@
     <dependency>
       <groupId>no.nav.security</groupId>
       <artifactId>token-client-spring</artifactId>
-      <version>${nav.boot-version}</version>
+      <version>${nav.security-version}</version>
     </dependency>
     <dependency>
       <groupId>no.nav.security</groupId>
       <artifactId>token-validation-spring-test</artifactId>
-      <version>${nav.boot-version}</version>
+      <version>${nav.security-version}</version>
     </dependency>
 
     <!-- Logstash -->
@@ -247,6 +248,11 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-core</artifactId>
+      <version>[11.0.22,)</version>
     </dependency>
 
     <dependency>
