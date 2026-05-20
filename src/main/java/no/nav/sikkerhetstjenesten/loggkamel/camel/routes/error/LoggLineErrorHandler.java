@@ -13,9 +13,6 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 
 public abstract class LoggLineErrorHandler extends RouteBuilder {
 
-    @Value("${routing.loggline.dead-letter}")
-    protected String deadLetterUri;
-
     @Value("${routing.loggline.invalid-message}")
     protected String invalidMessageUri;
 
@@ -37,9 +34,9 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
-                .log("Routing DependencyException to dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log("Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.BackoutQueueType.deadletter))
-                .to(deadLetterUri);
+                .to(invalidMessageUri);
 
         onException(InvalidLogException.class)
                 .useOriginalBody()
