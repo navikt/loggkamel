@@ -17,9 +17,6 @@
   },
   "buckets": [
     {
-      "name": "loggkamel-prod-postgresql-deadletter"
-    },
-    {
       "name": "loggkamel-prod-postgresql-invalid-message"
     },
     {
@@ -30,9 +27,6 @@
     },
     {
       "name": "loggkamel-prod-logglines"
-    },
-    {
-      "name": "loggkamel-prod-logglines-deadletter"
     },
     {
       "name": "loggkamel-prod-logglines-invalid-message"

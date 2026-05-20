@@ -14,9 +14,6 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
-    @Value("${routing.postgres.dead-letter}")
-    protected String postgresDeadLetterUri;
-
     @Value("${routing.postgres.invalid-message}")
     protected String postgresInvalidMessageUri;
 
@@ -37,7 +34,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         getContext().setAllowUseOriginalMessage(true);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log("Routing DependencyException to postgres dead-letter after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log("Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .useOriginalBody()
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
@@ -45,7 +42,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.BackoutQueueType.deadletter);
                 })
-                .to(postgresDeadLetterUri);
+                .to(postgresInvalidMessageUri);
 
         // Other teknologi-specific dead letter queues go here
 
