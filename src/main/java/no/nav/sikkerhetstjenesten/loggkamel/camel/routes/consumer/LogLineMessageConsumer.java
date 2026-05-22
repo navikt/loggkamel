@@ -9,6 +9,7 @@ import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
@@ -33,6 +34,10 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
     @Override
     public void configure() {
         super.errorHandling();
+
+        onException(DuplicateKeyException.class)
+                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, dropping message as another instance of loggkamel has successfully claimed it")
+                .handled(true);
 
         from(consumerUri)
             .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)

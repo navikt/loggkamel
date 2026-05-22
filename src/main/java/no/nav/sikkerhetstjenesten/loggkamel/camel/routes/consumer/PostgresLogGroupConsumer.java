@@ -9,6 +9,7 @@ import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
@@ -33,10 +34,13 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
     public void configure() {
         super.errorHandling();
 
+        onException(DuplicateKeyException.class)
+                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, dropping message as another instance of loggkamel has successfully claimed it")
+                .handled(true);
+
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
             .autoStartup(false)
-            .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
@@ -47,6 +51,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
+            .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
             .process(exchange -> metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed))
             .choice()
                 .when(header(FILE_NAME).endsWith(".gz"))
