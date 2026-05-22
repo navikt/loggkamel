@@ -23,6 +23,7 @@ class OversiktJPAAdapterTest {
     private final static String DBNAME = "dbName";
     private final static TeknologiEnum TEKNOLOGI = TeknologiEnum.ORACLE;
     private final static String NAISTEAM = "naisteam";
+    private final static String NAISTEAM2 = "naisteam2";
 
     @Mock
     AuditloggArkivEntity toSaveAuditloggArkivEntity;
@@ -142,18 +143,32 @@ class OversiktJPAAdapterTest {
 
     @Test
     void getAllTasksByNaisteam_exceptionPassesThrough() {
-        when(repository.findAllByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
+        when(repository.findAllArkivByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
 
         assertThrows(RuntimeException.class, () -> adapter.getAllTasksByNaisteam(NAISTEAM));
     }
 
     @Test
     void getAllTasksByNaisteam_successful() {
-        when(repository.findAllByNaisteam(NAISTEAM)).thenReturn(List.of(toSaveAuditloggArkivEntity, savedAuditloggArkivEntity));
+        when(repository.findAllArkivByNaisteam(NAISTEAM)).thenReturn(List.of(toSaveAuditloggArkivEntity, savedAuditloggArkivEntity));
 
         when(mapper.auditloggArkivEntityToResponseDTO(toSaveAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO);
         when(mapper.auditloggArkivEntityToResponseDTO(savedAuditloggArkivEntity)).thenReturn(auditloggArkivResponseDTO2);
 
         assertEquals(List.of(auditloggArkivResponseDTO, auditloggArkivResponseDTO2), adapter.getAllTasksByNaisteam(NAISTEAM));
+    }
+
+    @Test
+    void findAllDistinctNaisteam_exceptionPassesThrough() {
+        when(repository.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> adapter.findAllDistinctNaisteam());
+    }
+
+    @Test
+    void findAllDistinctNaisteam_successful() {
+        when(repository.findAllDistinctNaisteam()).thenReturn(List.of(NAISTEAM, NAISTEAM2));
+
+        assertEquals(List.of(NAISTEAM, NAISTEAM2), adapter.findAllDistinctNaisteam());
     }
 }
