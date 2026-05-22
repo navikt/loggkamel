@@ -108,4 +108,54 @@ class OversiktServiceTest {
 
         assertThrows(RuntimeException.class, () -> service.getAuditloggArkivByNaisteam(NAISTEAM));
     }
+
+    @Test
+    void naisteamHasActiveArkivTasks_successful() {
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
+        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(true);
+        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditloggArkivResponseDTO));
+
+        assertTrue(service.naisteamHasActiveArkivTasks(NAISTEAM));
+    }
+
+    @Test
+    void naisteamHasActiveArkivTasks_returnsFalseWhenNoActiveTasks() {
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(false);
+        when(auditloggArkivResponseDTO2.getFiksa()).thenReturn(true);
+        when(auditloggArkivResponseDTO2.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggArkivResponseDTO2.getLoggingEndringer()).thenReturn(false);
+        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditloggArkivResponseDTO, auditloggArkivResponseDTO2));
+
+        assertFalse(service.naisteamHasActiveArkivTasks(NAISTEAM));
+    }
+
+    @Test
+    void naisteamHasActiveArkivTasks_exceptionPassesThrough() {
+        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.naisteamHasActiveArkivTasks(NAISTEAM));
+    }
+
+    @Test
+    void findAllNaisteamWithActiveArkivTasks_successful() {
+        String activeTeam = "active-team";
+        String inactiveTeam = "inactive-team";
+
+        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
+        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggArkivResponseDTO2.getFiksa()).thenReturn(false);
+        when(adapter.findAllDistinctNaisteam()).thenReturn(List.of(activeTeam, inactiveTeam));
+        when(adapter.getAllTasksByNaisteam(activeTeam)).thenReturn(List.of(auditloggArkivResponseDTO));
+        when(adapter.getAllTasksByNaisteam(inactiveTeam)).thenReturn(List.of(auditloggArkivResponseDTO2));
+
+        assertEquals(List.of(activeTeam), service.findAllNaisteamWithActiveArkivTasks());
+    }
+
+    @Test
+    void findAllNaisteamWithActiveArkivTasks_exceptionPassesThrough() {
+        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.findAllNaisteamWithActiveArkivTasks());
+    }
 }

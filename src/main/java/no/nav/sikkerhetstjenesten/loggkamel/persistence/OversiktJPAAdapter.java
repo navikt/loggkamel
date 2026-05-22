@@ -58,9 +58,13 @@ public class OversiktJPAAdapter {
     }
 
     public List<AuditloggArkivResponseDTO> getAllTasksByNaisteam(String naisteam) {
-        List<AuditloggArkivEntity> foundEntities = repository.findAllByNaisteam(naisteam);
+        List<AuditloggArkivEntity> foundEntities = repository.findAllArkivByNaisteam(naisteam);
 
         return foundEntities.stream().map(mapper::auditloggArkivEntityToResponseDTO).toList();
+    }
+
+    public List<String> findAllDistinctNaisteam() {
+        return repository.findAllDistinctNaisteam();
     }
 
 }

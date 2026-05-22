@@ -37,4 +37,15 @@ public class OversiktService {
     public List<AuditloggArkivResponseDTO> getAuditloggArkivByNaisteam(String naisteam) {
         return adapter.getAllTasksByNaisteam(naisteam);
     }
+
+    public boolean naisteamHasActiveArkivTasks(String naisteam) {
+        return adapter.getAllTasksByNaisteam(naisteam).stream()
+                .anyMatch(task -> task.getFiksa() && (task.getLoggingLeseoperasjoner() || task.getLoggingEndringer()));
+    }
+
+    public List<String> findAllNaisteamWithActiveArkivTasks() {
+        return adapter.findAllDistinctNaisteam().stream()
+                .filter(this::naisteamHasActiveArkivTasks)
+                .toList();
+    }
 }

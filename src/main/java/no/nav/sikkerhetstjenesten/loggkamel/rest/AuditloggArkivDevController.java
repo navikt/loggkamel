@@ -13,19 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.List;
-
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-@UnprotectedRestController(value = "/api/v1/dev")
+@UnprotectedRestController(value = "/api/v1/dev/arkiv")
 @ConditionalOnDevOrLocal
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
@@ -41,7 +37,7 @@ public class AuditloggArkivDevController {
         this.oversiktService = oversiktService;
     }
 
-    @PostMapping(path = "arkiv", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(OK)
     @Operation(summary = "Registrerer en DB for Audit Logg Arkivering")
     public AuditloggArkivResponseDTO createAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
@@ -49,20 +45,12 @@ public class AuditloggArkivDevController {
         return oversiktService.createAuditloggArkiv(auditloggArkivRequestDTO);
     }
 
-    @PutMapping("arkiv")
+    @PutMapping()
     @ResponseStatus(OK)
     @Operation(summary = "Oppdatere Audit Logg Arkivering for en gitt DB navn og teknologi")
     public AuditloggArkivResponseDTO updateAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
         log.debug("Updating audit logg arkiv: {}", auditloggArkivRequestDTO);
         return oversiktService.updateAuditloggArkiv(auditloggArkivRequestDTO);
-    }
-
-    @GetMapping("arkiv/search/naisteam/{naisTeam}")
-    @ResponseStatus(OK)
-    @Operation(summary = "Finne alle audit logg arkiv for gitt nais team")
-    public List<AuditloggArkivResponseDTO> getAuditloggArkivByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
-        log.debug("Getting audit logg arkiv by nais team: {}", naisTeam);
-        return oversiktService.getAuditloggArkivByNaisteam(naisTeam);
     }
 }
 
