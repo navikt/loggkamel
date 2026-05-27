@@ -201,16 +201,6 @@
       <artifactId>boot-conditionals</artifactId>
       <version>${nav.boot-version}</version>
     </dependency>
-    <dependency>
-      <groupId>no.nav.security</groupId>
-      <artifactId>token-client-spring</artifactId>
-      <version>${nav.security-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>no.nav.security</groupId>
-      <artifactId>token-validation-spring-test</artifactId>
-      <version>${nav.security-version}</version>
-    </dependency>
 
     <!-- Logstash -->
     <dependency>
@@ -253,11 +243,6 @@
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
       <version>[11.0.22,)</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec-http</artifactId>
-      <version>4.2.13.Final</version>
     </dependency>
 
     <dependency>

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import no.nav.security.token.support.spring.UnprotectedRestController;
+//import no.nav.security.token.support.spring.UnprotectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
@@ -17,7 +17,8 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-@UnprotectedRestController(value = "/api/v1/naisteam")
+//@UnprotectedRestController(value = "/api/v1/naisteam")
+//TODO: declare controller
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "NaisteamController", description = "Denne kontrolleren skal brukes for å finne audit logg arkiv for naisteam og verifisere hvis naisteam har aktivt nødt for arkiv infrastruktur")

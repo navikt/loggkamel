@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnGCP;
-import no.nav.security.token.support.spring.ProtectedRestController;
+//import no.nav.security.token.support.spring.ProtectedRestController;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
@@ -22,7 +22,9 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
 // TODO: look into input sanitization to avoid sql, log injection
-@ProtectedRestController(value = "/api/v1/arkiv", issuer = "azuread", claimMap = {})
+//TODO: declare controller
+// TODO: require authentication for controller, validate token
+//@ProtectedRestController(value = "/api/v1/arkiv", issuer = "azuread", claimMap = {})
 @ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
