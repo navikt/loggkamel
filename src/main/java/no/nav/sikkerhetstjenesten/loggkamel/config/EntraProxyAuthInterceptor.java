@@ -20,9 +20,9 @@ import java.util.Map;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 @Component
-public class EntraIdAuthInterceptor implements ClientHttpRequestInterceptor {
+public class EntraProxyAuthInterceptor implements ClientHttpRequestInterceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(EntraIdAuthInterceptor.class);
+    private static final Logger log = LoggerFactory.getLogger(EntraProxyAuthInterceptor.class);
 
     @Value("${NAIS_CLUSTER_NAME:#{''}}")
     private String clusterName;
@@ -41,8 +41,6 @@ public class EntraIdAuthInterceptor implements ClientHttpRequestInterceptor {
 
         String authToken = getAuthToken();
         request.getHeaders().setBearerAuth(authToken);
-
-        log.debug("Setting bearer token with authToken ending in {}", authToken.substring(Math.max(0, authToken.length() - 5)));
 
         return execution.execute(request, body);
     }

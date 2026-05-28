@@ -20,12 +20,12 @@ public class EntraProxyConfig {
     private String entraProxyUrl;
 
     @Bean
-    public EntraProxyClient entraProxyClient(EntraIdAuthInterceptor entraIdAuthInterceptor) {
+    public EntraProxyClient entraProxyClient(EntraProxyAuthInterceptor entraProxyAuthInterceptor) {
         RestClient restClient = RestClient.builder()
                 .baseUrl(entraProxyUrl)
                 .requestInterceptors(interceptors -> {
                     interceptors.add(new LoggingRequestInterceptor());
-                    interceptors.add(entraIdAuthInterceptor);
+                    interceptors.add(entraProxyAuthInterceptor);
                 })
                 .build();
 
