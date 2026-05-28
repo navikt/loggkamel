@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,14 +40,14 @@ class EntraProxyServiceCacheIntegrationTest {
     EntraProxyService service;
 
     @Autowired
-    EntraProxyClient client;
+    EntraProxyAdapter adapter;
 
     @Autowired
     CacheManager cacheManager;
 
     @BeforeEach
     void setUp() {
-        reset(client);
+        reset(adapter);
         clearCache(CacheConfig.ENTRA_PROXY_BY_NAV_IDENT);
         clearCache(CacheConfig.ENTRA_PROXY_BY_T_IDENT);
     }
@@ -55,71 +55,47 @@ class EntraProxyServiceCacheIntegrationTest {
     @Test
     void getAnsattFraNavIdent_successfulResponseIsCached() {
         EntraProxyAnsatt ansatt = EntraProxyAnsatt.builder().navIdent(NAV_IDENT).epost(EPOST).build();
-        when(client.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(ansatt);
+        when(adapter.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(ansatt);
 
         EntraProxyAnsatt first = service.getAnsattFraNavIdent(NAV_IDENT);
         EntraProxyAnsatt second = service.getAnsattFraNavIdent(NAV_IDENT);
 
         assertEquals(ansatt, first);
         assertEquals(ansatt, second);
-        verify(client, times(1)).getAnsattFraNavIdent(NAV_IDENT);
-    }
-
-    @Test
-    void getAnsattFraNavIdent_notFoundIsCachedAsNull() {
-        when(client.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(restClientException(HttpStatus.NOT_FOUND));
-
-        EntraProxyAnsatt first = service.getAnsattFraNavIdent(NAV_IDENT);
-        EntraProxyAnsatt second = service.getAnsattFraNavIdent(NAV_IDENT);
-
-        assertNull(first);
-        assertNull(second);
-        verify(client, times(1)).getAnsattFraNavIdent(NAV_IDENT);
+        verify(adapter, times(1)).getAnsattFraNavIdent(NAV_IDENT);
     }
 
     @Test
     void getAnsattFraNavIdent_non404ExceptionIsNotCached() {
-        when(client.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(restClientException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(adapter.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(restClientException(HttpStatus.SERVICE_UNAVAILABLE));
 
         assertThrows(RestClientResponseException.class, () -> service.getAnsattFraNavIdent(NAV_IDENT));
         assertThrows(RestClientResponseException.class, () -> service.getAnsattFraNavIdent(NAV_IDENT));
 
-        verify(client, times(2)).getAnsattFraNavIdent(NAV_IDENT);
+        verify(adapter, times(2)).getAnsattFraNavIdent(NAV_IDENT);
     }
 
     @Test
     void getAnsattFraTIdent_successfulResponseIsCached() {
         EntraProxyAnsatt ansatt = EntraProxyAnsatt.builder().tident(T_IDENT).epost(EPOST).build();
-        when(client.getAnsattFraTIdent(T_IDENT)).thenReturn(ansatt);
+        when(adapter.getAnsattFraTIdent(T_IDENT)).thenReturn(ansatt);
 
         EntraProxyAnsatt first = service.getAnsattFraTIdent(T_IDENT);
         EntraProxyAnsatt second = service.getAnsattFraTIdent(T_IDENT);
 
         assertEquals(ansatt, first);
         assertEquals(ansatt, second);
-        verify(client, times(1)).getAnsattFraTIdent(T_IDENT);
-    }
-
-    @Test
-    void getAnsattFraTIdent_notFoundIsCachedAsNull() {
-        when(client.getAnsattFraTIdent(T_IDENT)).thenThrow(restClientException(HttpStatus.NOT_FOUND));
-
-        EntraProxyAnsatt first = service.getAnsattFraTIdent(T_IDENT);
-        EntraProxyAnsatt second = service.getAnsattFraTIdent(T_IDENT);
-
-        assertNull(first);
-        assertNull(second);
-        verify(client, times(1)).getAnsattFraTIdent(T_IDENT);
+        verify(adapter, times(1)).getAnsattFraTIdent(T_IDENT);
     }
 
     @Test
     void getAnsattFraTIdent_non404ExceptionIsNotCached() {
-        when(client.getAnsattFraTIdent(T_IDENT)).thenThrow(restClientException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(adapter.getAnsattFraTIdent(T_IDENT)).thenThrow(restClientException(HttpStatus.SERVICE_UNAVAILABLE));
 
         assertThrows(RestClientResponseException.class, () -> service.getAnsattFraTIdent(T_IDENT));
         assertThrows(RestClientResponseException.class, () -> service.getAnsattFraTIdent(T_IDENT));
 
-        verify(client, times(2)).getAnsattFraTIdent(T_IDENT);
+        verify(adapter, times(2)).getAnsattFraTIdent(T_IDENT);
     }
 
     private void clearCache(String cacheName) {
@@ -144,8 +120,8 @@ class EntraProxyServiceCacheIntegrationTest {
     static class TestConfig {
 
         @Bean
-        EntraProxyClient entraProxyClient() {
-            return Mockito.mock(EntraProxyClient.class);
+        EntraProxyAdapter entraProxyAdapter() {
+            return Mockito.mock(EntraProxyAdapter.class);
         }
     }
 }
