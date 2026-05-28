@@ -57,6 +57,8 @@ no.nav.security.jwt:
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
+  namespace: "sikkerhetstjenesten"
+  app-name: "entra-proxy"
 
 springdoc:
   swagger-ui:

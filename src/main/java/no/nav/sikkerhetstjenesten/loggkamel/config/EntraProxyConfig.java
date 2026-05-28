@@ -34,6 +34,15 @@ public class EntraProxyConfig {
     @Value("${ENTRA_PROXY_BASE_URL}")
     private String entraProxyUrl;
 
+    @Value("${NAIS_CLUSTER_NAME:#{''}")
+    private String clusterName;
+
+    @Value("${entra-proxy.namespace:#{''}}")
+    private String entraProxyNamespace;
+
+    @Value("${entra-proxy.app-name:#{''}}")
+    private String entraProxyAppName;
+
     @Value("${NAIS_TOKEN_ENDPOINT:#{''}}")
     private String naisTokenEndpoint;
 
@@ -48,6 +57,8 @@ public class EntraProxyConfig {
 //    @Scheduled(fixedRate = 300000)
     @ConditionalOnGCP
     private void refreshEntraProxClient() {
+        //TODO: this method isn't being run as scheduled, why?
+
         log.info("Refreshing EntraProxyClient bean with new auth token");
         ctxt.registerBean("EntraProxyClient", EntraProxyClient.class, buildEntraProxyClientWithCurrentToken());
         ctxt.refresh();
@@ -80,10 +91,10 @@ public class EntraProxyConfig {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        //TODO: construct target programatically instead of hardcoding
+        String target = String.format("api://%s.%s.%s/.default", clusterName, entraProxyNamespace, entraProxyAppName);
         Map<String, String> body = Map.of(
                 "identity_provider", "entra_id",
-                "target", "api://dev-gcp.sikkerhetstjenesten.entra-proxy/.default"
+                "target", target
         );
 
         ResponseEntity<Map> response = RestClient.create().post()
