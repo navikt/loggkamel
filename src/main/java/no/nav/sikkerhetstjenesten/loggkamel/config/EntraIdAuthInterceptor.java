@@ -24,7 +24,7 @@ public class EntraIdAuthInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(EntraIdAuthInterceptor.class);
 
-    @Value("${NAIS_CLUSTER_NAME:#{''}")
+    @Value("${NAIS_CLUSTER_NAME:#{''}}")
     private String clusterName;
 
     @Value("${entra-proxy.namespace:#{''}}")
