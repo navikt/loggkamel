@@ -2,8 +2,10 @@ package no.nav.sikkerhetstjenesten.loggkamel.config;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapterImpl;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
-import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyMock;
+import no.nav.sikkerhetstjenesten.loggkamel.client.MockEntraProxyAdapter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +16,17 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @Configuration
 public class EntraProxyConfig {
 
+    @Value("${ENTRA_PROXY_BASE_URL}")
+    private String entraProxyUrl;
+
     @Bean
-    @ConditionalOnGCP
-    public EntraProxyClient entraProxyClient(RestClient.Builder restClientBuilder, @Value("${ENTRA_PROXY_BASE_URL}")
-                                                String entraProxyUrl) {
-        RestClient restClient = restClientBuilder
+    public EntraProxyClient entraProxyClient(EntraProxyAuthInterceptor entraProxyAuthInterceptor) {
+        RestClient restClient = RestClient.builder()
                 .baseUrl(entraProxyUrl)
+                .requestInterceptors(interceptors -> {
+                    interceptors.add(new LoggingRequestInterceptor());
+                    interceptors.add(entraProxyAuthInterceptor);
+                })
                 .build();
 
         HttpServiceProxyFactory proxyFactory = HttpServiceProxyFactory.builder()
@@ -30,8 +37,14 @@ public class EntraProxyConfig {
     }
 
     @Bean
+    @ConditionalOnGCP
+    public EntraProxyAdapter entraProxyAdapter(EntraProxyClient entraProxyClient) {
+        return new EntraProxyAdapterImpl(entraProxyClient);
+    }
+
+    @Bean
     @ConditionalOnLocalOrTest
-    public EntraProxyClient entraProxyClientMock() {
-        return new EntraProxyMock();
+    public EntraProxyAdapter mockEntraProxyAdapter() {
+        return new MockEntraProxyAdapter();
     }
 }

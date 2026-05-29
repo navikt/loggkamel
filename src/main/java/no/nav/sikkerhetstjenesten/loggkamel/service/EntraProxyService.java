@@ -1,45 +1,27 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientResponseException;
 
 @Service
 public class EntraProxyService {
 
-    private final EntraProxyClient client;
+    private final EntraProxyAdapter entraProxyAdapter;
 
-    public EntraProxyService(EntraProxyClient client) {
-        this.client = client;
+    public EntraProxyService(EntraProxyAdapter entraProxyAdapter) {
+        this.entraProxyAdapter = entraProxyAdapter;
     }
 
     @Cacheable(cacheNames = CacheConfig.ENTRA_PROXY_BY_NAV_IDENT, key = "#navIdent", sync = true)
     public EntraProxyAnsatt getAnsattFraNavIdent(String navIdent) {
-        try {
-            return client.getAnsattFraNavIdent(navIdent);
-        } catch (RestClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return null;
-            }
-
-            throw e;
-        }
+        return entraProxyAdapter.getAnsattFraNavIdent(navIdent);
     }
 
     @Cacheable(cacheNames = CacheConfig.ENTRA_PROXY_BY_T_IDENT, key = "#tIdent", sync = true)
     public EntraProxyAnsatt getAnsattFraTIdent(String tIdent) {
-        try {
-            return client.getAnsattFraTIdent(tIdent);
-        } catch (RestClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return null;
-            }
-
-            throw e;
-        }
+        return entraProxyAdapter.getAnsattFraTIdent(tIdent);
     }
 }

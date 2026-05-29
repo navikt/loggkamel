@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
-import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;

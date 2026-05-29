@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client;
 
-public class EntraProxyMock implements EntraProxyClient {
-    public static final String MOCK_ANSATT_NAV_IDENT = "MOCK_NAV_IDENT";
+public class MockEntraProxyAdapter implements EntraProxyAdapter {
     public static final String MOCK_ANSATT_NAV_TIDENT = "MOCK_NAV_TIDENT";
     public static final String MOCK_ANSATT_VISNING_NAVN = "MOCK_NAVN";
     public static final String MOCK_ANSATT_FORNAVN = "MOCK_FORNAVN";
@@ -10,15 +9,19 @@ public class EntraProxyMock implements EntraProxyClient {
     public static final String MOCK_ENHET_NUMMER = "MOCK_ENHET_NUMMER";
     public static final String MOCK_ENHET_NAVN = "MOCK_ENHET_NAVN";
 
-
     @Override
     public EntraProxyAnsatt getAnsattFraNavIdent(String navIdent) {
-        return buildMockAnsatt();
+        return buildMockAnsatt(navIdent);
     }
 
-    private EntraProxyAnsatt buildMockAnsatt() {
+    @Override
+    public EntraProxyAnsatt getAnsattFraTIdent(String tIdent) {
+        return buildMockAnsatt(tIdent);
+    }
+
+    private EntraProxyAnsatt buildMockAnsatt(String navIdent) {
         return EntraProxyAnsatt.builder()
-                .navIdent(MOCK_ANSATT_NAV_IDENT)
+                .navIdent(navIdent)
                 .visningNavn(MOCK_ANSATT_VISNING_NAVN)
                 .fornavn(MOCK_ANSATT_FORNAVN)
                 .etternavn(MOCK_ANSATT_ETTERNAVN)
@@ -31,8 +34,4 @@ public class EntraProxyMock implements EntraProxyClient {
                 .build();
     }
 
-    @Override
-    public EntraProxyAnsatt getAnsattFraTIdent(String tIdent) {
-        return buildMockAnsatt();
-    }
 }
