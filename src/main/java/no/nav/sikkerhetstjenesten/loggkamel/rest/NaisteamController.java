@@ -13,7 +13,8 @@ import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@RestController(value = "/api/v1/naisteam")
+@RestController
+@RequestMapping("/api/v1/naisteam")
 @Tag(name = "NaisteamController", description = "Denne kontrolleren skal brukes for å finne audit logg arkiv for naisteam og verifisere hvis naisteam har aktivt nødt for arkiv infrastruktur")
 public class NaisteamController {
 

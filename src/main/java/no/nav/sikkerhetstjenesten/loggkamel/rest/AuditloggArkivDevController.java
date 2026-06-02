@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@RestController(value = "/api/v1/dev/arkiv")
+@RestController
+@RequestMapping("/api/v1/dev/arkiv")
 @ConditionalOnDevOrLocal
 @Tag(name = "AuditloggArkivDevController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
 public class AuditloggArkivDevController {
