@@ -40,7 +40,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .autoStartup(false)
+//            .autoStartup(false)
             .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
             .process(exchange -> {
                 // If the file comes from a bucket instead of local storage, still populate the filename
