@@ -1,9 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogGroupConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGroupEnricher.LOG_GROUP_ENRICHER_ROUTE;
-import static org.apache.camel.Exchange.EXCEPTION_CAUGHT;
 import static org.apache.camel.Exchange.FILE_NAME;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
@@ -40,37 +35,14 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .autoStartup(false)
-            .process(exchange -> exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL))
-            .process(exchange -> {
-                // If the file comes from a bucket instead of local storage, still populate the filename
-                if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
-                    exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
-                }
-            })
+//            .autoStartup(false)
+            .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
-            .process(exchange -> metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed))
-            .choice()
-                .when(header(FILE_NAME).endsWith(".gz"))
-                    .log(LoggingLevel.INFO, "Log file ${header.CamelFileName} is gzip compressed, attempting to decompress")
-                    .doTry()
-                        .unmarshal().gzipDeflater()
-                        .endDoTry()
-                    .doCatch(Exception.class)
-                        .process(exchange -> {
-                            String fileName = exchange.getIn().getHeader(FILE_NAME, String.class);
-                            Exception cause = exchange.getProperty(EXCEPTION_CAUGHT, Exception.class);
-                            String errorMessage = cause != null ? cause.getMessage() : "unknown error";
-
-                            throw new InvalidPostgresLogGroupException(
-                                "Failed to decompress gzip file " + (fileName != null ? fileName : "unknown") + ", error: " + errorMessage
-                            );
-                        })
-                    .end()
-                .end()
+            .bean(PostgresLogGroupConsumerProcessor.class, "incrementMetrics")
+            .bean(PostgresLogGroupConsumerProcessor.class, "decompressIfGzip")
             .to(LOG_GROUP_ENRICHER_ROUTE);
     }
 }
