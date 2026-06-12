@@ -35,8 +35,6 @@ class PostgresLogGroupConsumerProcessorTest {
         processor = new PostgresLogGroupConsumerProcessor(metrics);
     }
 
-    // ── initializeConsumerState ──────────────────────────────────────────────
-
     @Test
     void initializeConsumerState_setsTeknoLogiVariable() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
@@ -67,8 +65,6 @@ class PostgresLogGroupConsumerProcessorTest {
         assertEquals("existing.auditlog", exchange.getIn().getHeader(FILE_NAME, String.class));
     }
 
-    // ── incrementMetrics ────────────────────────────────────────────────────
-
     @Test
     void incrementMetrics_callsHappyPathWithPostgresqlGrouped() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
@@ -77,8 +73,6 @@ class PostgresLogGroupConsumerProcessorTest {
 
         verify(metrics).incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed);
     }
-
-    // ── decompressIfGzip ────────────────────────────────────────────────────
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
