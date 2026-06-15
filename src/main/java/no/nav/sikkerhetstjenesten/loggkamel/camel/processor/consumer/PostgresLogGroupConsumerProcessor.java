@@ -61,7 +61,7 @@ public class PostgresLogGroupConsumerProcessor {
         } catch (Exception e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
             throw new InvalidPostgresLogGroupException(
-                "Failed to decompress gzip file " + fileName + ", error: " + errorMessage
+                "Failed to decompress gzip file " + fileName + ", error: " + errorMessage, e
             );
         }
     }
