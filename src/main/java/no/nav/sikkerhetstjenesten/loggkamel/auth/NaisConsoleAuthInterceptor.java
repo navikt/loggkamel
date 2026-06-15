@@ -27,14 +27,15 @@ public class NaisConsoleAuthInterceptor implements ClientHttpRequestInterceptor 
         return execution.execute(request, body);
     }
 
-private String getAuthToken() {
-    if (pathToTokenFile == null || pathToTokenFile.isBlank()) {
-        throw new DependencyException("NAIS_SERVICE_ACCOUNT_TOKEN_PATH is not set");
-    }
+    private String getAuthToken() {
+        if (pathToTokenFile == null || pathToTokenFile.isBlank()) {
+            throw new DependencyException("NAIS_SERVICE_ACCOUNT_TOKEN_PATH is not set");
+        }
 
-    try {
-        return Files.readString(Path.of(pathToTokenFile)).strip();
-    } catch (IOException e) {
-        throw new DependencyException("Unable to read nais console token from workflow file: " + pathToTokenFile, e);
+        try {
+            return Files.readString(Path.of(pathToTokenFile)).strip();
+        } catch (IOException e) {
+            throw new DependencyException("Unable to read nais console token from workflow file: " + pathToTokenFile, e);
+        }
     }
 }
