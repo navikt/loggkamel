@@ -90,5 +90,4 @@ spec:
     - name: DB_POOLSIZE
       value: '{{db.poolsize}}'
   envFrom:
-    - secret: client-tokens
     - secret: loggkamel-unleash-api-token
