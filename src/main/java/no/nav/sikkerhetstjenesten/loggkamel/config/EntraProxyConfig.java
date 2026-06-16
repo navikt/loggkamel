@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.config;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
+import no.nav.sikkerhetstjenesten.loggkamel.auth.EntraProxyAuthInterceptor;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapterImpl;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
