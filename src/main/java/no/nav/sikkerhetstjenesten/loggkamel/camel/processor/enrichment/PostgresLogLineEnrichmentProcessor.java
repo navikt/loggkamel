@@ -20,7 +20,6 @@ public class PostgresLogLineEnrichmentProcessor {
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
 
-    public static final String LOG_ENRICHMENT = "logLineEnrichment";
     static final String DB_AUDIT_ENTRY_REQUEST_TYPE = "dbAuditEntry";
 
     private final EntraProxyService entraProxyService;
@@ -49,7 +48,7 @@ public class PostgresLogLineEnrichmentProcessor {
     }
 
     private EnrichedAuditlogg extractEnrichmentFromLog(String body) {
-        String regex = "^(.*)\\(\\d+\\):v-oidc-([a-zA-Z0-9]*)-\\d+-.*@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
+        String regex = "^(.*)\\(\\d+\\):(.*)@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(body);
@@ -59,10 +58,16 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
+        String userIdentity = matcher.group(2);
+        // if the user identity is of the form "v-oidc-{navIdent}-something", extract the navIdent part. If it isn't of that form, then pass the full string to entra-proxy
+        if (userIdentity.startsWith("v-oidc-")) {
+            userIdentity = userIdentity.split("-")[2];
+        }
+
         return EnrichedAuditlogg.builder()
                 .originalMessage(body)
                 .logTime(matcher.group(1))
-                .navIdent(matcher.group(2))
+                .navIdent(userIdentity)
                 .dbName(matcher.group(3))
                 .auditType(matcher.group(4))
                 .statementId(matcher.group(5))
@@ -86,8 +91,8 @@ public class PostgresLogLineEnrichmentProcessor {
         }
 
         if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
-            log.info("Entra-proxy returned empty response for navIdent {}, sending log to invalid messages", navIdent);
-            throw new InvalidPostgresLogLineException("Entra-proxy returned empty response for navIdent " + navIdent);
+            log.info("Entra-proxy returned empty response for navIdent {}, not enriching with employee email", navIdent);
+            return null;
         }
 
         return entraProxyAnsatt.getEpost();

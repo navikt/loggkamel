@@ -9,10 +9,14 @@ import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.stream.Stream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,13 +101,20 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLENAVIDENT")).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
+        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(pgAuditClass)).thenReturn(logLineOperationTypes);
+
+        postgresLogLineEnrichmentProcessor.enrich(exchange);
+
+        ArgumentCaptor<EnrichedAuditlogg> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedAuditlogg.class);
+        verify(message).setBody(logEnrichmentCaptor.capture());
+
+        EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
+        assertNull(capturedLogEnrichment.getEpost());
     }
 
-    @Test
-    void enrich_happyPath() {
-        String logMessageBody = String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter);
-
+    @ParameterizedTest
+    @MethodSource("provideLogLinesTestingVOIDAndUnknownLogParsing")
+    void enrich_happyPath(String logMessageBody) {
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
         String ePost = "epost";
@@ -121,6 +132,13 @@ class PostgresLogLineEnrichmentProcessorTest {
         EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);
 
+    }
+
+    private static Stream<String> provideLogLinesTestingVOIDAndUnknownLogParsing() {
+        return Stream.of(
+                String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter),
+                String.format("%s(48754):%s@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter)
+        );
     }
 
     private EnrichedAuditlogg expectedLogEnrichment(String logMessageBody) {
