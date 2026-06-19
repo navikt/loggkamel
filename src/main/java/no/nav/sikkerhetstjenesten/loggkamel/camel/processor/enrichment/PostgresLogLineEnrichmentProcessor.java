@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -24,11 +25,13 @@ public class PostgresLogLineEnrichmentProcessor {
 
     private final EntraProxyService entraProxyService;
     private final LogLineOperationsEnricher logLineOperationsEnricher;
+    private final Metrics metrics;
 
     @Autowired
-    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogLineOperationsEnricher logLineOperationsEnricher) {
+    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogLineOperationsEnricher logLineOperationsEnricher, Metrics metrics) {
         this.logLineOperationsEnricher = logLineOperationsEnricher;
         this.entraProxyService = entraProxyService;
+        this.metrics = metrics;
     }
 
     public void enrich(Exchange exchange) {
@@ -92,6 +95,7 @@ public class PostgresLogLineEnrichmentProcessor {
 
         if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
             log.info("Entra-proxy returned empty response for navIdent {}, not enriching with employee email", navIdent);
+            metrics.incrementUnknownNavIdent();
             return null;
         }
 
