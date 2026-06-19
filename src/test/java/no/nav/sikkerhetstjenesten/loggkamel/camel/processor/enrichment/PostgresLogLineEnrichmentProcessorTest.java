@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -60,6 +61,9 @@ class PostgresLogLineEnrichmentProcessorTest {
 
     @Mock
     LogLineOperationsEnricher logLineOperationsEnricher;
+
+    @Mock
+    Metrics metrics;
 
     @InjectMocks
     PostgresLogLineEnrichmentProcessor postgresLogLineEnrichmentProcessor;
