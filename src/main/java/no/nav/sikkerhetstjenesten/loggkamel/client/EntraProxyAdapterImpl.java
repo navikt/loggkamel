@@ -16,7 +16,7 @@ public class EntraProxyAdapterImpl implements EntraProxyAdapter {
         try {
             return client.getAnsattFraNavIdent(navIdent);
         } catch (RestClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND || e.getStatusCode() == HttpStatus.BAD_REQUEST) {
                 return null;
             }
 
@@ -28,7 +28,7 @@ public class EntraProxyAdapterImpl implements EntraProxyAdapter {
         try {
             return client.getAnsattFraTIdent(tIdent);
         } catch (RestClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND || e.getStatusCode() == HttpStatus.BAD_REQUEST) {
                 return null;
             }
 
