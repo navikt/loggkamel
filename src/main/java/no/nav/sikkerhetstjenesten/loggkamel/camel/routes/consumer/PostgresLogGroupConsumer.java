@@ -35,9 +35,9 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
             .routeId(POSTGRES_LOG_CONSUMER_ID)
-            .autoStartup(false)
+//            .autoStartup(false)
             .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
-            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
+            .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
             .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
             .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
