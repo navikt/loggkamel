@@ -35,4 +35,9 @@ public class Metrics {
         meterRegistry.counter(logName, "teknologi", teknologi, "action", action.name(), "database", databaseName).increment();
     }
 
+    public void incrementUnknownNavIdent() {
+        String logName = LOGGKAMEL_APP_PREFIX + "unknown-nav-ident";
+        meterRegistry.counter(logName).increment();
+    }
+
 }

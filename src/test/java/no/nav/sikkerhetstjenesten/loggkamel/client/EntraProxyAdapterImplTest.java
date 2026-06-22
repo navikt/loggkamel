@@ -43,6 +43,13 @@ class EntraProxyAdapterImplTest {
     }
 
     @Test
+    void getAnsattFraNavIdent_badRequestReturnsNull() {
+        when(client.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(restClientException(HttpStatus.BAD_REQUEST));
+
+        assertNull(adapter.getAnsattFraNavIdent(NAV_IDENT));
+    }
+
+    @Test
     void getAnsattFraNavIdent_non404ExceptionConvertedToDependencyException() {
         when(client.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(restClientException(HttpStatus.SERVICE_UNAVAILABLE));
 
@@ -60,6 +67,13 @@ class EntraProxyAdapterImplTest {
     @Test
     void getAnsattFraTIdent_notFoundReturnsNull() {
         when(client.getAnsattFraTIdent(T_IDENT)).thenThrow(restClientException(HttpStatus.NOT_FOUND));
+
+        assertNull(adapter.getAnsattFraTIdent(T_IDENT));
+    }
+
+    @Test
+    void getAnsattFraTIdent_badRequestReturnsNull() {
+        when(client.getAnsattFraTIdent(T_IDENT)).thenThrow(restClientException(HttpStatus.BAD_REQUEST));
 
         assertNull(adapter.getAnsattFraTIdent(T_IDENT));
     }
