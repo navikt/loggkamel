@@ -4,6 +4,7 @@ import com.google.cloud.storage.StorageException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.LogLineMessageConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +36,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
                 .handled(true);
 
         //TODO: clean error message, logging level info, also include in the other consumer
-        onException(StorageException.class)
+        onException(RuntimeCamelException.class)
                 .log(LoggingLevel.ERROR, "CAUGHT STORAGE EXCEPTION")
                 .handled(true);
 
