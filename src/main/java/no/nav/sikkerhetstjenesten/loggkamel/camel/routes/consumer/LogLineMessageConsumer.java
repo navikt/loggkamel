@@ -35,10 +35,12 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         from(consumerUri)
             .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
-            .autoStartup(false)
+//            .autoStartup(false)
             .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
+            //TODO: REMOVE THIS AFTER TESTING
+            .log(LoggingLevel.INFO, "Consuming loggline with camel filename: ${header.CamelFileName}, GCP filename: ${header.CamelGoogleCloudStorageObjectName}")
             .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
             .bean(LogLineMessageConsumerProcessor.class, "mapToAuditloggLineMessage")
             .bean(LogLineMessageConsumerProcessor.class, "incrementMetrics")

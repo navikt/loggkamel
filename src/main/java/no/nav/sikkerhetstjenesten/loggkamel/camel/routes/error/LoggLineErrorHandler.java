@@ -43,6 +43,8 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                //TODO: REMOVE THIS AFTER TESTING
+                .log(LoggingLevel.INFO, "Sending log line to invalid messages queue with camel filename: ${header.CamelFileName}, GCP filename: ${header.CamelGoogleCloudStorageObjectName}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, String.class).toLowerCase(), Metrics.BackoutQueueType.invalid))
                 .to(invalidMessageUri);
 
