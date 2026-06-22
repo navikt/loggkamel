@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
-import com.google.cloud.storage.StorageException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.LogLineMessageConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
@@ -33,11 +32,6 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         onException(DuplicateKeyException.class)
                 .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, dropping message as another instance of loggkamel has successfully claimed it")
-                .handled(true);
-
-        //TODO: clean error message, logging level info, also include in the other consumer
-        onException(RuntimeCamelException.class)
-                .log(LoggingLevel.ERROR, "CAUGHT STORAGE EXCEPTION")
                 .handled(true);
 
         from(consumerUri)
