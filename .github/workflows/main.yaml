@@ -26,7 +26,7 @@ jobs:
     name: Deploy to ${{ matrix.cluster }}
     environment: ${{ matrix.cluster }}:sikkerhetstjenesten
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           persist-credentials: false
       - uses: nais/deploy/actions/deploy@7c152a10f4da3ca352d57a25eba0b3a8e04882f9 # Deploy
