@@ -53,7 +53,7 @@
     "min": "30m"
   },
   "replica": {
-    "min": 4,
+    "min": 2,
     "max": 4
   }
 }
