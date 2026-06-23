@@ -41,4 +41,7 @@
     <root level="info">
         <appender-ref ref="otel"/>
     </root>
+
+    <!-- Keep only actionable events from Camel GCS polling internals; expected 404 race warnings are noisy with competing consumers -->
+    <logger name="org.apache.camel.component.google.storage.GoogleCloudStorageConsumer" level="ERROR"/>
 </configuration>

@@ -24,7 +24,7 @@ public class ConsumerControlRoute extends RouteBuilder {
     public void configure() {
         from("quartz:" + CONSUMER_CONTROL_ROUTE_ID + "?cron=0+*/10+*+*+*+?") // Every 10 minutes
                 .routeId(CONSUMER_CONTROL_ROUTE_ID)
-                .log(LoggingLevel.INFO, "Checking whether to disable consumer routes based on feature flags")
+                .log(LoggingLevel.DEBUG, "Checking whether to disable consumer routes based on feature flags")
                 .process(exchange -> {
                     boolean consumePostgresLogs = unleash.isEnabled(POSTGRES_LOGS_FEATURE_FLAG, false);
                     if (consumePostgresLogs && exchange.getContext().getRouteController().getRouteStatus(POSTGRES_LOG_CONSUMER_ID).isStopped()) {
@@ -45,6 +45,6 @@ public class ConsumerControlRoute extends RouteBuilder {
                         exchange.getContext().getRouteController().stopRoute(LOG_LINE_MESSAGE_CONSUMER_ID);
                     }
                 })
-                .log(LoggingLevel.INFO, "Consumer route control check complete");
+                .log(LoggingLevel.DEBUG, "Consumer route control check complete");
     }
 }
