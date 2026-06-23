@@ -52,10 +52,10 @@ spec:
     path: /monitoring/prometheus
   readiness:
     path: /monitoring/health/readiness
-    initialDelay: 30
+    initialDelay: 60
   liveness:
     path: /monitoring/health/liveness
-    initialDelay: 30
+    initialDelay: 60
   port: 8080
   replicas:
     max: {{replica.max}}
@@ -66,7 +66,7 @@ spec:
     requests:
       cpu: '{{cpu.min}}'
       memory: '{{mem.min}}'
-  terminationGracePeriodSeconds: 60
+  terminationGracePeriodSeconds: 120
   accessPolicy:
     outbound:
       rules:
