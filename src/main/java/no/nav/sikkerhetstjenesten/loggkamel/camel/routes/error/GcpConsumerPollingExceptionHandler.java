@@ -41,7 +41,13 @@ public class GcpConsumerPollingExceptionHandler implements ExceptionHandler {
 
     @Override
     public void handleException(String message, Exchange exchange, Throwable exception) {
+        //TODO: remove after testing
+        log.error("Captured exception during GCS consumer polling: " + exception);
+
         StorageException storageException = findStorageException(exception);
+
+        //TODO: remove after testing
+        log.error("Captured storage exception: " + storageException);
         if (storageException != null && storageException.getCode() == HTTP_NOT_FOUND) {
             log.debug(
                 "Ignoring 404 Not Found during GCS consumer polling — object was likely already " +
