@@ -9,6 +9,7 @@ import com.google.cloud.logging.Severity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -40,8 +41,8 @@ import static org.mockito.Mockito.when;
 class GCPArkivLoggProducerProcessorTest {
 
     private static final String DATABASE_NAME = "dbName";
+    private static final TeknologiEnum TEKNOLOGI_IN_MESSAGE = TeknologiEnum.POSTGRESQL;
     private static final ZonedDateTime NOW = ZonedDateTime.now();
-    private static final String UPPERCASE_TEKNOLOGI = "SLKFJLKJSDF";
     private static final String PROVIDED_GCP_ID = "gcpId";
     private static final String PROVIDED_FILENAME = "providedFilename";
 
@@ -66,14 +67,14 @@ class GCPArkivLoggProducerProcessorTest {
     @Test
     void incrementMetrics_incrementsHappyPathAndDatabaseSpecificMetrics() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(TEKNOLOGI, UPPERCASE_TEKNOLOGI);
+        exchange.setVariable(TEKNOLOGI, TEKNOLOGI_IN_MESSAGE);
         exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
         when(auditloggArkivResponseDTO.getDbname()).thenReturn(DATABASE_NAME);
 
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, UPPERCASE_TEKNOLOGI.toLowerCase(), Metrics.Action.produced);
-        verify(metrics).incrementDatabaseSpecificAction(DATABASE_NAME, UPPERCASE_TEKNOLOGI.toLowerCase(), Metrics.Action.produced);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
+        verify(metrics).incrementDatabaseSpecificAction(DATABASE_NAME, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
     }
 
     @Test

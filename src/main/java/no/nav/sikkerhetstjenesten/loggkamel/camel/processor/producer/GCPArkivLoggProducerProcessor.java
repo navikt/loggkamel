@@ -9,6 +9,7 @@ import com.google.cloud.logging.Severity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class GCPArkivLoggProducerProcessor {
     }
 
     public void incrementMetrics(Exchange exchange) {
-        String teknologi = exchange.getVariable(TEKNOLOGI, String.class).toLowerCase();
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
         metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi, Metrics.Action.produced);
 
         String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();

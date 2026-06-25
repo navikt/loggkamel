@@ -28,8 +28,8 @@ public class LogLineMessageProducerProcessor {
     }
 
     public void incrementMetrics(Exchange exchange) {
-        String teknologi = exchange.getVariable(TEKNOLOGI, String.class);
-        metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi.toLowerCase(), Metrics.Action.produced);
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
+        metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi, Metrics.Action.produced);
     }
 
     public void mapToAuditloggLineMessage(Exchange exchange) throws JsonProcessingException {
