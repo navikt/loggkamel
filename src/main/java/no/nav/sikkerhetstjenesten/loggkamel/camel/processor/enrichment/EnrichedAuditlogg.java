@@ -51,5 +51,5 @@ public class EnrichedAuditlogg {
     private String sqlParameters;
     @Email
     private String epost;
-    private static final String requestType = "dbAuditEntry";
+    private final String requestType = "dbAuditEntry";
 }
