@@ -45,7 +45,7 @@ class LogLineMessageProducerProcessorTest {
 
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TEKNOLOGI_IN_EXCHANGE.name().toLowerCase(), Metrics.Action.produced);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TEKNOLOGI_IN_EXCHANGE, Metrics.Action.produced);
     }
 
     @Test

@@ -103,8 +103,8 @@ class LogLineMessageConsumerProcessorTest {
 
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TeknologiEnum.POSTGRESQL.name(), Metrics.Action.consumed);
-        verify(metrics).incrementDatabaseSpecificAction(DB_NAME, TeknologiEnum.POSTGRESQL.name(), Metrics.Action.consumed);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
+        verify(metrics).incrementDatabaseSpecificAction(DB_NAME, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 }
 

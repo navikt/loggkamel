@@ -4,6 +4,7 @@ public enum TeknologiEnum {
     POSTGRESQL,
     ORACLE,
     DB2,
-    IMS
+    IMS,
+    UNKNOWN
 }
 

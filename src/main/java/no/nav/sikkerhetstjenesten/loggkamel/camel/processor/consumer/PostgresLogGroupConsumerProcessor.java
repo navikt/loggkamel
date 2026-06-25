@@ -37,7 +37,7 @@ public class PostgresLogGroupConsumerProcessor {
     }
 
     public void incrementMetrics(Exchange exchange) {
-        metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL.name().toLowerCase(), Metrics.Action.consumed);
+        metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
     public void decompressIfGzip(Exchange exchange) {
