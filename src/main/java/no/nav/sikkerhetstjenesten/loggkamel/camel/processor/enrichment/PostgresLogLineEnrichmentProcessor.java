@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,8 +23,7 @@ public class PostgresLogLineEnrichmentProcessor {
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
-
-    static final String DB_AUDIT_ENTRY_REQUEST_TYPE = "dbAuditEntry";
+    static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS zzz", Locale.ENGLISH);
 
     private final EntraProxyService entraProxyService;
     private final LogLineOperationsEnricher logLineOperationsEnricher;
@@ -41,9 +43,13 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException("Audit log message is blank");
         }
 
-        EnrichedAuditlogg enrichedAuditlogg = extractEnrichmentFromLog(body);
+        EnrichedAuditlogg enrichedAuditlogg;
+        try {
+            enrichedAuditlogg = extractEnrichmentFromLog(body);
+        } catch (Exception e) {
+            throw new  InvalidPostgresLogLineException("Failure converting values extracted from log line into EnrichedAuditLogg", e);
+        }
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
-        enrichedAuditlogg.setRequestType(DB_AUDIT_ENTRY_REQUEST_TYPE);
         exchange.getMessage().setBody(enrichedAuditlogg);
 
         LogLineOperationTypes logLineOperationTypes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
@@ -51,7 +57,7 @@ public class PostgresLogLineEnrichmentProcessor {
     }
 
     private EnrichedAuditlogg extractEnrichmentFromLog(String body) {
-        String regex = "^(.*)\\(\\d+\\):(.*)@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
+        String regex = "^(.*):\\d+\\.\\d+\\.\\d+\\.\\d+\\(\\d+\\):(.*)@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(body);
@@ -61,6 +67,8 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
+        ZonedDateTime logTime = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMATTER);
+
         String userIdentity = matcher.group(2);
         // if the user identity is of the form "v-oidc-{navIdent}-something", extract the navIdent part. If it isn't of that form, then pass the full string to entra-proxy
         if (userIdentity.startsWith("v-oidc-")) {
@@ -69,13 +77,13 @@ public class PostgresLogLineEnrichmentProcessor {
 
         return EnrichedAuditlogg.builder()
                 .originalMessage(body)
-                .logTime(matcher.group(1))
+                .logTime(logTime)
                 .navIdent(userIdentity)
                 .dbName(matcher.group(3))
-                .auditType(matcher.group(4))
+                .auditType(EnrichedAuditlogg.AuditType.valueOf(matcher.group(4)))
                 .statementId(matcher.group(5))
                 .substatementId(matcher.group(6))
-                .pgAuditClass(matcher.group(7))
+                .pgAuditClass(EnrichedAuditlogg.AuditClass.valueOf(matcher.group(7)))
                 .pgCommand(matcher.group(8))
                 .pgObjectType(matcher.group(9))
                 .pgObjectName(matcher.group(10))

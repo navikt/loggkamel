@@ -36,7 +36,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         from(consumerUri)
             .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
-            .autoStartup(false)
+//            .autoStartup(false)
             .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")
             .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
             .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")

@@ -1,9 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.ZonedDateTime;
 
 @Builder
 @Data
@@ -11,22 +15,41 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EnrichedAuditlogg {
 
-    //TODO: add validation on individual fields given what we can safely assume about them
+    public enum AuditType {
+        SESSION,
+        OBJECT
+    }
+
+    public enum AuditClass {
+        READ,
+        WRITE,
+        FUNCTION,
+        ROLE,
+        DDL,
+        MISC,
+        MISC_SET,
+    }
 
     private String originalMessage;
-
-    private String logTime;
+    @NotNull
+    private ZonedDateTime logTime;
+    @NotNull
     private String navIdent;
+    @NotNull
     private String dbName;
-    private String auditType;
+    @NotNull
+    private AuditType auditType;
     private String statementId;
     private String substatementId;
-    private String pgAuditClass;
+    @NotNull
+    private AuditClass pgAuditClass;
     private String pgCommand;
     private String pgObjectType;
     private String pgObjectName;
+    @NotNull
     private String sqlStatement;
     private String sqlParameters;
+    @Email
     private String epost;
-    private String requestType;
+    private static final String requestType = "dbAuditEntry";
 }
