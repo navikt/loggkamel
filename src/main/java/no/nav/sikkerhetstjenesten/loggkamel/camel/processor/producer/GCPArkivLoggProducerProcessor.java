@@ -58,12 +58,10 @@ public class GCPArkivLoggProducerProcessor {
             Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
             Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 
-//            enrichedAuditLogg.getLogTime()
-
             LogEntry entry = LogEntry.newBuilder(logMessageAsJsonPayload)
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
-//                    .setTimestamp()
+                    .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
                     .build();
 
             logging.write(Collections.singleton(entry));
