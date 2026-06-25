@@ -45,7 +45,7 @@ public class Metrics {
     }
 
     public void incrementHappyPath(Multiplicity multiplicity, TeknologiEnum teknologi, Action action) {
-        meterRegistry.counter(HAPPY_PATH_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), ACTION_LABEL, action.name());
+        meterRegistry.counter(HAPPY_PATH_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), ACTION_LABEL, action.name()).increment();
     }
 
     public void incrementUnhappyPath(Multiplicity multiplicity, TeknologiEnum teknologi, BackoutQueueType backoutQueueType) {
