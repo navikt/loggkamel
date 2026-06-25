@@ -96,7 +96,7 @@ class GCPArkivLoggProducerProcessorTest {
         LogEntry entry = assertInstanceOf(LogEntry.class, entryObject);
         assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
         assertEquals(Severity.INFO, entry.getSeverity());
-        assertEquals(NOW.toInstant(),  entry.getInstantTimestamp());
+        assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
 
         Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
         assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());
