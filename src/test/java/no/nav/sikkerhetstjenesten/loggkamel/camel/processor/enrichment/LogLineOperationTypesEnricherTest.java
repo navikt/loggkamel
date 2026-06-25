@@ -1,26 +1,17 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
 class LogLineOperationTypesEnricherTest {
 
-    @Mock
-    LogLineOperationTypes routingAttributes;
-
-    @InjectMocks
-    LogLineOperationsEnricher logLineOperationsEnricher;
+    LogLineOperationsEnricher logLineOperationsEnricher = new  LogLineOperationsEnricher();
 
     @Test
     void auditClassWrite_setsModificationTrue() {
-        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.WRITE);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.WRITE);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -28,7 +19,7 @@ class LogLineOperationTypesEnricherTest {
 
     @Test
     void auditClassRole_setsModificationTrue() {
-        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.ROLE);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.ROLE);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -36,7 +27,7 @@ class LogLineOperationTypesEnricherTest {
 
     @Test
     void auditClassDdl_setsModificationTrue() {
-        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.DDL);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.DDL);
 
         assertTrue(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());
@@ -44,7 +35,7 @@ class LogLineOperationTypesEnricherTest {
 
     @Test
     void auditClassRead_setsReadTrue() {
-        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(LogLineOperationsEnricher.READ);
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.READ);
 
         assertFalse(constructedAttributes.isModification());
         assertTrue(constructedAttributes.isRead());
@@ -52,7 +43,7 @@ class LogLineOperationTypesEnricherTest {
 
     @Test
     void auditClassOther_doesNotSetAnyFlags() {
-        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass("OTHER");
+        LogLineOperationTypes constructedAttributes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.MISC);
 
         assertFalse(constructedAttributes.isModification());
         assertFalse(constructedAttributes.isRead());

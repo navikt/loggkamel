@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
@@ -41,6 +42,7 @@ class GCPArkivLoggProducerProcessorTest {
 
     private static final String DATABASE_NAME = "dbName";
     private static final TeknologiEnum TEKNOLOGI_IN_MESSAGE = TeknologiEnum.POSTGRESQL;
+    private static final ZonedDateTime NOW = ZonedDateTime.now();
     private static final String PROVIDED_GCP_ID = "gcpId";
     private static final String PROVIDED_FILENAME = "providedFilename";
 
@@ -80,7 +82,7 @@ class GCPArkivLoggProducerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
         exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
-        exchange.getMessage().setBody(EnrichedAuditlogg.builder().dbName(DATABASE_NAME).build());
+        exchange.getMessage().setBody(EnrichedAuditlogg.builder().dbName(DATABASE_NAME).logTime(NOW).build());
 
         when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenReturn(logging);
         Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
@@ -95,6 +97,7 @@ class GCPArkivLoggProducerProcessorTest {
         LogEntry entry = assertInstanceOf(LogEntry.class, entryObject);
         assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
         assertEquals(Severity.INFO, entry.getSeverity());
+        assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
 
         Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
         assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());
