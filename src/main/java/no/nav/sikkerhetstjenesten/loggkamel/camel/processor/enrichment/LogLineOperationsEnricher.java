@@ -6,21 +6,16 @@ import java.util.List;
 
 @Component
 public class LogLineOperationsEnricher {
-    public static final String WRITE = "WRITE";
-    public static final String ROLE = "ROLE";
-    public static final String DDL = "DDL";
-    public static final String READ = "READ";
 
-    private static final List<String> WRITE_CLASSES = List.of(WRITE, ROLE, DDL);
+    private static final List<EnrichedAuditlogg.AuditClass> WRITE_CLASSES = List.of(EnrichedAuditlogg.AuditClass.WRITE, EnrichedAuditlogg.AuditClass.ROLE, EnrichedAuditlogg.AuditClass.DDL);
 
-
-    public LogLineOperationTypes constructOperationTypesFromAuditClass(String auditClass) {
+    public LogLineOperationTypes constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass auditClass) {
         LogLineOperationTypes routingAttributes = new LogLineOperationTypes();
 
         if (WRITE_CLASSES.contains(auditClass)) {
             routingAttributes.setModification(true);
         }
-        if (READ.equals(auditClass)) {
+        if (EnrichedAuditlogg.AuditClass.READ.equals(auditClass)) {
             routingAttributes.setRead(true);
         }
 

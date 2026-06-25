@@ -54,12 +54,14 @@ public class GCPArkivLoggProducerProcessor {
         String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
 
         try (Logging logging = gcpLoggingClientFactory.create(targetGCPProjectId)) {
-            Map<String, Object> logMessageAsMap = objectMapper.convertValue(exchange.getMessage().getBody(EnrichedAuditlogg.class), new TypeReference<>() {});
+            EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
+            Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
             Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 
             LogEntry entry = LogEntry.newBuilder(logMessageAsJsonPayload)
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
+                    .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
                     .build();
 
             logging.write(Collections.singleton(entry));

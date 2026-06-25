@@ -3,7 +3,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.LogLineMessageConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.*;
@@ -28,13 +29,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PostgresLogLineEnrichmentProcessorTest {
 
-    private static final String logTime = "time";
+    private static final String logTime = "2026-04-09 16:51:06.264 CEST";
+    private static final ZonedDateTime logTimeAsZonedDateTime = ZonedDateTime.parse(logTime, PostgresLogLineEnrichmentProcessor.DATE_TIME_FORMATTER);
     private static final String navIdent = "navIdent";
     private static final String dbName = "dbName";
-    private static final String auditType = "SESSION";
+    private static final EnrichedAuditlogg.AuditType auditType = EnrichedAuditlogg.AuditType.SESSION;
     private static final String statementId = "statementId";
     private static final String substatementId = "substatementId";
-    private static final String pgAuditClass = "READ";
+    private static final EnrichedAuditlogg.AuditClass pgAuditClass = EnrichedAuditlogg.AuditClass.READ;
     private static final String pgAuditCommand = "SELECT";
     private static final String pgAuditObjectType = "objectType";
     private static final String pgAuditObjectName = "objectName";
@@ -85,7 +87,7 @@ class PostgresLogLineEnrichmentProcessorTest {
 
     @Test
     void enrich_exceptionFromEntraProxy() {
-        String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLENAVIDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
+        String logMessageBody = "2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLENAVIDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
         RuntimeException entraProxyException = new RuntimeException("Something went wrong, panic!");
 
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
@@ -99,7 +101,7 @@ class PostgresLogLineEnrichmentProcessorTest {
 
     @Test
     void enrich_noEmployeeInfo() {
-        String logMessageBody = "<2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLENAVIDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
+        String logMessageBody = "2026-02-10 22:22:17.196 CET:155.55.63.45(36578):v-oidc-SAMPLENAVIDENT-1770758518-xeoEcAD9-axsys-prod-admin@axsys-prod:[2862673]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: SESSION,7,1,READ,SELECT,,,SELECT reltype FROM pg_catalog.pg_class WHERE 1<>1 LIMIT 1,<none>\n";
 
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
@@ -140,16 +142,15 @@ class PostgresLogLineEnrichmentProcessorTest {
 
     private static Stream<String> provideLogLinesTestingVOIDAndUnknownLogParsing() {
         return Stream.of(
-                String.format("%s(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter),
-                String.format("%s(48754):%s@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType, statementId, substatementId, pgAuditClass, pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter)
+                String.format("%s:127.0.0.1(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType.name(), statementId, substatementId, pgAuditClass.name(), pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter),
+                String.format("%s:127.0.0.1(48754):%s@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType.name(), statementId, substatementId, pgAuditClass.name(), pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter)
         );
     }
 
     private EnrichedAuditlogg expectedLogEnrichment(String logMessageBody) {
         return EnrichedAuditlogg.builder()
                 .originalMessage(logMessageBody)
-                .requestType(DB_AUDIT_ENTRY_REQUEST_TYPE)
-                .logTime(logTime)
+                .logTime(logTimeAsZonedDateTime)
                 .navIdent(navIdent)
                 .dbName(dbName)
                 .auditType(auditType)
