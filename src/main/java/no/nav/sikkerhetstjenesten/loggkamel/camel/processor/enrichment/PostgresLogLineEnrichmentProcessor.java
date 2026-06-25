@@ -46,8 +46,10 @@ public class PostgresLogLineEnrichmentProcessor {
         EnrichedAuditlogg enrichedAuditlogg;
         try {
             enrichedAuditlogg = extractEnrichmentFromLog(body);
-        } catch (Exception e) {
-            throw new  InvalidPostgresLogLineException("Failure converting values extracted from log line into EnrichedAuditLogg", e);
+        } catch (InvalidPostgresLogLineException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new InvalidPostgresLogLineException("Failure converting values extracted from log line into EnrichedAuditlogg", e);
         }
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
         exchange.getMessage().setBody(enrichedAuditlogg);
