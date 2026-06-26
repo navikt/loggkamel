@@ -28,7 +28,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
     @Value("${routing.loggline.bucket}")
     private String consumerUri;
 
-    @Value("${routing.loggline.bucket-delete:#{null}}}")
+    @Value("${routing.loggline.bucket-delete:#{null}}")
     private String deleteSourceUri;
 
     @Override
@@ -39,8 +39,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
-                    .to(deleteSourceUri)
-                    .end();
+                    .to(deleteSourceUri);
         }
 
         super.errorHandling();

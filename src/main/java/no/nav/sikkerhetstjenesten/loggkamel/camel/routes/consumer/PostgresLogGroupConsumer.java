@@ -24,7 +24,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
 
-    @Value("${routing.postgres.consumer-delete:#{null}}}")
+    @Value("${routing.postgres.consumer-delete:#{null}}")
     private String deleteSourceUri;
 
     @Autowired
@@ -39,8 +39,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
-                    .to(deleteSourceUri)
-                    .end();
+                    .to(deleteSourceUri);
         }
 
         this.errorHandling();
