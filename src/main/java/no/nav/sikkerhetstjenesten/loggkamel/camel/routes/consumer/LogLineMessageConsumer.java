@@ -45,7 +45,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
         super.errorHandling();
 
         onException(DuplicateKeyException.class)
-                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
+                .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
                 .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
 

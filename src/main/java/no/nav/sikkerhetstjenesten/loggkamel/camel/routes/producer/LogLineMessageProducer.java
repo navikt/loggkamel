@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.LogLineMessageProducerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
+import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,7 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
 
         from(LOG_LINE_MESSAGE_PRODUCER_ROUTE)
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
-                .log("Producing loggline message ${header.CamelFileName} to log line endpoint")
+                .log(LoggingLevel.INFO, "Producing loggline message ${header.CamelFileName} to log line endpoint")
                 .bean(LogLineMessageProducerProcessor.class, "incrementMetrics")
                 .bean(LogLineMessageProducerProcessor.class, "mapToAuditloggLineMessage")
                 .toD(logLineMessageBucketUri);
