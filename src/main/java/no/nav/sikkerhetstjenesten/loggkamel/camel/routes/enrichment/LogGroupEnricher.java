@@ -5,7 +5,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHan
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static java.lang.Thread.sleep;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.LogGroupFilter.LOG_GROUP_FILTER_ROUTE;
 
 @Component
@@ -22,9 +21,6 @@ public class LogGroupEnricher extends LoggGroupErrorHandler {
                 .routeId(LOG_GROUP_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching Log-Group level attributes for ${header.CamelFileName}")
                 .bean(LogGroupEnrichmentProcessor.class, "enrich")
-                .process(exchange -> {
-                    sleep(1000 * 60 * 3); //wait 3 mins
-                })
                 .to(LOG_GROUP_FILTER_ROUTE);
     }
 }
