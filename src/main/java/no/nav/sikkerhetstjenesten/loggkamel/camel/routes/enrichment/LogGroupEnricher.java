@@ -23,7 +23,7 @@ public class LogGroupEnricher extends LoggGroupErrorHandler {
                 .log(LoggingLevel.INFO, "Enriching Log-Group level attributes for ${header.CamelFileName}")
                 .bean(LogGroupEnrichmentProcessor.class, "enrich")
                 .process(exchange -> {
-                    sleep(1000 * 60 * 5); //wait 5 mins
+                    sleep(1000 * 60 * 3); //wait 3 mins
                 })
                 .to(LOG_GROUP_FILTER_ROUTE);
     }

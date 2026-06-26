@@ -35,7 +35,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
-                .autoStartup(false)
+//                .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
