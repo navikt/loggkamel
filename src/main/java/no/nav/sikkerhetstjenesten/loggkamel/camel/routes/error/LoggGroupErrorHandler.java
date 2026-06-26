@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
@@ -19,9 +18,6 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
     @Value("${routing.fallback.invalid-message}")
     protected String fallbackInvalidMessageUri;
-
-    @Autowired
-    protected ObjectMapper objectMapper;
 
     @Autowired
     protected Metrics metrics;

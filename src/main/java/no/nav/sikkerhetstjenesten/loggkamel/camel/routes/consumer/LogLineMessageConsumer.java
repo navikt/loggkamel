@@ -12,9 +12,12 @@ import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogLineEnricher.LOG_LINE_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class LogLineMessageConsumer extends LoggLineErrorHandler {
+
+    private static final String KEEP_SOURCE_FILE = "keepSourceFile";
 
     @Autowired
     @Qualifier("logLineMessageIdempotentRepository")
@@ -25,17 +28,31 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
     @Value("${routing.loggline.bucket}")
     private String consumerUri;
 
+    @Value("${routing.loggline.bucket-delete:#{null}}}")
+    private String deleteSourceUri;
+
     @Override
     public void configure() {
         super.errorHandling();
 
         onException(DuplicateKeyException.class)
-                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, dropping message as another instance of loggkamel has successfully claimed it")
+                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
+                .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
+
+        // Explicitly delete original local files on route completion. Only necessary when reading to/from GCP
+        if (deleteSourceUri != null && deleteSourceUri.startsWith("google-storage://")) {
+            onCompletion()
+                    .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
+                    .setHeader(OBJECT_NAME, header(FILE_NAME))
+                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
+                    .to(deleteSourceUri)
+                    .end();
+        }
 
         from(consumerUri)
                 .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
-//                .autoStartup(false)
+                .autoStartup(false)
                 .transacted()
                 .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")
                 .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")

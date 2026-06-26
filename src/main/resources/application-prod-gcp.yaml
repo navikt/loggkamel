@@ -3,7 +3,9 @@ routing:
     invalid-message: "google-storage://loggkamel-prod-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-prod-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
+    consumer-delete: "google-storage://loggkamel-prod-postgresql-consumer?operation=deleteObject"
     invalid-message: "google-storage://loggkamel-prod-postgresql-invalid-message"
   loggline:
     bucket: "google-storage://loggkamel-prod-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
+    bucket-delete: "google-storage://loggkamel-prod-logglines?operation=deleteObject"
     invalid-message: "google-storage://loggkamel-prod-logglines-invalid-message"

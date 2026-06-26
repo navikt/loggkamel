@@ -22,7 +22,7 @@ public class ConsumerControlRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("quartz:" + CONSUMER_CONTROL_ROUTE_ID + "?cron=0+*/10+*+*+*+?") // Every 10 minutes
+        from("quartz:" + CONSUMER_CONTROL_ROUTE_ID + "?cron=0+*+*+*+*+?") // Check whether to enable every minute
                 .routeId(CONSUMER_CONTROL_ROUTE_ID)
                 .log(LoggingLevel.DEBUG, "Checking whether to disable consumer routes based on feature flags")
                 .process(exchange -> {
