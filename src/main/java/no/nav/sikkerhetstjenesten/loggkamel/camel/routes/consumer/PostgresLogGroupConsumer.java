@@ -55,10 +55,12 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
-                .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
-                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
+                // much more thorough logging, only ever deploy to dev
+//                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
                 //Prevent multiple instances of loggkamel from processing the same file, leave removal of the file up to the instance processing it
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
+                .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
                 .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
                 .bean(PostgresLogGroupConsumerProcessor.class, "incrementMetrics")
                 .bean(PostgresLogGroupConsumerProcessor.class, "decompressIfGzip")

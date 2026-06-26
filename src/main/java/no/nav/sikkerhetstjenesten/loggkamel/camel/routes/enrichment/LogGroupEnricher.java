@@ -20,7 +20,7 @@ public class LogGroupEnricher extends LoggGroupErrorHandler {
 
         from(LOG_GROUP_ENRICHER_ROUTE)
                 .routeId(LOG_GROUP_ENRICHER_ID)
-                .log(LoggingLevel.INFO, "Enriching Log-Group level attributes for ${header.CamelFileName}")
+                .log(LoggingLevel.DEBUG, "Enriching Log-Group level attributes for ${header.CamelFileName}")
                 .bean(LogGroupEnrichmentProcessor.class, "enrich")
                 .process(exchange -> {
                     sleep(1000 * 60 * 3); //wait 3 mins

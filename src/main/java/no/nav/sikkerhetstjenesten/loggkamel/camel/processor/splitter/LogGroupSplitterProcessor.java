@@ -25,7 +25,7 @@ public class LogGroupSplitterProcessor {
         }
 
         String filenameWithUUID = createFilenameWithUUID(originalFileName);
-        log.info("New filename being assigned: {}", filenameWithUUID);
+        log.debug("New filename being assigned: {}", filenameWithUUID);
 
         exchange.getMessage().setHeader(FILE_NAME, filenameWithUUID);
         exchange.getMessage().setHeader(OBJECT_NAME, filenameWithUUID);

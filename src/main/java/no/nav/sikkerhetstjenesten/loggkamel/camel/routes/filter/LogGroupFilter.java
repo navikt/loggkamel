@@ -19,8 +19,8 @@ public class LogGroupFilter extends LoggGroupErrorHandler {
 
         from(LOG_GROUP_FILTER_ROUTE)
                 .routeId(LOG_GROUP_FILTER_ID)
-                .log(LoggingLevel.INFO, "Determining whether to filter log message group ${header.CamelFileName}")
-                .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
+                .log(LoggingLevel.DEBUG, "Determining whether to filter log message group ${header.CamelFileName}")
+//                .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
                 .filter().method(LogGroupFilterProcessor.class)
                 .to(LOG_GROUP_SPLITTER_ROUTE);
     }

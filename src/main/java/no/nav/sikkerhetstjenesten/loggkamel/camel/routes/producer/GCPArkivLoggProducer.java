@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.GCPArkivLoggProducerProcessor;
+import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +15,7 @@ public class GCPArkivLoggProducer extends ArkivLoggProducer {
 
         from(ARKIVLOGG_PRODUCER_ROUTE)
             .routeId(ARKIVLOGG_PRODUCER_ID)
-            .log("Producing log message ${header.CamelFileName} to GCP Logging")
+            .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} to GCP Logging")
             .bean(GCPArkivLoggProducerProcessor.class, "incrementMetrics")
             .bean(GCPArkivLoggProducerProcessor.class, "writeToGcpLogging");
     }

@@ -55,9 +55,10 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
                 .autoStartup(false)
                 .transacted()
                 .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")
-                .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
+//                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
+                .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
                 .bean(LogLineMessageConsumerProcessor.class, "mapToAuditloggLineMessage")
                 .bean(LogLineMessageConsumerProcessor.class, "incrementMetrics")
                 .to(LOG_LINE_ENRICHER_ROUTE);
