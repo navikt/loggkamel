@@ -20,7 +20,6 @@ public class PostgresLogLineEnricher extends LoggLineErrorHandler {
         from(POSTGRES_LOG_ENRICH_ROUTE)
                 .routeId(POSTGRES_LOG_ENRICH_ID)
                 .log(LoggingLevel.INFO, "Enriching log message ${header.CamelFileName}")
-//                .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
                 .bean(PostgresLogLineEnrichmentProcessor.class, "enrich")
                 .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
                 .to(LOG_LINE_FILTER_ROUTE);

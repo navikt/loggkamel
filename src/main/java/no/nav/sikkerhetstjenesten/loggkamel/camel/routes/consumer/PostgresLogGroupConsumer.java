@@ -33,13 +33,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
     @Override
     public void configure() {
-        super.errorHandling();
-
-        onException(DuplicateKeyException.class)
-                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
-                .setProperty(KEEP_SOURCE_FILE, constant(true))
-                .handled(true);
-
         // Explicitly delete original local files on route completion. Only necessary when reading to/from GCP
         if (deleteSourceUri != null && deleteSourceUri.startsWith("google-storage://")) {
             onCompletion()
@@ -50,14 +43,19 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     .end();
         }
 
+        this.errorHandling();
+
+        onException(DuplicateKeyException.class)
+                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
+                .setProperty(KEEP_SOURCE_FILE, constant(true))
+                .handled(true);
+
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
-                // much more thorough logging, only ever deploy to dev
-//                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
                 //Prevent multiple instances of loggkamel from processing the same file, leave removal of the file up to the instance processing it
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")

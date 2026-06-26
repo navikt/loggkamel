@@ -33,13 +33,6 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
     @Override
     public void configure() {
-        super.errorHandling();
-
-        onException(DuplicateKeyException.class)
-                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
-                .setProperty(KEEP_SOURCE_FILE, constant(true))
-                .handled(true);
-
         // Explicitly delete original local files on route completion. Only necessary when reading to/from GCP
         if (deleteSourceUri != null && deleteSourceUri.startsWith("google-storage://")) {
             onCompletion()
@@ -50,13 +43,19 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
                     .end();
         }
 
+        super.errorHandling();
+
+        onException(DuplicateKeyException.class)
+                .log("Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
+                .setProperty(KEEP_SOURCE_FILE, constant(true))
+                .handled(true);
+
         from(consumerUri)
                 .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
                 .autoStartup(false)
                 .transacted()
                 .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")
-                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}, file body ${body}")
-//                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
                 .bean(LogLineMessageConsumerProcessor.class, "mapToAuditloggLineMessage")
