@@ -12,6 +12,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.Exchange;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class GCPArkivLoggProducerProcessor {
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
                     .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
+                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement()))
                     .build();
 
             logging.write(Collections.singleton(entry));
