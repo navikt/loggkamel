@@ -33,7 +33,8 @@ spring:
       max-lifetime: 1200000
       idle-timeout: 600000
       connection-test-query: SELECT 1
-      maximum-pool-size: ${db.poolsize}
+      maximum-pool-size: 10
+      minimum-idle: 0
 
 logging:
   level:
