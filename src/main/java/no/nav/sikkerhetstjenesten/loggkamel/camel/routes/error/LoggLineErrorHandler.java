@@ -26,29 +26,23 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-        // Allows use of original message in exception handlers for cases where the message is an InputStream, as happens with GCP buckets
-        getContext().setStreamCaching(true);
-        getContext().setAllowUseOriginalMessage(true);
 
         onException(DependencyException.class)
-                .useOriginalBody()
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .log("Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.deadletter))
-                .to(invalidMessageUri);
+                .to(invalidMessageUri); //TODO: instead of moving message directly here, instead tell GCP to copy the original message here
 
         onException(InvalidLogException.class)
-                .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.invalid))
-                .to(invalidMessageUri);
+                .to(invalidMessageUri); //TODO: instead of moving message directly here, instead tell GCP to copy the original message here
 
         onException(Exception.class)
-                .useOriginalBody()
                 .maximumRedeliveries(0)
                 .handled(true)
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
@@ -56,6 +50,6 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.invalid);
                 })
-                .to(invalidMessageUri);
+                .to(invalidMessageUri); //TODO: instead of moving message directly here, instead tell GCP to copy the original message here
     }
 }

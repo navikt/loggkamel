@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
@@ -46,22 +46,15 @@ public class PostgresLogGroupConsumerProcessor {
             return;
         }
 
-        log.info("Log file {} is gzip compressed, attempting to decompress", fileName);
+        log.info("Log file {} is gzip compressed, wrapping body in GZIPInputStream for streaming decompression", fileName);
         try {
-            byte[] compressedBytes = exchange.getMessage().getBody(byte[].class);
-            try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(compressedBytes));
-                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                byte[] buffer = new byte[4096];
-                int len;
-                while ((len = gzipInputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, len);
-                }
-                exchange.getMessage().setBody(outputStream.toByteArray());
-            }
-        } catch (Exception e) {
+            InputStream compressedStream = exchange.getMessage().getBody(InputStream.class);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(compressedStream);
+            exchange.getMessage().setBody(gzipInputStream);
+        } catch (IOException e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
             throw new InvalidPostgresLogGroupException(
-                "Failed to decompress gzip file " + fileName + ", error: " + errorMessage, e
+                "Failed to open gzip stream for file " + fileName + ", error: " + errorMessage, e
             );
         }
     }

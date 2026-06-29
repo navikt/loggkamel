@@ -12,8 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
@@ -98,32 +101,45 @@ class PostgresLogGroupConsumerProcessorTest {
     }
 
     @Test
-    void decompressIfGzip_decompressesGzipBody() throws Exception {
-        String originalContent = "audit log line content";
-        byte[] originalContentBytes = originalContent.getBytes(StandardCharsets.UTF_8);
-        byte[] gzipBytes = gzip(originalContent);
+    void decompressIfGzip_setsBodyToGZIPInputStream() throws Exception {
+        InputStream gzipStream = new ByteArrayInputStream(gzip("audit log line content"));
 
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getIn().setHeader(FILE_NAME, "some-file.auditlog.gz");
-        exchange.getMessage().setBody(gzipBytes);
+        exchange.getMessage().setBody(gzipStream);
 
         processor.decompressIfGzip(exchange);
 
-        assertArrayEquals(originalContentBytes, exchange.getMessage().getBody(byte[].class));
+        assertInstanceOf(GZIPInputStream.class, exchange.getMessage().getBody(InputStream.class));
+    }
+
+    @Test
+    void decompressIfGzip_gzipStreamDecompressesCorrectlyWhenRead() throws Exception {
+        String originalContent = "audit log line content";
+        InputStream gzipStream = new ByteArrayInputStream(gzip(originalContent));
+
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getIn().setHeader(FILE_NAME, "some-file.auditlog.gz");
+        exchange.getMessage().setBody(gzipStream);
+
+        processor.decompressIfGzip(exchange);
+
+        byte[] decompressedBytes = exchange.getMessage().getBody(InputStream.class).readAllBytes();
+        assertArrayEquals(originalContent.getBytes(StandardCharsets.UTF_8), decompressedBytes);
     }
 
     @Test
     void decompressIfGzip_throwsInvalidPostgresLogGroupExceptionOnCorruptGzip() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getIn().setHeader(FILE_NAME, "corrupt-file.auditlog.gz");
-        exchange.getMessage().setBody("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
+        exchange.getMessage().setBody(new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8)));
 
         InvalidPostgresLogGroupException exception = assertThrows(
             InvalidPostgresLogGroupException.class,
             () -> processor.decompressIfGzip(exchange)
         );
 
-        assertTrue(exception.getMessage().contains("Failed to decompress gzip file corrupt-file.auditlog.gz"));
+        assertTrue(exception.getMessage().contains("Failed to open gzip stream for file corrupt-file.auditlog.gz"));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────
