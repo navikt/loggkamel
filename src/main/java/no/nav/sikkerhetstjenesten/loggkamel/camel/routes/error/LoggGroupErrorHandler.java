@@ -80,6 +80,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     private void prepareExchangeForGCPDelete(Exchange exchange, String destinationBucket) {
         if (postgresInvalidMessageRouting.startsWith("google-storage://")) {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
+            exchange.getIn().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
         }
