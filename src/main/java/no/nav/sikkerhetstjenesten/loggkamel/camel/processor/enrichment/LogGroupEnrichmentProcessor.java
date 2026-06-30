@@ -30,7 +30,7 @@ public class LogGroupEnrichmentProcessor {
     }
 
     public void enrich(Exchange exchange) {
-        log.debug("LogGroupEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
+        log.info("LogGroupEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
 
         String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 

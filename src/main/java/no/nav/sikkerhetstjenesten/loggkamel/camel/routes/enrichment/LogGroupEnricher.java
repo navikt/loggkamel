@@ -19,7 +19,7 @@ public class LogGroupEnricher extends LoggGroupErrorHandler {
 
         from(LOG_GROUP_ENRICHER_ROUTE)
                 .routeId(LOG_GROUP_ENRICHER_ID)
-                .log(LoggingLevel.DEBUG, "Enriching Log-Group level attributes for ${header.CamelFileName}")
+                .log(LoggingLevel.INFO, "Enriching Log-Group level attributes for ${header.CamelFileName}")
                 .bean(LogGroupEnrichmentProcessor.class, "enrich")
                 .to(LOG_GROUP_FILTER_ROUTE);
     }
