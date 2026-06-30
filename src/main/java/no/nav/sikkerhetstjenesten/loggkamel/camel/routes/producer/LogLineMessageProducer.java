@@ -21,6 +21,7 @@ public class LogLineMessageProducer extends LoggGroupErrorHandler {
 
         from(LOG_LINE_MESSAGE_PRODUCER_ROUTE)
                 .routeId(LOG_LINE_MESSAGE_PRODUCER)
+                .throwException(new Exception("TESTING FAILURE AFTER SPLITTING")) //TODO: remove after testing
                 .log(LoggingLevel.INFO, "Producing loggline message ${header.CamelFileName} to log line endpoint")
                 .bean(LogLineMessageProducerProcessor.class, "incrementMetrics")
                 .bean(LogLineMessageProducerProcessor.class, "mapToAuditloggLineMessage")

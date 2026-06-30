@@ -17,6 +17,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 //TODO: make this class take a Teknologi and route strings, make the consumers pass that in
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
+    public static final String ORIGINAL_FILENAME = "originalFilename";
+
     @Value("${routing.postgres.invalid-message}")
     protected String postgresInvalidMessageDestinationUri;
 
@@ -79,7 +81,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
         if (postgresInvalidMessageRouting.startsWith("google-storage://")) {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
+            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
         }
     }
 }
