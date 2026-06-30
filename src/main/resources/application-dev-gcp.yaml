@@ -34,10 +34,3 @@ routing:
     invalid-message-routing: ${routing.loggline.bucket}
 
 debug: false
-
-# TODO: remove
-logging:
-  level:
-    org.apache.camel.component.google.storage: DEBUG
-    com.google.cloud.storage: DEBUG
-    org.apache.camel.processor.aggregate: DEBUG
