@@ -51,7 +51,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
                 .autoStartup(false)
-                .transacted()
+//                .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
