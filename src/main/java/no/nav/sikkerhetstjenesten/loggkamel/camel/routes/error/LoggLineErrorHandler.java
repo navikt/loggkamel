@@ -30,11 +30,13 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
+        getContext().setAllowUseOriginalMessage(true);
 
         onException(DependencyException.class)
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
+                .useOriginalBody()
                 .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.deadletter))
                 .process(this::prepareExchangeForGCPDelete)
@@ -43,6 +45,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
         onException(InvalidLogException.class)
                 .maximumRedeliveries(0)
                 .handled(true)
+                .useOriginalBody()
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.invalid))
                 .process(this::prepareExchangeForGCPDelete)
@@ -51,6 +54,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
         onException(Exception.class)
                 .maximumRedeliveries(0)
                 .handled(true)
+                .useOriginalBody()
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;

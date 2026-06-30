@@ -31,12 +31,14 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
+        getContext().setAllowUseOriginalMessage(true);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log("Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
+                .useOriginalBody()
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.deadletter);
                 })
@@ -46,9 +48,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .to(postgresInvalidMessageRouting);
 
         onException(InvalidLogException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log("Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .maximumRedeliveries(0)
                 .handled(true)
+                .useOriginalBody()
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
                 })
@@ -62,6 +65,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
                 .maximumRedeliveries(0)
                 .handled(true)
+                .useOriginalBody()
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
                 })
