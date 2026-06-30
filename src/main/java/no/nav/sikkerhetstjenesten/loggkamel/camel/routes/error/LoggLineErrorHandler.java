@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
@@ -18,9 +17,6 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     protected String invalidMessageUri;
 
     @Autowired
-    protected ObjectMapper objectMapper;
-
-    @Autowired
     protected Metrics metrics;
 
     public abstract void configure();
@@ -31,14 +27,14 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
-                .log("Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.deadletter))
                 .to(invalidMessageUri); //TODO: instead of moving message directly here, instead tell GCP to copy the original message here
 
         onException(InvalidLogException.class)
                 .maximumRedeliveries(0)
                 .handled(true)
-                .log("Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.invalid))
                 .to(invalidMessageUri); //TODO: instead of moving message directly here, instead tell GCP to copy the original message here
 

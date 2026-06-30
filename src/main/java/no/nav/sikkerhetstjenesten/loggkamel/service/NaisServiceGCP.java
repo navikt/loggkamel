@@ -48,7 +48,7 @@ public class NaisServiceGCP implements NaisService {
                     .toEntity(NaisTeamEnvironments.class)
                     .block();
         } catch (Exception e) {
-            log.info("Feil ved kall mot nais graphql api for team {}, message: {}", naisTeam, e.getMessage());
+            log.warn("Feil ved kall mot nais graphql api for team {}, message: {}", naisTeam, e.getMessage());
             throw new NaisDependencyException("Feil ved kall mot nais graphql api for team " + naisTeam, e);
         }
 

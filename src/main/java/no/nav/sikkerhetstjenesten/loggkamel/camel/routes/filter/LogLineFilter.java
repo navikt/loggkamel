@@ -19,10 +19,8 @@ public class LogLineFilter extends LoggLineErrorHandler {
 
         from(LOG_LINE_FILTER_ROUTE)
                 .routeId(LOG_LINE_FILTER_ID)
-                .log(LoggingLevel.INFO, "Determining whether to filter log message ${header.CamelFileName}")
-                .log(LoggingLevel.DEBUG, "Message: ${body}, Headers: ${headers}")
+                .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName}")
                 .filter().method(LogLineFilterProcessor.class)
-                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
                 .to(ARKIVLOGG_PRODUCER_ROUTE);
     }
 }
