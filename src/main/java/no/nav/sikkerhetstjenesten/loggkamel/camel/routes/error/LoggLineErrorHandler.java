@@ -69,6 +69,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
+            exchange.getIn().setBody(null);
         }
     }
 }

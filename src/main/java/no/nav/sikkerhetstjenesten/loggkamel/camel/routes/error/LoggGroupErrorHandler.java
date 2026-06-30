@@ -83,6 +83,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
+            exchange.getIn().setBody(null);
         }
     }
 }
