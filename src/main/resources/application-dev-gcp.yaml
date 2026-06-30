@@ -23,12 +23,21 @@ routing:
   fallback:
     invalid-message: "google-storage://loggkamel-dev-fallback-invalid-message"
   postgres:
-    consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+#    consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+    consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
     invalid-message: "loggkamel-dev-postgresql-invalid-message"
     invalid-message-routing: ${routing.postgres.consumer}
   loggline:
-    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+#    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
     invalid-message: "loggkamel-dev-logglines-invalid-message"
     invalid-message-routing: ${routing.loggline.bucket}
 
 debug: false
+
+# TODO: remove
+logging:
+  level:
+    org.apache.camel.component.google.storage: DEBUG
+    com.google.cloud.storage: DEBUG
+    org.apache.camel.processor.aggregate: DEBUG
