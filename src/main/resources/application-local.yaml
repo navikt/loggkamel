@@ -55,9 +55,11 @@ routing:
   postgres:
     consumer: "file:src/main/resources/files/postgres"
     invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
+    invalid-message-routing: routing.postgres.invalid-message
   loggline:
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
+    invalid-message-routing: routing.loggline.invalid-message
   arkiv:
     producer: "file:src/main/resources/files/output"
 

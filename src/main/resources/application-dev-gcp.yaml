@@ -24,11 +24,11 @@ routing:
     invalid-message: "google-storage://loggkamel-dev-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
-    consumer-delete: "google-storage://loggkamel-dev-postgresql-consumer?operation=deleteObject"
     invalid-message: "google-storage://loggkamel-dev-postgresql-invalid-message"
+    invalid-message-routing: routing.postgres.consumer
   loggline:
     bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
-    bucket-delete: "google-storage://loggkamel-dev-logglines?operation=deleteObject"
     invalid-message: "google-storage://loggkamel-dev-logglines-invalid-message"
+    invalid-message-routing: routing.loggline.consumer
 
 debug: false
