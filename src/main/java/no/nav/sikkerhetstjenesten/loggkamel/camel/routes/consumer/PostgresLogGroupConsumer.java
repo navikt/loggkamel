@@ -53,10 +53,11 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
-                .bean(PostgresLogGroupConsumerProcessor.class, "prepareBodyAsInputStream")
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
+                .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-                .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
+                .bean(PostgresLogGroupConsumerProcessor.class, "prepareBodyAsInputStream")
                 .bean(PostgresLogGroupConsumerProcessor.class, "incrementMetrics")
                 .bean(PostgresLogGroupConsumerProcessor.class, "decompressIfGzip")
                 .to(LOG_GROUP_ENRICHER_ROUTE);

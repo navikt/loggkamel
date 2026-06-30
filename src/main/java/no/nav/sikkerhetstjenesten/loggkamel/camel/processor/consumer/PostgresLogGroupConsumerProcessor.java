@@ -77,8 +77,11 @@ public class PostgresLogGroupConsumerProcessor {
         log.info("Log file {} is gzip compressed, wrapping body in GZIPInputStream for streaming decompression", fileName);
         try {
             InputStream compressedStream = exchange.getMessage().getBody(InputStream.class);
+            log.info("Pulled InputStream out of exchange body");
             GZIPInputStream gzipInputStream = new GZIPInputStream(compressedStream);
+            log.info("Created GZIPInputStream from InputStream");
             exchange.getMessage().setBody(gzipInputStream);
+            log.info("Assigned GZIPInputStream to message body");
         } catch (IOException e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
             throw new InvalidPostgresLogGroupException(
