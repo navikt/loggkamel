@@ -65,7 +65,7 @@ public class PostgresLogLineEnrichmentProcessor {
         Matcher matcher = pattern.matcher(body);
 
         if (!matcher.find()) {
-            log.info(UNEXPECTED_LOG_PATTERN_MESSAGE);
+            log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 

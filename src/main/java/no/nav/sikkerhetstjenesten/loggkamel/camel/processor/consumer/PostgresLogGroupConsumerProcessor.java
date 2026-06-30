@@ -46,7 +46,7 @@ public class PostgresLogGroupConsumerProcessor {
             return;
         }
 
-        log.info("Log file {} is gzip compressed, attempting to decompress", fileName);
+        log.debug("Log file {} is gzip compressed, attempting to decompress", fileName);
         try {
             byte[] compressedBytes = exchange.getMessage().getBody(byte[].class);
             try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(compressedBytes));
