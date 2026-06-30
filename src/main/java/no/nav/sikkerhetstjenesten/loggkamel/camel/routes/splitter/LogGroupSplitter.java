@@ -20,7 +20,7 @@ public class LogGroupSplitter extends LoggGroupErrorHandler {
         from(LOG_GROUP_SPLITTER_ROUTE)
                 .routeId(LOG_GROUP_SPLITTER_ID)
                 .log(LoggingLevel.INFO, "Splitting log file ${header.CamelFileName} into individual messages")
-                .throwException(new Exception("TESTING FAILURE AFTER SPLITTING")) //TODO: remove after testing
+                .throwException(new Exception("TESTING FAILURE BEFORE SPLITTING")) //TODO: remove after testing
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                 .bean(LogGroupSplitterProcessor.class, "prepareLogLineHeaders")
                 .to(LOG_LINE_MESSAGE_PRODUCER_ROUTE);

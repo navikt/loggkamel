@@ -79,6 +79,7 @@ public class PostgresLogGroupConsumerProcessor {
 
         log.info("Log file {} is gzip compressed, wrapping body in GZIPInputStream for streaming decompression", fileName);
         try {
+            //TODO: remove info logging here, maybe leave one line as debug
             InputStream compressedStream = exchange.getMessage().getBody(InputStream.class);
             log.info("Pulled InputStream out of exchange body");
             GZIPInputStream gzipInputStream = new GZIPInputStream(compressedStream);
