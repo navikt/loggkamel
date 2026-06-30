@@ -51,10 +51,12 @@ public class PostgresLogGroupConsumerProcessor {
         Object body = exchange.getMessage().getBody();
 
         if (body instanceof InputStream) {
+            log.debug("Received input stream as InputStream");
             return;
         }
 
         if (body instanceof Blob blob) {
+            log.debug("Received input stream as Blob");
             ReadChannel reader = blob.reader();
             exchange.getMessage().setBody(Channels.newInputStream(reader));
             return;
@@ -65,6 +67,7 @@ public class PostgresLogGroupConsumerProcessor {
         if (inputStream == null) {
             throw new InvalidPostgresLogGroupException("Unable to convert message body to InputStream for file " + exchange.getIn().getHeader(FILE_NAME, String.class));
         }
+        log.debug("Converting message body to InputStream");
         exchange.getMessage().setBody(inputStream);
     }
 
