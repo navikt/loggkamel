@@ -9,9 +9,9 @@
     </appender>
 
     <springProfile name="dev">
-        <logger name="org.springframework" level="info"/>
-        <logger name="org.apache.camel" level="info"/>
-        <logger name="no.nav.sikkerhetstjenesten" level="info"/>
+        <logger name="org.springframework" level="debug"/>
+        <logger name="org.apache.camel" level="debug"/>
+        <logger name="no.nav.sikkerhetstjenesten" level="debug"/>
     </springProfile>
 
     <springProfile name="local | test">
