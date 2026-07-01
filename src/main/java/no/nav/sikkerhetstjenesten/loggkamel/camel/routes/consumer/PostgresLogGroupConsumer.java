@@ -3,6 +3,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogGroupConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
+import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.LogGroupEnricher.LOG_GROUP_ENRICHER_ROUTE;
 import static org.apache.camel.Exchange.FILE_NAME;
+import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
 @Component
 public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
@@ -32,16 +35,16 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
         // Explicitly delete original local files on route completion. Only necessary when reading from GCP
         if (consumerUri.startsWith("google-storage://")) {
             //TODO: replace after testing
-//            onCompletion()
-//                    .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
-//                    .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
-//                    .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
-//                    .setBody(constant(null))
-//                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket") //TODO: replace with a call to header.ORIGINAL_FILENAME
-//                    .to(consumerUri);
-
             onCompletion()
-                    .log(LoggingLevel.INFO, "onCompletion block reached! KEEP_SOURCE_FILE property is ${exchangeProperty.keepSourceFile}, CamelDuplicateMessage header is ${header.CamelDuplicateMessage}, ORIGINAL_FILENAME header is ${header.originalFilename}");
+                    .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
+                    .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
+                    .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
+                    .setBody(constant(null))
+                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.originalFilename} from consumer bucket")
+                    .to(consumerUri);
+
+//            onCompletion()
+//                    .log(LoggingLevel.INFO, "onCompletion block reached! KEEP_SOURCE_FILE property is ${exchangeProperty.keepSourceFile}, CamelDuplicateMessage header is ${header.CamelDuplicateMessage}, ORIGINAL_FILENAME header is ${header.originalFilename}");
         }
 
         this.errorHandling();

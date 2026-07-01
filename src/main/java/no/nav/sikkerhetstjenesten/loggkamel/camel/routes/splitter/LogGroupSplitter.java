@@ -24,7 +24,7 @@ public class LogGroupSplitter extends LoggGroupErrorHandler {
                 .split(body().tokenize("^\\<|\n\\<")).streaming()
                     .parallelProcessing()
                     .executorService("logLinePublishPool")
-                    .stopOnException()
+//                    .stopOnException()
                     .shareUnitOfWork()
                     .bean(LogGroupSplitterProcessor.class, "prepareLogLineHeaders")
                     .to(LOG_LINE_MESSAGE_PRODUCER_ROUTE);
