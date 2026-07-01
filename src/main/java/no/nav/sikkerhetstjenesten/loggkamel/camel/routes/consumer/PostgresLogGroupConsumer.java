@@ -36,7 +36,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
         if (consumerUri.startsWith("google-storage://")) {
             onCompletion()
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
-                    .setHeader(OBJECT_NAME, header(FILE_NAME))
+                    .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
                     .setBody(constant(null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
@@ -56,14 +56,14 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
-                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
-                .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false) //Prevent multiple instances of loggkamel from processing the same file
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}, determining whether to process or if it's already claimed")
+                //Prevent multiple instances of loggkamel from processing the same file, leave removal of the file up to the instance processing it
+                .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
                 .bean(PostgresLogGroupConsumerProcessor.class, "prepareBodyAsInputStream")
                 .bean(PostgresLogGroupConsumerProcessor.class, "incrementMetrics")
                 .bean(PostgresLogGroupConsumerProcessor.class, "decompressIfGzip")
-                .log(LoggingLevel.DEBUG, "Prepared body as InputStream for ${header.CamelFileName} with headers ${headers}")
                 .to(LOG_GROUP_ENRICHER_ROUTE);
     }
 }

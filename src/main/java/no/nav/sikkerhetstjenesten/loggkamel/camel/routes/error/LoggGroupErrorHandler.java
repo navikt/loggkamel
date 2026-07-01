@@ -33,7 +33,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-//        getContext().setAllowUseOriginalMessage(true);
+        getContext().setAllowUseOriginalMessage(true); //TODO: testing if this does not force stream into cache in GCP, while letting local work as before
         getContext().setStreamCaching(false);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
@@ -41,12 +41,12 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
-//                .useOriginalBody()
+                .useOriginalBody() //testing
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.deadletter);
                 })
                 .process(exchange -> {
-                    prepareExchangeForGCPDelete(exchange, postgresInvalidMessageDestinationUri);
+                    prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);
                 })
                 .to(postgresInvalidMessageRouting);
 
@@ -54,12 +54,12 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
                 .maximumRedeliveries(0)
                 .handled(true)
-//                .useOriginalBody()
+                .useOriginalBody() //testing
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
                 })
                 .process(exchange -> {
-                    prepareExchangeForGCPDelete(exchange, postgresInvalidMessageDestinationUri);
+                    prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);
                 })
                 .to(postgresInvalidMessageRouting);
 
@@ -68,23 +68,23 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
                 .maximumRedeliveries(0)
                 .handled(true)
-//                .useOriginalBody()
+                .useOriginalBody() //testing
                 .process(exchange -> {
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
                 })
                 .process(exchange -> {
-                    prepareExchangeForGCPDelete(exchange, postgresInvalidMessageDestinationUri);
+                    prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);
                 })
                 .to(postgresInvalidMessageRouting);
     }
 
-    private void prepareExchangeForGCPDelete(Exchange exchange, String destinationBucket) {
-        if (postgresInvalidMessageRouting.startsWith("google-storage://")) {
+    private void prepareExchangeForGCPCopyToInvalidMessageDestination(Exchange exchange, String originBucket, String destinationBucket) {
+        if (originBucket.startsWith("google-storage://")) {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
-            exchange.getIn().setBody(null);
+            exchange.getIn().setBody(null); //clear the body for safety; in GCP
         }
     }
 }

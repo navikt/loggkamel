@@ -19,8 +19,6 @@ management:
       enabled: true
 
 routing:
-  fallback:
-    invalid-message: "google-storage://loggkamel-dev-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
     invalid-message: "loggkamel-dev-postgresql-invalid-message"

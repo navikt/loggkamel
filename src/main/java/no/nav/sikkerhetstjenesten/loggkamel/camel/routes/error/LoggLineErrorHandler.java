@@ -30,7 +30,8 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-        getContext().setAllowUseOriginalMessage(true);
+        getContext().setAllowUseOriginalMessage(true); //TODO: if this doesn't work in the group handler, remove here too along with useOriginalBody() flags per error route
+        getContext().setStreamCaching(false);
 
         onException(DependencyException.class)
                 .maximumRedeliveries(3)
@@ -38,8 +39,11 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .handled(true)
                 .useOriginalBody()
                 .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.deadletter))
-                .process(this::prepareExchangeForGCPDelete)
+                .process(exchange -> {
+                    TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
+                    metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.deadletter);
+                })
+                .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);
 
         onException(InvalidLogException.class)
@@ -47,8 +51,11 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                 .handled(true)
                 .useOriginalBody()
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
-                .process(exchange -> metrics.incrementUnhappyPath(Metrics.Multiplicity.single, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class), Metrics.BackoutQueueType.invalid))
-                .process(this::prepareExchangeForGCPDelete)
+                .process(exchange -> {
+                    TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
+                    metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.invalid);
+                })
+                .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);
 
         onException(Exception.class)
@@ -60,11 +67,11 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
                     metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.invalid);
                 })
-                .process(this::prepareExchangeForGCPDelete)
+                .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);
     }
 
-    private void prepareExchangeForGCPDelete(Exchange exchange) {
+    private void prepareExchangeForGCPCopyToInvalidMessageDestination(Exchange exchange) {
         if (invalidMessageRouting.startsWith("google-storage://")) {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);

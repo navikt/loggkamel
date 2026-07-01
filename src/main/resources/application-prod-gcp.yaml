@@ -1,6 +1,4 @@
 routing:
-  fallback:
-    invalid-message: "google-storage://loggkamel-prod-fallback-invalid-message"
   postgres:
     consumer: "google-storage://loggkamel-prod-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
     invalid-message: "loggkamel-prod-postgresql-invalid-message"

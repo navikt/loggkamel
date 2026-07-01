@@ -52,6 +52,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         from(consumerUri)
                 .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
+                .streamCache(false)
                 .autoStartup(false)
                 .transacted()
                 .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")

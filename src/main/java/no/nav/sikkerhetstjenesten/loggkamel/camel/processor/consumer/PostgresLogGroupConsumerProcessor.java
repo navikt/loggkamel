@@ -62,7 +62,7 @@ public class PostgresLogGroupConsumerProcessor {
             return;
         }
 
-        // If the body isn't an input stream but can at least be converted to one by camel, we set it to one for safety
+        // If the body isn't an input stream but can at least be converted to one by camel, we coerce that conversion
         InputStream inputStream = exchange.getMessage().getBody(InputStream.class);
         if (inputStream == null) {
             throw new InvalidPostgresLogGroupException("Unable to convert message body to InputStream for file " + exchange.getIn().getHeader(FILE_NAME, String.class));
@@ -79,13 +79,10 @@ public class PostgresLogGroupConsumerProcessor {
 
         log.info("Log file {} is gzip compressed, wrapping body in GZIPInputStream for streaming decompression", fileName);
         try {
-            //TODO: remove info logging here, maybe leave one line as debug
             InputStream compressedStream = exchange.getMessage().getBody(InputStream.class);
-            log.info("Pulled InputStream out of exchange body");
             GZIPInputStream gzipInputStream = new GZIPInputStream(compressedStream);
-            log.info("Created GZIPInputStream from InputStream");
             exchange.getMessage().setBody(gzipInputStream);
-            log.info("Assigned GZIPInputStream to message body");
+            log.debug("Assigned GZIPInputStream to message body");
         } catch (IOException e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
             throw new InvalidPostgresLogGroupException(
