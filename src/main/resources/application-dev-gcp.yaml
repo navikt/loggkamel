@@ -24,7 +24,7 @@ routing:
     invalid-message: "loggkamel-dev-postgresql-invalid-message"
     invalid-message-routing: ${routing.postgres.consumer}
   loggline:
-    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+    bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
     invalid-message: "loggkamel-dev-logglines-invalid-message"
     invalid-message-routing: ${routing.loggline.bucket}
 
