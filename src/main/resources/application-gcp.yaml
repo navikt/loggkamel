@@ -73,7 +73,7 @@ springdoc:
 # On GCP, we can use more aggressive defaults than local development
 executor:
   logLinePublish:
-    corePoolSize: 16
-    maxPoolSize: 32
-    queueSize: 5000
+    corePoolSize: 8
+    maxPoolSize: 16
+    queueSize: 500
     keepAliveSeconds: 60
