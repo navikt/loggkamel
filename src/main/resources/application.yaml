@@ -2,6 +2,15 @@ logging:
   level:
     root: info
 
+spring:
+  main:
+    keep-alive: true
+  task:
+    execution:
+      simple:
+        # Bound async work when virtual threads are enabled.
+        concurrency-limit: 300
+
 ENTRA_PROXY_BASE_URL: http://entra-proxy
 NAIS_CONSOLE_BASE_URL: https://console.nav.cloud.nais.io/graphql
 
