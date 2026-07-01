@@ -3,7 +3,7 @@
     "https://loggkamel.intern.nav.no"
   ],
   "db": {
-    "poolsize": "2",
+    "poolsize": "20",
     "type": "POSTGRES_18",
     "tier": "db-custom-1-3840",
     "name": "loggkamel"
