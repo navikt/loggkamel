@@ -8,13 +8,3 @@ routing:
     invalid-message: "loggkamel-prod-logglines-invalid-message"
     invalid-message-routing: ${routing.loggline.bucket}
 
-# Executor pool tuning for production
-# Consider monitoring split latency and queue depth to adjust if needed
-#executor:
-#  logLinePublish:
-    # Production: keep defaults from application-gcp.yaml (16 core, 32 max, 5000 queue)
-    # If you need different tuning, uncomment and adjust:
-    # corePoolSize: 20
-    # maxPoolSize: 40
-    # queueSize: 8000
-    # keepAliveSeconds: 120
