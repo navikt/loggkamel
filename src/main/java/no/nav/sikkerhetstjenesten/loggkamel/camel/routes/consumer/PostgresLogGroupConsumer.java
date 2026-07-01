@@ -52,6 +52,7 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
+                .streamCache(false)
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")

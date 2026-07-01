@@ -34,6 +34,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
     public void errorHandling() {
 //        getContext().setAllowUseOriginalMessage(true);
+        getContext().setStreamCaching(false);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
                 .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
