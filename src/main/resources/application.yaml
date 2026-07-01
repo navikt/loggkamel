@@ -4,3 +4,15 @@ logging:
 
 ENTRA_PROXY_BASE_URL: http://entra-proxy
 NAIS_CONSOLE_BASE_URL: https://console.nav.cloud.nais.io/graphql
+
+executor:
+  logLinePublish:
+    # Thread pool for parallel processing of split log lines
+    # corePoolSize: minimum number of threads to keep alive
+    corePoolSize: 8
+    # maxPoolSize: maximum number of threads to create
+    maxPoolSize: 16
+    # queueSize: maximum pending tasks before blocking caller (CallerRuns backpressure)
+    queueSize: 2000
+    # keepAliveSeconds: how long to keep excess threads alive
+    keepAliveSeconds: 60

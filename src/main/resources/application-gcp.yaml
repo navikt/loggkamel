@@ -67,3 +67,12 @@ springdoc:
       client-id: ${azure.app.client.id}
     csrf:
       enabled: true
+
+# Executor pool for parallel log line publishing
+# On GCP, we can use more aggressive defaults than local development
+executor:
+  logLinePublish:
+    corePoolSize: 16
+    maxPoolSize: 32
+    queueSize: 5000
+    keepAliveSeconds: 60

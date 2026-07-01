@@ -63,3 +63,12 @@ routing:
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
+
+executor:
+  logLinePublish:
+    # Conservative defaults for local development to avoid overwhelming single machine
+    corePoolSize: 2
+    maxPoolSize: 4
+    queueSize: 500
+    keepAliveSeconds: 30
+

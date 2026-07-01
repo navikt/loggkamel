@@ -29,3 +29,12 @@ routing:
     invalid-message-routing: ${routing.loggline.bucket}
 
 debug: false
+
+# Dev environment: tuned for balance between throughput and safe testing
+#executor:
+#  logLinePublish:
+#    corePoolSize: 8
+#    maxPoolSize: 16
+#    queueSize: 3000
+#    keepAliveSeconds: 60
+
