@@ -22,6 +22,7 @@ public class LogLineEnricher extends LoggLineErrorHandler {
         from(LOG_LINE_ENRICHER_ROUTE)
                 .routeId(LOG_LINE_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Determining which teknologi-specific enricher to use for ${header.CamelFileName}")
+                .throwException(new Exception("TESTING FAILURE WHEN CONSUMING LOG LINE")) //TODO: remove after testing
                 .choice()
                     .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
                         .log(LoggingLevel.INFO, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
