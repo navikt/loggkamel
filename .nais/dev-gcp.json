@@ -3,9 +3,9 @@
     "https://loggkamel.intern.dev.nav.no"
   ],
   "db": {
-    "poolsize": "2",
+    "poolsize": "20",
     "type": "POSTGRES_18",
-    "tier": "db-f1-micro",
+    "tier": "db-custom-1-3840",
     "name": "loggkamel"
   },
   "db-flags": {
@@ -21,9 +21,6 @@
     },
     {
       "name": "loggkamel-dev-postgresql-consumer"
-    },
-    {
-      "name": "loggkamel-dev-fallback-invalid-message"
     },
     {
       "name": "loggkamel-dev-logglines"
@@ -46,11 +43,11 @@
     }
   },
   "mem": {
-    "min": "640Mi",
-    "max": "1Gi"
+    "min": "1Gi",
+    "max": "2Gi"
   },
   "cpu": {
-    "min": "20m"
+    "min": "30m"
   },
   "replica": {
     "min": 2,

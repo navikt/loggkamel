@@ -50,16 +50,25 @@ management:
       enabled: true
 
 routing:
-  fallback:
-    invalid-message: "file:src/main/resources/files/fallback/invalid-messages"
   postgres:
     consumer: "file:src/main/resources/files/postgres"
     invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
+    invalid-message-routing: ${routing.postgres.invalid-message}
   loggline:
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
+    invalid-message-routing: ${routing.loggline.invalid-message}
   arkiv:
     producer: "file:src/main/resources/files/output"
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
+
+executor:
+  logLinePublish:
+    # Conservative defaults for local development to avoid overwhelming single machine
+    corePoolSize: 2
+    maxPoolSize: 4
+    queueSize: 500
+    keepAliveSeconds: 30
+

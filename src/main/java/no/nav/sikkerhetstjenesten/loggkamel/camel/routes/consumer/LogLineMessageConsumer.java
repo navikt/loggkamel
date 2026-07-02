@@ -3,6 +3,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.LogLineMessageConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggLineErrorHandler;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
+import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,18 +30,17 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
     @Value("${routing.loggline.bucket}")
     private String consumerUri;
 
-    @Value("${routing.loggline.bucket-delete:#{null}}")
-    private String deleteSourceUri;
-
     @Override
     public void configure() {
-        // Explicitly delete original local files on route completion. Only necessary when reading to/from GCP
-        if (deleteSourceUri != null && deleteSourceUri.startsWith("google-storage://")) {
+        // Explicitly delete original local files on route completion. Only necessary when reading from GCP
+        if (consumerUri.startsWith("google-storage://")) {
             onCompletion()
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
+                    .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
+                    .setBody(constant(null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
-                    .to(deleteSourceUri);
+                    .to(consumerUri);
         }
 
         super.errorHandling();
@@ -51,6 +52,7 @@ public class LogLineMessageConsumer extends LoggLineErrorHandler {
 
         from(consumerUri)
                 .routeId(LOG_LINE_MESSAGE_CONSUMER_ID)
+                .streamCache(false)
                 .autoStartup(false)
                 .transacted()
                 .bean(LogLineMessageConsumerProcessor.class, "populateFilenameHeader")

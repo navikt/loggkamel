@@ -3,6 +3,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogGroupConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
+import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,22 +26,21 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
     @Value("${routing.postgres.consumer}")
     private String consumerUri;
 
-    @Value("${routing.postgres.consumer-delete:#{null}}")
-    private String deleteSourceUri;
-
     @Autowired
     @Qualifier("postgresLogGroupIdempotentRepository")
     private JdbcMessageIdRepository idempotentRepository;
 
     @Override
     public void configure() {
-        // Explicitly delete original local files on route completion. Only necessary when reading to/from GCP
-        if (deleteSourceUri != null && deleteSourceUri.startsWith("google-storage://")) {
+        // Explicitly delete original local files on route completion. Only necessary when reading from GCP
+        if (consumerUri.startsWith("google-storage://")) {
             onCompletion()
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
-                    .setHeader(OBJECT_NAME, header(FILE_NAME))
-                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
-                    .to(deleteSourceUri);
+                    .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
+                    .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
+                    .setBody(constant(null))
+                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.originalFilename} from consumer bucket")
+                    .to(consumerUri);
         }
 
         this.errorHandling();
@@ -51,14 +52,16 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
 
         from(consumerUri)
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
+                .streamCache(false)
                 .autoStartup(false)
                 .transacted()
                 .bean(PostgresLogGroupConsumerProcessor.class, "initializeConsumerState")
-                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}, determining whether to process or if it's already claimed")
                 //Prevent multiple instances of loggkamel from processing the same file, leave removal of the file up to the instance processing it
                 .idempotentConsumer(header(FILE_NAME), idempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
-                .convertBodyTo(byte[].class) // Ensure body is fully read and cached for use in error handling, as with GCP buckets the body is an InputStream that can only be read once
+                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
+                .bean(PostgresLogGroupConsumerProcessor.class, "prepareBodyAsInputStream")
                 .bean(PostgresLogGroupConsumerProcessor.class, "incrementMetrics")
                 .bean(PostgresLogGroupConsumerProcessor.class, "decompressIfGzip")
                 .to(LOG_GROUP_ENRICHER_ROUTE);

@@ -1,6 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
+import com.google.cloud.ReadChannel;
+import com.google.cloud.storage.Blob;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
@@ -9,11 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.util.zip.GZIPInputStream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler.ORIGINAL_FILENAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
@@ -34,10 +39,35 @@ public class PostgresLogGroupConsumerProcessor {
         if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
             exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
         }
+        exchange.getIn().setHeader(ORIGINAL_FILENAME, exchange.getIn().getHeader(FILE_NAME, String.class));
     }
 
     public void incrementMetrics(Exchange exchange) {
         metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
+    }
+
+    public void prepareBodyAsInputStream(Exchange exchange) {
+        Object body = exchange.getMessage().getBody();
+
+        if (body instanceof InputStream) {
+            log.debug("Received input stream as InputStream");
+            return;
+        }
+
+        if (body instanceof Blob blob) {
+            log.debug("Received input stream as Blob");
+            ReadChannel reader = blob.reader();
+            exchange.getMessage().setBody(Channels.newInputStream(reader));
+            return;
+        }
+
+        // If the body isn't an input stream but can at least be converted to one by camel, we coerce that conversion
+        InputStream inputStream = exchange.getMessage().getBody(InputStream.class);
+        if (inputStream == null) {
+            throw new InvalidPostgresLogGroupException("Unable to convert message body to InputStream for file " + exchange.getIn().getHeader(FILE_NAME, String.class));
+        }
+        log.debug("Converting message body to InputStream");
+        exchange.getMessage().setBody(inputStream);
     }
 
     public void decompressIfGzip(Exchange exchange) {
@@ -46,24 +76,17 @@ public class PostgresLogGroupConsumerProcessor {
             return;
         }
 
-        log.debug("Log file {} is gzip compressed, attempting to decompress", fileName);
+        log.info("Log file {} is gzip compressed, wrapping body in GZIPInputStream for streaming decompression", fileName);
         try {
-            byte[] compressedBytes = exchange.getMessage().getBody(byte[].class);
-            try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(compressedBytes));
-                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                byte[] buffer = new byte[4096];
-                int len;
-                while ((len = gzipInputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, len);
-                }
-                exchange.getMessage().setBody(outputStream.toByteArray());
-            }
-        } catch (Exception e) {
+            InputStream compressedStream = exchange.getMessage().getBody(InputStream.class);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(compressedStream);
+            exchange.getMessage().setBody(gzipInputStream);
+            log.debug("Assigned GZIPInputStream to message body");
+        } catch (IOException e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
             throw new InvalidPostgresLogGroupException(
-                "Failed to decompress gzip file " + fileName + ", error: " + errorMessage, e
+                "Failed to open gzip stream for file " + fileName + ", error: " + errorMessage, e
             );
         }
     }
 }
-

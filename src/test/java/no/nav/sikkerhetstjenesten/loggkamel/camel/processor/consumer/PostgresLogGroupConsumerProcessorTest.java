@@ -1,129 +1,204 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
+import com.google.cloud.ReadChannel;
+import com.google.cloud.storage.Blob;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.support.DefaultExchange;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LoggGroupErrorHandler.ORIGINAL_FILENAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresLogGroupConsumerProcessorTest {
 
+    private static final String DESIRED_FILENAME = "desiredFilename";
+    private static final String COMPRESSED_FILENAME = "otherFilename.gz";
+
     @Mock
     private Metrics metrics;
 
-    private PostgresLogGroupConsumerProcessor processor;
+    @Mock
+    Exchange exchange;
 
-    @BeforeEach
-    void setup() {
-        processor = new PostgresLogGroupConsumerProcessor(metrics);
-    }
+    @Mock
+    Message message;
+
+    @InjectMocks
+    PostgresLogGroupConsumerProcessor processor;
 
     @Test
     void initializeConsumerState_setsTeknoLogiVariable() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        when(exchange.getIn()).thenReturn(message);
 
         processor.initializeConsumerState(exchange);
 
-        assertEquals(TeknologiEnum.POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
+        verify(exchange).setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
     }
 
     @Test
     void initializeConsumerState_populatesFilenameFromObjectNameWhenAbsent() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(OBJECT_NAME, "some-file.auditlog");
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
+        when(message.getHeader(OBJECT_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.initializeConsumerState(exchange);
 
-        assertEquals("some-file.auditlog", exchange.getIn().getHeader(FILE_NAME, String.class));
+        verify(message).setHeader(FILE_NAME, DESIRED_FILENAME);
     }
 
     @Test
-    void initializeConsumerState_keepsExistingFilenameHeader() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(FILE_NAME, "existing.auditlog");
-        exchange.getIn().setHeader(OBJECT_NAME, "other.auditlog");
+    void initializeConsumerState_setOriginalFilename() {
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.initializeConsumerState(exchange);
 
-        assertEquals("existing.auditlog", exchange.getIn().getHeader(FILE_NAME, String.class));
+        verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
+        verifyNoMoreInteractions(message);
     }
 
     @Test
     void incrementMetrics_callsHappyPathWithPostgresqlGrouped() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-
         processor.incrementMetrics(exchange);
 
         verify(metrics).incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
     @Test
+    void prepareBodyAsInputStream_doesNothingWhenBodyIsAlreadyInputStream() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody()).thenReturn(mock(InputStream.class));
+
+        processor.prepareBodyAsInputStream(exchange);
+
+        verifyNoMoreInteractions(exchange, message);
+    }
+
+    @Test
+    void prepareBodyAsInputStream_makesInputStreamFromBlob() {
+        when(exchange.getMessage()).thenReturn(message);
+        Blob blob = mock(Blob.class);
+        when(message.getBody()).thenReturn(blob);
+        ReadChannel readChannel = mock(ReadChannel.class);
+        when(blob.reader()).thenReturn(readChannel);
+
+        processor.prepareBodyAsInputStream(exchange);
+
+        verify(message).setBody(any(InputStream.class));
+        verifyNoMoreInteractions(exchange, message);
+    }
+
+    @Test
+    void prepareBodyAsInputStream_exceptionIfBodyNotCoercibleToInputStream() {
+        when(exchange.getIn()).thenReturn(message);
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody()).thenReturn("This is not an InputStream or Blob");
+        when(message.getBody(InputStream.class)).thenReturn(null);
+
+        assertThrows(InvalidPostgresLogGroupException.class, () -> processor.prepareBodyAsInputStream(exchange));
+    }
+
+    @Test
+    void prepareBodyAsInputStream_coercesBodyToInputStream() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody()).thenReturn("This is not an InputStream or Blob");
+        InputStream stream = mock(InputStream.class);
+        when(message.getBody(InputStream.class)).thenReturn(stream);
+
+        processor.prepareBodyAsInputStream(exchange);
+
+        verify(message).setBody(stream);
+        verifyNoMoreInteractions(exchange, message);
+    }
+
+    @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(FILE_NAME, "some-file.auditlog");
-        byte[] originalBody = "plain content".getBytes(StandardCharsets.UTF_8);
-        exchange.getMessage().setBody(originalBody);
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.decompressIfGzip(exchange);
 
-        assertArrayEquals(originalBody, exchange.getMessage().getBody(byte[].class));
+        verifyNoMoreInteractions(exchange, message);
     }
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHeaderIsAbsent() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        byte[] originalBody = "plain content".getBytes(StandardCharsets.UTF_8);
-        exchange.getMessage().setBody(originalBody);
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
         processor.decompressIfGzip(exchange);
 
-        assertArrayEquals(originalBody, exchange.getMessage().getBody(byte[].class));
+        verifyNoMoreInteractions(exchange, message);
     }
 
     @Test
-    void decompressIfGzip_decompressesGzipBody() throws Exception {
-        String originalContent = "audit log line content";
-        byte[] originalContentBytes = originalContent.getBytes(StandardCharsets.UTF_8);
-        byte[] gzipBytes = gzip(originalContent);
+    void decompressIfGzip_setsBodyToGZIPInputStream() throws Exception {
+        InputStream inputStream = new ByteArrayInputStream(gzip("audit log line content"));
 
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(FILE_NAME, "some-file.auditlog.gz");
-        exchange.getMessage().setBody(gzipBytes);
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         processor.decompressIfGzip(exchange);
 
-        assertArrayEquals(originalContentBytes, exchange.getMessage().getBody(byte[].class));
+        verify(message).setBody(any(GZIPInputStream.class));
+    }
+
+    @Test
+    void decompressIfGzip_gzipStreamDecompressesCorrectlyWhenRead() throws Exception {
+        String originalContent = "audit log line content";
+        InputStream inputStream = new ByteArrayInputStream(gzip(originalContent));
+
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(InputStream.class)).thenReturn(inputStream);
+
+        processor.decompressIfGzip(exchange);
+
+        ArgumentCaptor<GZIPInputStream> gzipInputStreamArgumentCaptor = ArgumentCaptor.forClass(GZIPInputStream.class);
+        verify(message, times(1)).setBody(gzipInputStreamArgumentCaptor.capture());
+
+        byte[] decompressedBytes = gzipInputStreamArgumentCaptor.getValue().readAllBytes();
+        assertArrayEquals(originalContent.getBytes(StandardCharsets.UTF_8), decompressedBytes);
     }
 
     @Test
     void decompressIfGzip_throwsInvalidPostgresLogGroupExceptionOnCorruptGzip() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(FILE_NAME, "corrupt-file.auditlog.gz");
-        exchange.getMessage().setBody("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
+        InputStream inputStream = new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
+
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         InvalidPostgresLogGroupException exception = assertThrows(
             InvalidPostgresLogGroupException.class,
             () -> processor.decompressIfGzip(exchange)
         );
 
-        assertTrue(exception.getMessage().contains("Failed to decompress gzip file corrupt-file.auditlog.gz"));
+        assertTrue(exception.getMessage().contains("Failed to open gzip stream for file"));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────

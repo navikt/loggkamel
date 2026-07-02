@@ -23,6 +23,7 @@ public class Metrics {
 
     public enum Multiplicity {grouped, single}
 
+    //TODO: clean up backout queue type, as we no longer use separate dead letter queues
     public enum BackoutQueueType {invalid, deadletter};
 
     private final MeterRegistry meterRegistry;
