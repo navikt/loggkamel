@@ -34,7 +34,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
     public void configure() {
         // Explicitly delete original local files on route completion. Only necessary when reading from GCP
         if (consumerUri.startsWith("google-storage://")) {
-            //TODO: replace after testing
             onCompletion()
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
@@ -42,9 +41,6 @@ public class PostgresLogGroupConsumer extends LoggGroupErrorHandler {
                     .setBody(constant(null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.originalFilename} from consumer bucket")
                     .to(consumerUri);
-
-//            onCompletion()
-//                    .log(LoggingLevel.INFO, "onCompletion block reached! KEEP_SOURCE_FILE property is ${exchangeProperty.keepSourceFile}, CamelDuplicateMessage header is ${header.CamelDuplicateMessage}, ORIGINAL_FILENAME header is ${header.originalFilename}");
         }
 
         this.errorHandling();

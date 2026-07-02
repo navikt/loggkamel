@@ -30,7 +30,10 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-        getContext().setAllowUseOriginalMessage(true); //TODO: if this doesn't work in the group handler, remove here too along with useOriginalBody() flags per error route
+        // Use of the original message is allowed to enable local backout testing. Without stream caching this would
+        // result in partially-read streams being sent to backout queues in GCP, if the GCP flow didn't drop message body
+        // entirely and instead command GCP to copy the original file to the backout queue entirely outside of loggkamel
+        getContext().setAllowUseOriginalMessage(true);
         getContext().setStreamCaching(false);
 
         onException(DependencyException.class)
@@ -76,7 +79,7 @@ public abstract class LoggLineErrorHandler extends RouteBuilder {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
-            exchange.getIn().setBody(null);
+            exchange.getIn().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
         }
     }
 }

@@ -46,7 +46,6 @@ public class PostgresLogGroupConsumerProcessor {
         metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
-    //TODO: unit tests
     public void prepareBodyAsInputStream(Exchange exchange) {
         Object body = exchange.getMessage().getBody();
 

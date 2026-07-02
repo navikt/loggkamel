@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 
-//TODO: make this class take a Teknologi and route strings, make the consumers pass that in
+//TODO: When adding other consumers: make this class take a Teknologi and route strings, make the consumers pass that in
 public abstract class LoggGroupErrorHandler extends RouteBuilder {
 
     public static final String ORIGINAL_FILENAME = "originalFilename";
@@ -33,7 +33,10 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
     public abstract void configure();
 
     public void errorHandling() {
-        getContext().setAllowUseOriginalMessage(true); //TODO: testing if this does not force stream into cache in GCP, while letting local work as before
+        // Use of the original message is allowed to enable local backout testing. Without stream caching this would
+        // result in partially-read streams being sent to backout queues in GCP, if the GCP flow didn't drop message body
+        // entirely and instead command GCP to copy the original file to the backout queue entirely outside of loggkamel
+        getContext().setAllowUseOriginalMessage(true);
         getContext().setStreamCaching(false);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
@@ -84,7 +87,7 @@ public abstract class LoggGroupErrorHandler extends RouteBuilder {
             exchange.getIn().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
             exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
-            exchange.getIn().setBody(null); //clear the body for safety; in GCP
+            exchange.getIn().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
         }
     }
 }
