@@ -72,7 +72,7 @@ springdoc:
 # Executor pool for parallel log line publishing
 # On GCP, we can use more aggressive defaults than local development
 executor:
-  logLinePublish:
+  logPacketPublish:
     corePoolSize: 8
     maxPoolSize: 16
     queueSize: 500

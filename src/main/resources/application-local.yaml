@@ -54,7 +54,7 @@ routing:
     consumer: "file:src/main/resources/files/postgres"
     invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
     invalid-message-routing: ${routing.postgres.invalid-message}
-  loggline:
+  packet:
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
     invalid-message-routing: ${routing.loggline.invalid-message}
@@ -65,7 +65,7 @@ entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
 
 executor:
-  logLinePublish:
+  logPacketPublish:
     # Conservative defaults for local development to avoid overwhelming single machine
     corePoolSize: 2
     maxPoolSize: 4

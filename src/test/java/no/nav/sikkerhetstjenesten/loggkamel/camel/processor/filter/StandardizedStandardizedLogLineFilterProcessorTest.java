@@ -1,0 +1,67 @@
+package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
+
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOperationTypes;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static org.apache.camel.Exchange.FILE_NAME;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class StandardizedStandardizedLogLineFilterProcessorTest {
+
+    @Mock
+    Exchange exchange;
+
+    @Mock
+    Message message;
+
+    @Mock
+    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+
+    @Mock
+    LogLineOperationTypes logLineOperationTypes;
+
+    @InjectMocks
+    StandardizedLogLineFilterProcessor standardizedLogLineFilterProcessor;
+
+    @BeforeEach
+    void setup() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(FILE_NAME)).thenReturn("blah");
+        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
+        when(exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class)).thenReturn(logLineOperationTypes);
+    }
+
+    @Test
+    void isLoggingLeseoperasjonerAndRead_passesFilter() {
+        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(logLineOperationTypes.isRead()).thenReturn(true);
+
+        assertTrue(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
+    }
+
+    @Test
+    void isLoggingEndringerAndWrite_passesFilter() {
+        when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(true);
+        when(logLineOperationTypes.isModification()).thenReturn(true);
+
+        assertTrue(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
+    }
+
+    @Test
+    void isNotReadOrWrite_removedByFilter() {
+        // If no mocked attributes are set, they all default to false
+        assertFalse(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggArkiv(exchange));
+    }
+
+}

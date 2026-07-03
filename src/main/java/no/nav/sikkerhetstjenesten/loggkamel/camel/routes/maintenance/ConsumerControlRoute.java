@@ -6,8 +6,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.LogLineMessageConsumer.LOG_LINE_MESSAGE_CONSUMER_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.PostgresLogGroupConsumer.POSTGRES_LOG_CONSUMER_ID;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.NativeLogPacketConsumer.NATIVE_LOG_PACKET_CONSUMER_ID;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.PostgresLogStreamConsumer.POSTGRES_LOG_CONSUMER_ID;
 
 @Component
 public class ConsumerControlRoute extends RouteBuilder {
@@ -37,12 +37,12 @@ public class ConsumerControlRoute extends RouteBuilder {
                 })
                 .process(exchange -> {
                     boolean consumeLogLines = unleash.isEnabled(LOG_LINES_FEATURE_FLAG, false);
-                    if (consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(LOG_LINE_MESSAGE_CONSUMER_ID).isStopped()) {
-                        log.info("Feature flag 'consume-log-lines' is enabled, starting route {}", LOG_LINE_MESSAGE_CONSUMER_ID);
-                        exchange.getContext().getRouteController().startRoute(LOG_LINE_MESSAGE_CONSUMER_ID);
-                    } else if (!consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(LOG_LINE_MESSAGE_CONSUMER_ID).isStarted()) {
-                        log.info("Feature flag 'consume-log-lines' is disabled, stopping route {}", LOG_LINE_MESSAGE_CONSUMER_ID);
-                        exchange.getContext().getRouteController().stopRoute(LOG_LINE_MESSAGE_CONSUMER_ID);
+                    if (consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(NATIVE_LOG_PACKET_CONSUMER_ID).isStopped()) {
+                        log.info("Feature flag 'consume-log-lines' is enabled, starting route {}", NATIVE_LOG_PACKET_CONSUMER_ID);
+                        exchange.getContext().getRouteController().startRoute(NATIVE_LOG_PACKET_CONSUMER_ID);
+                    } else if (!consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(NATIVE_LOG_PACKET_CONSUMER_ID).isStarted()) {
+                        log.info("Feature flag 'consume-log-lines' is disabled, stopping route {}", NATIVE_LOG_PACKET_CONSUMER_ID);
+                        exchange.getContext().getRouteController().stopRoute(NATIVE_LOG_PACKET_CONSUMER_ID);
                     }
                 })
                 .log(LoggingLevel.DEBUG, "Consumer route control check complete");

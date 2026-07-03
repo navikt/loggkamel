@@ -4,7 +4,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.config.IdempotentRepositoryConfig.LOG_LINE_CONSUMER;
+import static no.nav.sikkerhetstjenesten.loggkamel.config.IdempotentRepositoryConfig.LOG_PACKET_CONSUMER;
 import static no.nav.sikkerhetstjenesten.loggkamel.config.IdempotentRepositoryConfig.POSTGRES_CONSUMER;
 
 @Component
@@ -26,7 +26,7 @@ public class IdempotentRepositoryCleanupRoute extends RouteBuilder {
         from("quartz:" + LOG_LINE_CLEANUP_ROUTE_ID + "?cron=0+0/5+*+*+*+?") // every five minutes
                 .routeId(LOG_LINE_CLEANUP_ROUTE_ID)
                 .log(LoggingLevel.DEBUG, "Running cleanup of expired log line idempotent repository entries")
-                .setBody(constant("DELETE FROM CAMEL_MESSAGEPROCESSED WHERE processorname = '" + LOG_LINE_CONSUMER + "' and createdAt < NOW() - INTERVAL '10 minutes'"))
+                .setBody(constant("DELETE FROM CAMEL_MESSAGEPROCESSED WHERE processorname = '" + LOG_PACKET_CONSUMER + "' and createdAt < NOW() - INTERVAL '10 minutes'"))
                 .to("spring-jdbc:default")
                 .log(LoggingLevel.DEBUG, "Idempotent repository cleanup complete");
     }

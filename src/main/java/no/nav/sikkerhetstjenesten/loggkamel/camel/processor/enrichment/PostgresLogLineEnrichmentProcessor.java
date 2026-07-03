@@ -54,6 +54,8 @@ public class PostgresLogLineEnrichmentProcessor {
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
         exchange.getMessage().setBody(enrichedAuditlogg);
 
+        //TODO: once you have other teknologies and can see if this step is standardizable, pull this into the filtration step instead of
+        // performing the operation preemptively here
         LogLineOperationTypes logLineOperationTypes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
         exchange.setVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, logLineOperationTypes);
     }
