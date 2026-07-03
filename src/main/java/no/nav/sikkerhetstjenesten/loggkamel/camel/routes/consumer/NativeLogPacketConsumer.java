@@ -60,7 +60,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                 .idempotentConsumer(header(FILE_NAME), logPacketIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
                 .bean(NativeLogPacketConsumerProcessor.class, "mapToLogLineList")
-                // TODO: split by individual AuditloggLineMessage here
+                .split(body())
                     .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesFromLogLine")
                     .bean(NativeLogPacketConsumerProcessor.class, "incrementMetrics")
                     .to(NATIVE_LOG_LINE_ENRICHER_ROUTE);

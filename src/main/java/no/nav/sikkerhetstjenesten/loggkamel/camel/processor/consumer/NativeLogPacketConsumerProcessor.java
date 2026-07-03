@@ -38,10 +38,9 @@ public class NativeLogPacketConsumerProcessor {
 
     public void mapToLogLineList(Exchange exchange) throws Exception {
         List<AuditloggLineMessage> loggLineMessageList = objectMapper.readValue(exchange.getMessage().getBody(String.class), List.class);
-        exchange.getMessage().setBody(loggLineMessageList, List.class);
+        exchange.getMessage().setBody(loggLineMessageList);
     }
 
-    //TODO: add unit tests
     public void initializeExchangeVariablesFromLogLine(Exchange exchange) throws JsonProcessingException {
         AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
 

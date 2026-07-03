@@ -20,11 +20,11 @@ public class NativeLogStreamSplitter extends LogStreamErrorHandler {
         from(NATIVE_LOG_STREAM_SPLITTER_ROUTE)
                 .routeId(NATIVE_LOG_STREAM_SPLITTER_ID)
                 .log(LoggingLevel.INFO, "Splitting log file ${header.CamelFileName} into bounded-size message lists")
-                .split(body().tokenize("^\\<|\n\\<")) //TODO: instead of splitting into a body consisting of a single String, split into a List<String> consisting of up to 1000 of these tokens
+                .split(method(NativeLogStreamSplitterProcessor.class, "groupIntoPackets"))
                     .streaming()
-                    .parallelProcessing()
-                    .executorService("logPacketPublishPool")
-                    .shareUnitOfWork()
+//                    .parallelProcessing()
+//                    .executorService("logPacketPublishPool")
+//                    .shareUnitOfWork()
                     .bean(NativeLogStreamSplitterProcessor.class, "prepareLogLineHeaders")
                     .to(NATIVE_LOG_PACKET_PRODUCER_ROUTE);
     }
