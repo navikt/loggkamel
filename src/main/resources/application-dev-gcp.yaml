@@ -26,7 +26,7 @@ routing:
   packet:
     bucket: "google-storage://loggkamel-dev-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
     invalid-message: "loggkamel-dev-logglines-invalid-message"
-    invalid-message-routing: ${routing.loggline.bucket}
+    invalid-message-routing: ${routing.packet.bucket}
 
 debug: false
 

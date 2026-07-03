@@ -57,7 +57,7 @@ routing:
   packet:
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
-    invalid-message-routing: ${routing.loggline.invalid-message}
+    invalid-message-routing: ${routing.packet.invalid-message}
   arkiv:
     producer: "file:src/main/resources/files/output"
 

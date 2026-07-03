@@ -16,12 +16,12 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Au
 
 public abstract class LogPacketErrorHandler extends RouteBuilder {
 
-    @Value("${routing.loggline.invalid-message}")
+    @Value("${routing.packet.invalid-message}")
     protected String invalidMessageUri;
 
     // This is not always where the invalid message ends up; rather it is the place we call to get the invalid message to its destination
     // In GCP, this is the consumer bucket: we call it to tell it to copy its file to the invalid message URI
-    @Value("${routing.loggline.invalid-message-routing}")
+    @Value("${routing.packet.invalid-message-routing}")
     protected String invalidMessageRouting;
 
     @Autowired

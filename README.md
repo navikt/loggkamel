@@ -1,5 +1,7 @@
 # Loggkamel
 
+TODO: go through, update to reflect packet behavior. Remember to also update the excalidraw files
+
 Loggkamel overfører logger fra on-prem databaser til GCP.
 Generert med [Kameleon](https://kameleon.dev).
 
