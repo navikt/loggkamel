@@ -29,19 +29,19 @@ public class NativeLogStreamSplitterProcessor {
 
     static final String LOG_PACKET_EXTENSION = ".packet";
 
-    public void prepareLogLineHeaders(Exchange exchange) {
-        String logGroupFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);
+    public void prepareLogPacketHeaders(Exchange exchange) {
+        String logStreamFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 
-        if (logGroupFilename == null || logGroupFilename.isEmpty()) {
-            log.warn("Filename header is missing while splitting log group");
-            throw new InvalidLogGroupException("Filename header is missing while splitting log group");
+        if (logStreamFilename == null || logStreamFilename.isEmpty()) {
+            log.warn("Filename header is missing while splitting log stream");
+            throw new InvalidLogGroupException("Filename header is missing while splitting log stream");
         }
 
-        String logLineListFilename = createFilenameWithUUID(logGroupFilename);
-        log.debug("New filename being assigned: {}", logLineListFilename);
+        String logPacketFilename = createFilenameWithUUID(logStreamFilename);
+        log.debug("New filename being assigned to packet: {}", logPacketFilename);
 
-        exchange.getMessage().setHeader(FILE_NAME, logLineListFilename);
-        exchange.getMessage().setHeader(OBJECT_NAME, logLineListFilename);
+        exchange.getMessage().setHeader(FILE_NAME, logPacketFilename);
+        exchange.getMessage().setHeader(OBJECT_NAME, logPacketFilename);
     }
 
     private String createFilenameWithUUID(String originalFileName) {
@@ -50,8 +50,6 @@ public class NativeLogStreamSplitterProcessor {
         return fileBeforeExtension + "." + UUID.randomUUID() + fileExtension + LOG_PACKET_EXTENSION;
     }
 
-    // TODO: test with files with > 1000 log lines
-    //TODO: test with files with 1 log line
     public Iterator<List<String>> groupIntoPackets(Exchange exchange) {
         InputStream logGroupInputStream = exchange.getMessage().getBody(InputStream.class);
 

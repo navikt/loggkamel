@@ -44,7 +44,7 @@ class NativeLogStreamSplitterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamSplitterProcessor.prepareLogLineHeaders(exchange));
+        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange));
     }
 
     @Test
@@ -52,7 +52,7 @@ class NativeLogStreamSplitterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("sikkerhets-test.20260210.auditlog");
 
-        nativeLogStreamSplitterProcessor.prepareLogLineHeaders(exchange);
+        nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> objectNameCaptor = ArgumentCaptor.forClass(String.class);
@@ -71,7 +71,7 @@ class NativeLogStreamSplitterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("sikkerhets-test");
 
-        nativeLogStreamSplitterProcessor.prepareLogLineHeaders(exchange);
+        nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
         verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(FILE_NAME), fileNameCaptor.capture());

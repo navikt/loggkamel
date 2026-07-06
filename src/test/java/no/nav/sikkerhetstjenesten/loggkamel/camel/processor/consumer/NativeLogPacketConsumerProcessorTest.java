@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
@@ -25,6 +26,8 @@ import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +82,7 @@ class NativeLogPacketConsumerProcessorTest {
     void mapToLogLineList_setsBodyAndVariables() throws Exception {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setBody("blah");
-        when(objectMapper.readValue("blah", List.class)).thenReturn(List.of(auditloggLineMessage));
+        when(objectMapper.readValue(eq("blah"), any(TypeReference.class))).thenReturn(List.of(auditloggLineMessage));
 
         processor.mapToLogLineList(exchange);
 
@@ -91,8 +94,7 @@ class NativeLogPacketConsumerProcessorTest {
     @Test
     void initializeExchangeVariablesFromLogLine_setsVariables() throws JsonProcessingException {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getMessage().setBody("blah");
-        when(objectMapper.readValue("blah", AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
+        exchange.getMessage().setBody(auditloggLineMessage);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
         when(auditloggLineMessageHeader.getTeknologi()).thenReturn(TeknologiEnum.POSTGRESQL);
         when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);

@@ -25,7 +25,7 @@ public class NativeLogStreamSplitter extends LogStreamErrorHandler {
 //                    .parallelProcessing()
 //                    .executorService("logPacketPublishPool")
 //                    .shareUnitOfWork()
-                    .bean(NativeLogStreamSplitterProcessor.class, "prepareLogLineHeaders")
+                    .bean(NativeLogStreamSplitterProcessor.class, "prepareLogPacketHeaders")
                     .to(NATIVE_LOG_PACKET_PRODUCER_ROUTE);
     }
 }

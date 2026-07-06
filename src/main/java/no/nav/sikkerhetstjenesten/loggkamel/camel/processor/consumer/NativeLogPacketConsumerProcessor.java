@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
@@ -37,12 +38,11 @@ public class NativeLogPacketConsumerProcessor {
     }
 
     public void mapToLogLineList(Exchange exchange) throws Exception {
-        List<AuditloggLineMessage> loggLineMessageList = objectMapper.readValue(exchange.getMessage().getBody(String.class), List.class);
+        List<AuditloggLineMessage> loggLineMessageList = objectMapper.readValue(exchange.getMessage().getBody(String.class), new TypeReference<>() {});
         exchange.getMessage().setBody(loggLineMessageList);
     }
 
     public void initializeExchangeVariablesFromLogLine(Exchange exchange) throws JsonProcessingException {
-//        AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
         AuditloggLineMessage loggLineMessage = exchange.getIn().getBody(AuditloggLineMessage.class);
 
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
