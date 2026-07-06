@@ -54,6 +54,9 @@ public class NativeLogPacketConsumerProcessor {
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
+        //TODO: remove after testing
+        exchange.getIn().setHeader(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
+        exchange.getMessage().setHeader(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
     }
 
     public void incrementMetrics(Exchange exchange) {
