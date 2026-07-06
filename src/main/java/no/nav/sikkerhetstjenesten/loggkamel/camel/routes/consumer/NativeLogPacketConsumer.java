@@ -46,6 +46,10 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     //Flush Logging object for the GCP project to ensure all logs write successfully before deleting source packet
                     .process(exchange -> {
+                        //TODO: remove after debugging
+                        log.info("Exchange headers upon attempting to flush logs: {}", exchange.getMessage().getHeaders());
+                        log.info("Exchange variables upon attempting to flush logs: {}", exchange.getVariables());
+
                         String gcpId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
                         if (gcpId != null) {
                             try {
