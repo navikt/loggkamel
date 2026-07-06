@@ -54,7 +54,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                                 throw new GCPDependencyException("Failed to flush GCP logging client for project ID: " + gcpId, e);
                             }
                         } else {
-                            log.warn("Cannot flush GCP Logging for object ${header.CamelFileName}, as project ID in header is null");
+                            log.warn("Cannot flush GCP Logging for packet {}, as project ID in header is null", exchange.getMessage().getHeader(FILE_NAME));
                         }
                     })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
