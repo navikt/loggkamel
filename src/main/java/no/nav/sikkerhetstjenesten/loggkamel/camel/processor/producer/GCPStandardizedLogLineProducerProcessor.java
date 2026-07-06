@@ -68,7 +68,7 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .build();
 
             //TODO: remove after debugging
-            log.info("Log entry being sent to GCP logging: " + objectMapper.writeValueAsString(entry));
+            log.info("Log entry being sent to GCP logging: " + entry.getPayload() + ", timestamp: " + entry.getInstantTimestamp());
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
