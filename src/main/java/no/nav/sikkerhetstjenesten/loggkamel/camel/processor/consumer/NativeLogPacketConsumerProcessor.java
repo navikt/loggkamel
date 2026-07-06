@@ -43,23 +43,19 @@ public class NativeLogPacketConsumerProcessor {
     public void mapToLogLineList(Exchange exchange) throws Exception {
         List<AuditloggLineMessage> loggLineMessageList = objectMapper.readValue(exchange.getMessage().getBody(String.class), new TypeReference<>() {});
         exchange.getMessage().setBody(loggLineMessageList);
+    }
 
-        //TODO: remove, or move to its own method
+    public void initializeExchangeVariablesForPacket(Exchange exchange) {
+        List<AuditloggLineMessage> loggLineMessageList = exchange.getMessage().getBody(List.class);
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessageList.get(0).getHeader().getTeamGcpProjectId());
     }
 
-    public void initializeExchangeVariablesFromLogLine(Exchange exchange) {
+    public void initializeExchangeVariablesForLogLine(Exchange exchange) {
         AuditloggLineMessage loggLineMessage = exchange.getIn().getBody(AuditloggLineMessage.class);
-
-        //TODO: remove after testing
-        log.info("Auditlogg being processed with header; {}", loggLineMessage);
 
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
-        //TODO: remove after testing
-        exchange.getIn().setHeader(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
-        exchange.getMessage().setHeader(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
     }
 
     public void incrementMetrics(Exchange exchange) {

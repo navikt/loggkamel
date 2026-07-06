@@ -78,22 +78,33 @@ class NativeLogPacketConsumerProcessorTest {
         assertEquals(NAME_FROM_CAMEL, exchange.getIn().getHeader(FILE_NAME, String.class));
     }
 
-    //TODO: re-enable and fix after testing
-//    @Test
-//    void mapToLogLineList_setsBodyAndVariables() throws Exception {
-//        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-//        exchange.getMessage().setBody("blah");
-//        when(objectMapper.readValue(eq("blah"), any(TypeReference.class))).thenReturn(List.of(auditloggLineMessage));
-//
-//        processor.mapToLogLineList(exchange);
-//
-//        assertInstanceOf(List.class, exchange.getMessage().getBody());
-//        assertInstanceOf(AuditloggLineMessage.class, exchange.getMessage().getBody(List.class).get(0));
-//        assertEquals(auditloggLineMessage, exchange.getMessage().getBody(List.class).get(0));
-//    }
+    @Test
+    void mapToLogLineList_setsBodyAndVariables() throws Exception {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getMessage().setBody("blah");
+        when(objectMapper.readValue(eq("blah"), any(TypeReference.class))).thenReturn(List.of(auditloggLineMessage));
+
+        processor.mapToLogLineList(exchange);
+
+        assertInstanceOf(List.class, exchange.getMessage().getBody());
+        assertInstanceOf(AuditloggLineMessage.class, exchange.getMessage().getBody(List.class).get(0));
+        assertEquals(auditloggLineMessage, exchange.getMessage().getBody(List.class).get(0));
+    }
 
     @Test
-    void initializeExchangeVariablesFromLogLine_setsVariables() throws JsonProcessingException {
+    void initializeExchangeVariablesForPacket_setsVariables() {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getMessage().setBody(List.of(auditloggLineMessage));
+        when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
+        when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
+
+        processor.initializeExchangeVariablesForPacket(exchange);
+
+        assertEquals(TEAM_PROJECT_ID, exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class));
+    }
+
+    @Test
+    void initializeExchangeVariablesForLogLine_setsVariables() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setBody(auditloggLineMessage);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
@@ -101,7 +112,7 @@ class NativeLogPacketConsumerProcessorTest {
         when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
         when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
 
-        processor.initializeExchangeVariablesFromLogLine(exchange);
+        processor.initializeExchangeVariablesForLogLine(exchange);
 
         assertEquals(TeknologiEnum.POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
         assertEquals(auditloggArkivResponseDTO, exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class));
