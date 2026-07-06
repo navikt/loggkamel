@@ -38,6 +38,8 @@ public class CacheConfig {
                     // Closing GCP Logging instances on eviction from cache
                     if (value instanceof Logging logging) {
                         try {
+                            //TODO: remove after debugging
+                            log.info("Closing logging client for GCP ID {}", key);
                             logging.close();
                         } catch (Exception e) {
                             log.warn("Error while closing GCP Logging client for project ID {}: {}",
