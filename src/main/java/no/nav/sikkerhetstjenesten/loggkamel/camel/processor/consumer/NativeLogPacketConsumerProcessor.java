@@ -43,6 +43,9 @@ public class NativeLogPacketConsumerProcessor {
     public void mapToLogLineList(Exchange exchange) throws Exception {
         List<AuditloggLineMessage> loggLineMessageList = objectMapper.readValue(exchange.getMessage().getBody(String.class), new TypeReference<>() {});
         exchange.getMessage().setBody(loggLineMessageList);
+
+        //TODO: remove, or move to its own method
+        exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessageList.get(0).getHeader().getTeamGcpProjectId());
     }
 
     public void initializeExchangeVariablesFromLogLine(Exchange exchange) {
