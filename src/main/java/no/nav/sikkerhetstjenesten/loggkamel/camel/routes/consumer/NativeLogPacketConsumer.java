@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import com.google.cloud.logging.Logging;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
 import org.apache.camel.LoggingLevel;
@@ -51,8 +51,10 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                             try {
                                 cacheManager.getCache(GCP_LOGGING_BY_ID).get(gcpId, Logging.class).flush();
                             } catch (Exception e) {
-                                throw new DependencyException("Failed to flush GCP logging client for project ID: " + gcpId, e);
+                                throw new GCPDependencyException("Failed to flush GCP logging client for project ID: " + gcpId, e);
                             }
+                        } else {
+                            log.warn("Cannot flush GCP Logging for object ${header.CamelFileName}, as project ID in header is null");
                         }
                     })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
