@@ -50,7 +50,6 @@ public class NativeLogStreamSplitterProcessor {
         return fileBeforeExtension + "." + UUID.randomUUID() + fileExtension + LOG_PACKET_EXTENSION;
     }
 
-    //TODO: read through iterator, make sure you understand how it works
     // TODO: test with files with > 1000 log lines
     //TODO: test with files with 1 log line
     public Iterator<List<String>> groupIntoPackets(Exchange exchange) {
@@ -127,6 +126,8 @@ public class NativeLogStreamSplitterProcessor {
                         : new StringBuilder(bufferedStartOfNextEntry);
                 bufferedStartOfNextEntry = null;
 
+                // Reads line by line. Lines starting with "<" are the start of a new log entry. Lines not starting with "<"
+                // are a continuation of the current log entry.
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("<")) {
                         String logEntryStart = line.substring(1);

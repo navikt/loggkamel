@@ -42,7 +42,8 @@ public class NativeLogPacketConsumerProcessor {
     }
 
     public void initializeExchangeVariablesFromLogLine(Exchange exchange) throws JsonProcessingException {
-        AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
+//        AuditloggLineMessage loggLineMessage = objectMapper.readValue(exchange.getMessage().getBody(String.class), AuditloggLineMessage.class);
+        AuditloggLineMessage loggLineMessage = exchange.getIn().getBody(AuditloggLineMessage.class);
 
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());

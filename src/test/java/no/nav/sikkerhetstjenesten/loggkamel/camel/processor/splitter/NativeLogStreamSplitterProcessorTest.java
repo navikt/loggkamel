@@ -81,45 +81,44 @@ class NativeLogStreamSplitterProcessorTest {
         assertTrue(generatedFileName.endsWith(LOG_PACKET_EXTENSION));
     }
 
-    //TODO: read through bot-generated tests, clean up
-//    @Test
-//    void groupIntoPacketsMatchesOldTokenizationSemantics() {
-//        String input = "<first\ncontinuation\n<second\n<third";
-//
-//        when(exchange.getMessage()).thenReturn(message);
-//        when(message.getBody(java.io.InputStream.class))
-//                .thenReturn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
-//
-//        Iterator<List<String>> packets = nativeLogStreamSplitterProcessor.groupIntoPackets(exchange);
-//
-//        assertTrue(packets.hasNext());
-//        assertEquals(List.of("first\ncontinuation", "second", "third"), packets.next());
-//        assertFalse(packets.hasNext());
-//    }
-//
-//    @Test
-//    void groupIntoPacketsSplitsIntoThousandSizedPackets() {
-//        StringBuilder inputBuilder = new StringBuilder();
-//        for (int i = 0; i < LOG_PACKET_MAX_SIZE + 1; i++) {
-//            inputBuilder.append("<entry-").append(i).append("\n");
-//        }
-//
-//        when(exchange.getMessage()).thenReturn(message);
-//        when(message.getBody(java.io.InputStream.class))
-//                .thenReturn(new ByteArrayInputStream(inputBuilder.toString().getBytes(StandardCharsets.UTF_8)));
-//
-//        Iterator<List<String>> packets = nativeLogStreamSplitterProcessor.groupIntoPackets(exchange);
-//
-//        List<String> firstPacket = packets.next();
-//        List<String> secondPacket = packets.next();
-//
-//        assertEquals(LOG_PACKET_MAX_SIZE, firstPacket.size());
-//        assertEquals("entry-0", firstPacket.getFirst());
-//        assertEquals("entry-999", firstPacket.getLast());
-//
-//        assertEquals(1, secondPacket.size());
-//        assertEquals("entry-1000", secondPacket.getFirst());
-//        assertFalse(packets.hasNext());
-//    }
+    @Test
+    void groupIntoPacketsDemarcatedByNewPacketCharacter() {
+        String input = "<first\ncontinuation\n<second\n<third";
+
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(java.io.InputStream.class))
+                .thenReturn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+
+        Iterator<List<String>> packets = nativeLogStreamSplitterProcessor.groupIntoPackets(exchange);
+
+        assertTrue(packets.hasNext());
+        assertEquals(List.of("first\ncontinuation", "second", "third"), packets.next());
+        assertFalse(packets.hasNext());
+    }
+
+    @Test
+    void groupIntoPacketsSplitsIntoThousandSizedPackets() {
+        StringBuilder inputBuilder = new StringBuilder();
+        for (int i = 0; i < LOG_PACKET_MAX_SIZE + 1; i++) {
+            inputBuilder.append("<entry-").append(i).append("\n");
+        }
+
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getBody(java.io.InputStream.class))
+                .thenReturn(new ByteArrayInputStream(inputBuilder.toString().getBytes(StandardCharsets.UTF_8)));
+
+        Iterator<List<String>> packets = nativeLogStreamSplitterProcessor.groupIntoPackets(exchange);
+
+        List<String> firstPacket = packets.next();
+        List<String> secondPacket = packets.next();
+
+        assertEquals(LOG_PACKET_MAX_SIZE, firstPacket.size());
+        assertEquals("entry-0", firstPacket.getFirst());
+        assertEquals("entry-999", firstPacket.getLast());
+
+        assertEquals(1, secondPacket.size());
+        assertEquals("entry-1000", secondPacket.getFirst());
+        assertFalse(packets.hasNext());
+    }
 }
 
