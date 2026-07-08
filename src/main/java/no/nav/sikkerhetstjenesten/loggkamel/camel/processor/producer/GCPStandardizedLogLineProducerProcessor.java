@@ -65,9 +65,6 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement()))
                     .build();
 
-            //TODO: remove after debugging
-            log.info("Log entry being sent to GCP logging: " + entry.getPayload() + ", timestamp: " + entry.getInstantTimestamp());
-
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
             String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
