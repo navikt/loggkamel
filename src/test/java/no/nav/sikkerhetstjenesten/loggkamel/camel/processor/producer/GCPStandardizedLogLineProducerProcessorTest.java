@@ -25,9 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.GCPStandardizedLogLineProducerProcessor.CLOUD_LOGGING_ENTRY_NAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -110,6 +108,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     void writeToGcpLogging_wrapsAnyFailureAsGcpDependencyException() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
+        exchange.setVariable(PLACE_IN_PACKET, 1);
         exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
 
         when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenThrow(new RuntimeException("boom"));
