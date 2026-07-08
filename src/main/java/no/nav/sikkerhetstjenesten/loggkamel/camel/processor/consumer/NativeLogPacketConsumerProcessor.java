@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
@@ -56,6 +54,7 @@ public class NativeLogPacketConsumerProcessor {
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
+        exchange.setVariable(PLACE_IN_PACKET, loggLineMessage.getHeader().getPlaceInPacket());
     }
 
     public void incrementMetrics(Exchange exchange) {

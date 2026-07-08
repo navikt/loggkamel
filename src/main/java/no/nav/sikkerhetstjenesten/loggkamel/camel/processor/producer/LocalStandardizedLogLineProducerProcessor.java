@@ -33,6 +33,7 @@ public class LocalStandardizedLogLineProducerProcessor {
         exchange.getMessage().setBody(objectMapper.writeValueAsString(enrichedAuditlogg));
     }
 
+    //TODO: unit tests
     public void prepareLogLineHeaders(Exchange exchange) {
         String logPacketFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);
 

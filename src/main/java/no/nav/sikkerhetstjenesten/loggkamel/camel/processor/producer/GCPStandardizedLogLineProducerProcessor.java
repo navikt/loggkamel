@@ -21,9 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Map;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
@@ -73,8 +71,9 @@ public class GCPStandardizedLogLineProducerProcessor {
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
             String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
-            log.warn("Error while writing log entry to GCP Logging for file {}, error message: {}", fileName, e.getMessage());
-            throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName, e);
+            int lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
+            log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
+            throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
         }
     }
 }

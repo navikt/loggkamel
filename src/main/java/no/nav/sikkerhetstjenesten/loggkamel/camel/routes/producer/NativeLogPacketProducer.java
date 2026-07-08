@@ -21,7 +21,7 @@ public class NativeLogPacketProducer extends LogStreamErrorHandler {
 
         from(NATIVE_LOG_PACKET_PRODUCER_ROUTE)
                 .routeId(NATIVE_LOG_PACKET_PRODUCER)
-                .log(LoggingLevel.INFO, "Producing loggline message list ${header.CamelFileName} to log line endpoint")
+                .log(LoggingLevel.INFO, "Producing log packet ${header.CamelFileName} to log packet endpoint")
                 .bean(NativeLogPacketProducerProcessor.class, "incrementMetrics")
                 .bean(NativeLogPacketProducerProcessor.class, "mapToAuditloggLineMessageList")
                 .toD(logPacketBucket);

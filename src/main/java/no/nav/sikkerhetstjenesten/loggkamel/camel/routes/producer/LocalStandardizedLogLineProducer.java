@@ -19,7 +19,7 @@ public class LocalStandardizedLogLineProducer extends StandardizedLogLineProduce
 
         from(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
-                .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} to local log")
+                .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} line ${variable.PlaceInPacket} to local log")
                 .bean(LocalStandardizedLogLineProducerProcessor.class, "mapToJson")
                 .bean(LocalStandardizedLogLineProducerProcessor.class, "prepareLogLineHeaders")
                 .toD(producerUri);

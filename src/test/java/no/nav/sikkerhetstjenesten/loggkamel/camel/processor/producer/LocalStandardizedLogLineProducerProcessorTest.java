@@ -39,4 +39,6 @@ class LocalStandardizedLogLineProducerProcessorTest {
         String mappedJson = exchange.getMessage().getBody(String.class);
         assertEquals(AUDITLOGG_AS_STRING, mappedJson);
     }
+
+    //TODO: unit tests for prepareLogLineHeaders
 }

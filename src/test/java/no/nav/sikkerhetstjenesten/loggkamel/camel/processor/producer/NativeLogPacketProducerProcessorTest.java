@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class NativeNativeLogPacketProducerProcessorTest {
+class NativeLogPacketProducerProcessorTest {
 
     private static final String LOG_LINE_1 = "logLine1";
     private static final String LOG_LINE_2 = "logLine2";
@@ -91,8 +91,10 @@ class NativeNativeLogPacketProducerProcessorTest {
         assertEquals(TEAM_GCP_PROJECT_ID_VALUE, typedCapturedList.get(0).getHeader().getTeamGcpProjectId());
         assertEquals(DB_NAME, typedCapturedList.get(0).getHeader().getAuditloggArkivResponseDTO().getDbname());
         assertEquals(LOG_LINE_1, typedCapturedList.get(0).getBody());
+        assertEquals(1, typedCapturedList.get(0).getHeader().getPlaceInPacket());
 
         assertEquals(LOG_LINE_2, typedCapturedList.get(1).getBody());
+        assertEquals(2, typedCapturedList.get(1).getHeader().getPlaceInPacket());
 
         verify(message).setBody(AUDITLOGG_LIST_AS_STRING);
         verify(message).setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());

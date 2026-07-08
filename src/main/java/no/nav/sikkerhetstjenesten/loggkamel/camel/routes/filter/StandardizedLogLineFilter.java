@@ -19,7 +19,7 @@ public class StandardizedLogLineFilter extends LogPacketErrorHandler {
 
         from(STANDARDIZED_LOG_LINE_FILTER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_FILTER_ID)
-                .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName}")
+                .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName} line ${variable.PlaceInPacket}")
                 .filter().method(StandardizedLogLineFilterProcessor.class)
                 .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE);
     }

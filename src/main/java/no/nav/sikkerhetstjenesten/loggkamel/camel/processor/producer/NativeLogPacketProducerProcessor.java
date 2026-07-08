@@ -11,6 +11,7 @@ import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
@@ -39,16 +40,20 @@ public class NativeLogPacketProducerProcessor {
     public void mapToAuditloggLineMessageList(Exchange exchange) throws JsonProcessingException {
         List<String> logLines = exchange.getMessage().getBody(List.class);
 
-        List<AuditloggLineMessage> auditloggLineMessageList = logLines.stream()
-                .map(logLine -> AuditloggLineMessage.builder()
-                        .body(logLine)
-                        .header(AuditloggLineMessageHeader.builder()
-                                .teknologi(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class))
-                                .teamGcpProjectId(exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class))
-                                .auditloggArkivResponseDTO(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class))
-                                .build())
-                        .build())
-                .toList();
+        List<AuditloggLineMessage> auditloggLineMessageList = new ArrayList<>(logLines.size());
+        for (int i =  0; i < logLines.size(); i++) {
+            auditloggLineMessageList.add(
+                    AuditloggLineMessage.builder()
+                            .body(logLines.get(i))
+                            .header(AuditloggLineMessageHeader.builder()
+                                    .teknologi(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class))
+                                    .teamGcpProjectId(exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class))
+                                    .auditloggArkivResponseDTO(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class))
+                                    .placeInPacket(i + 1)
+                                    .build())
+                            .build()
+            );
+        }
 
         exchange.getMessage().setBody(objectMapper.writeValueAsString(auditloggLineMessageList));
         exchange.getIn().setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());

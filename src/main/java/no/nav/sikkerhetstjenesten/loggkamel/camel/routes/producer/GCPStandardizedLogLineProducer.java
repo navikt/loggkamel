@@ -15,7 +15,7 @@ public class GCPStandardizedLogLineProducer extends StandardizedLogLineProducer 
 
         from(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
             .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
-            .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} to GCP Logging")
+            .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} line ${variable.PlaceInPacket} to GCP Logging")
             .bean(GCPStandardizedLogLineProducerProcessor.class, "incrementMetrics")
             .bean(GCPStandardizedLogLineProducerProcessor.class, "writeToGcpLogging");
     }

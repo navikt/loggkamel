@@ -16,8 +16,10 @@ public class AuditloggLineMessageHeader {
     public static final String TEKNOLOGI = "Teknologi";
     public static final String TEAM_GCP_PROJECT_ID = "TeamGcpProjectId";
     public static final String AUDITLOGG_ARKIV = "AuditloggArkiv";
+    public static final String PLACE_IN_PACKET = "PlaceInPacket";
 
     TeknologiEnum teknologi;
     String teamGcpProjectId;
     AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    int placeInPacket;
 }
