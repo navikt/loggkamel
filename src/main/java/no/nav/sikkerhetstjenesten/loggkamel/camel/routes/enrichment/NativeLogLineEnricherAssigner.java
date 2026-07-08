@@ -24,7 +24,7 @@ public class NativeLogLineEnricherAssigner extends LogPacketErrorHandler {
                 .log(LoggingLevel.DEBUG, "Determining which teknologi-specific enricher to use for ${header.CamelFileName}")
                 .choice()
                     .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
-                        .log(LoggingLevel.INFO, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
+                        .log(LoggingLevel.DEBUG, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
                         .to(POSTGRES_LOG_LINE_ENRICHER_ROUTE)
                     .otherwise()
                         .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${variable.Teknologi} in file ${header.CamelFileName}, sending to invalid message queue")
