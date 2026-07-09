@@ -17,7 +17,7 @@ public class StandardizedLogLineFilterProcessor {
     private static final Logger log = LoggerFactory.getLogger(StandardizedLogLineFilterProcessor.class);
 
     public boolean doesLineActionMatchRelevantAuditloggArkiv(Exchange exchange) {
-        log.info("LogLineFilterProcessor called for logfile: {}, line: {}", exchange.getMessage().getHeader(FILE_NAME), exchange.getVariable(PLACE_IN_PACKET));
+        log.debug("LogLineFilterProcessor called for logfile: {}, line: {}", exchange.getMessage().getHeader(FILE_NAME), exchange.getVariable(PLACE_IN_PACKET));
 
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
         LogLineOperationTypes routingAttributes = exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class);

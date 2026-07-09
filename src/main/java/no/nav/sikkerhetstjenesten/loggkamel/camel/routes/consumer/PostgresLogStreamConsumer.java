@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogStreamConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogStreamErrorHandler;
 import org.apache.camel.LoggingLevel;
@@ -61,8 +62,8 @@ public class PostgresLogStreamConsumer extends LogStreamErrorHandler {
                 .idempotentConsumer(header(FILE_NAME), postgresLogStreamIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming postgres log messages as filename: ${header.CamelFileName}")
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName} with headers ${headers}")
-                .bean(PostgresLogStreamConsumerProcessor.class, "prepareBodyAsInputStream")
                 .bean(PostgresLogStreamConsumerProcessor.class, "incrementMetrics")
+                .bean(InputStreamReader.class, "prepareBodyAsInputStream")
                 .bean(PostgresLogStreamConsumerProcessor.class, "decompressIfGzip")
                 .to(NATIVE_LOG_STREAM_ENRICHER_ROUTE);
     }

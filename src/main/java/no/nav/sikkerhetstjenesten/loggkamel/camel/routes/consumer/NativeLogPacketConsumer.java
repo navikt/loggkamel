@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import com.google.cloud.logging.Logging;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
 import org.apache.camel.LoggingLevel;
@@ -80,6 +81,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                 .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
                 .idempotentConsumer(header(FILE_NAME), logPacketIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
+                .bean(InputStreamReader.class, "prepareBodyAsInputStream")
                 .bean(NativeLogPacketConsumerProcessor.class, "mapToLogLineList")
                 .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesForPacket")
                 .split(body())

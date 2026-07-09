@@ -1,7 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
-import com.google.cloud.ReadChannel;
-import com.google.cloud.storage.Blob;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
@@ -83,53 +81,6 @@ class PostgresLogStreamConsumerProcessorTest {
         processor.incrementMetrics(exchange);
 
         verify(metrics).incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
-    }
-
-    @Test
-    void prepareBodyAsInputStream_doesNothingWhenBodyIsAlreadyInputStream() {
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody()).thenReturn(mock(InputStream.class));
-
-        processor.prepareBodyAsInputStream(exchange);
-
-        verifyNoMoreInteractions(exchange, message);
-    }
-
-    @Test
-    void prepareBodyAsInputStream_makesInputStreamFromBlob() {
-        when(exchange.getMessage()).thenReturn(message);
-        Blob blob = mock(Blob.class);
-        when(message.getBody()).thenReturn(blob);
-        ReadChannel readChannel = mock(ReadChannel.class);
-        when(blob.reader()).thenReturn(readChannel);
-
-        processor.prepareBodyAsInputStream(exchange);
-
-        verify(message).setBody(any(InputStream.class));
-        verifyNoMoreInteractions(exchange, message);
-    }
-
-    @Test
-    void prepareBodyAsInputStream_exceptionIfBodyNotCoercibleToInputStream() {
-        when(exchange.getIn()).thenReturn(message);
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody()).thenReturn("This is not an InputStream or Blob");
-        when(message.getBody(InputStream.class)).thenReturn(null);
-
-        assertThrows(InvalidPostgresLogGroupException.class, () -> processor.prepareBodyAsInputStream(exchange));
-    }
-
-    @Test
-    void prepareBodyAsInputStream_coercesBodyToInputStream() {
-        when(exchange.getMessage()).thenReturn(message);
-        when(message.getBody()).thenReturn("This is not an InputStream or Blob");
-        InputStream stream = mock(InputStream.class);
-        when(message.getBody(InputStream.class)).thenReturn(stream);
-
-        processor.prepareBodyAsInputStream(exchange);
-
-        verify(message).setBody(stream);
-        verifyNoMoreInteractions(exchange, message);
     }
 
     @Test
