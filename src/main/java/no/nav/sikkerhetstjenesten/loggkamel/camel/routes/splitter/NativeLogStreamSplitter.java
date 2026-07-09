@@ -21,10 +21,7 @@ public class NativeLogStreamSplitter extends LogStreamErrorHandler {
                 .routeId(NATIVE_LOG_STREAM_SPLITTER_ID)
                 .log(LoggingLevel.INFO, "Splitting log file ${header.CamelFileName} into bounded-size message lists")
                 .split(method(NativeLogStreamSplitterProcessor.class, "groupIntoPackets"))
-                    .streaming() //TODO: do we still want this parallellism? Would mean holding several in-progress packets in memory
-//                    .parallelProcessing()
-//                    .executorService("logPacketPublishPool")
-//                    .shareUnitOfWork()
+                    .streaming()
                     .bean(NativeLogStreamSplitterProcessor.class, "prepareLogPacketHeaders")
                     .to(NATIVE_LOG_PACKET_PRODUCER_ROUTE);
     }

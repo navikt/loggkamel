@@ -1,7 +1,5 @@
 # Loggkamel
 
-TODO: go through, update to reflect packet behavior. Remember to also update the excalidraw files
-
 Loggkamel overfører logger fra on-prem databaser til GCP.
 Generert med [Kameleon](https://kameleon.dev).
 
@@ -44,7 +42,6 @@ PROD: https://loggkamel.intern.nav.no/swagger-ui/index.html#/
 
 ![Nav audit project diagram](src/main/resources/tegning/Nav_audit_project.png)
 
-TODO: update with log packet logic
 ![Loggkamel Routes](src/main/resources/tegning/Loggkamel%20Routes.png)
 
 The log archiving process goes through the following steps:
