@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.PLACE_IN_PACKET;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -37,8 +35,8 @@ public class LocalStandardizedLogLineProducerProcessor {
         Integer placeInPacket = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
 
         if (logPacketFilename == null || logPacketFilename.isEmpty() || placeInPacket == null) {
-            log.warn("Filename header is missing while splitting log packet");
-            throw new InvalidLogLineException("Filename header is missing while splitting log packet");
+            log.warn("Filename or PlaceInPacket placeInPacket header is missing while splitting log packet");
+            throw new InvalidLogLineException("Filename or PlaceInPacket header is missing while splitting log packet");
         }
 
         String logLineFilename = addLogLineNumberToFilename(logPacketFilename,  placeInPacket);

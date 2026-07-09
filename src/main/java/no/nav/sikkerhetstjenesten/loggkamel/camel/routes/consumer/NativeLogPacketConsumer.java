@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import com.google.cloud.logging.Logging;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
@@ -12,6 +11,7 @@ import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -48,15 +48,23 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     //Flush Logging object for the GCP project to ensure all logs write successfully before deleting source packet
                     .process(exchange -> {
                         String gcpId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
-                        if (gcpId != null) {
-                            try {
-                                cacheManager.getCache(GCP_LOGGING_BY_ID).get(gcpId, Logging.class).flush();
-                            } catch (Exception e) {
-                                throw new GCPDependencyException("Failed to flush GCP logging client for project ID: " + gcpId, e);
-                            }
-                        } else {
+                        if (gcpId == null) {
                             log.warn("Cannot flush GCP Logging for packet {}, as project ID in header is null", exchange.getMessage().getHeader(FILE_NAME));
+                            return;
                         }
+
+                        Cache gcpCache =  cacheManager.getCache(GCP_LOGGING_BY_ID);
+                        if (gcpCache == null) {
+                            log.warn("Cannot flush GCP Logging for packet {}, as cache {} is not available", exchange.getMessage().getHeader(FILE_NAME), GCP_LOGGING_BY_ID);
+                            return;
+                        }
+
+                        Logging gcpLoggingClient = gcpCache.get(gcpId, Logging.class);
+                        if (gcpLoggingClient == null) {
+                            log.info("Unable to flush GCP logging for packet {}, client not found in cache", exchange.getMessage().getHeader(FILE_NAME));
+                        }
+
+                        cacheManager.getCache(GCP_LOGGING_BY_ID).get(gcpId, Logging.class).flush();
                     })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
