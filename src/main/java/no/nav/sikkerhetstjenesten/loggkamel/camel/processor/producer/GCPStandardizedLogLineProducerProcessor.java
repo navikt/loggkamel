@@ -66,10 +66,10 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .build();
 
             //TODO: debug logging, remove afterward
-            log.info("Logging Client status: {}", objectMapper.writeValueAsString(logging));
+            log.info("Logging Client for projectId: {}", logging.getOptions().getProjectId());
 //            log.info("EnrichedAuditLogg being saved: {}", enrichedAuditLogg);
 //            log.info("Message as JSON Payload: {}", logMessageAsJsonPayload);
-            log.info("Message as LogEntry: {}", entry);
+            log.info("Message as LogEntry: {}", objectMapper.writeValueAsString(entry));
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
