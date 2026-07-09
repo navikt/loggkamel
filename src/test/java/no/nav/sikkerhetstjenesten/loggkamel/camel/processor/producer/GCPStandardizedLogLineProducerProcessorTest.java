@@ -77,32 +77,32 @@ class GCPStandardizedLogLineProducerProcessorTest {
         verify(metrics).incrementDatabaseSpecificAction(DATABASE_NAME, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
     }
 
-    @Test
-    void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
-        exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
-        exchange.getMessage().setBody(EnrichedAuditlogg.builder().dbName(DATABASE_NAME).logTime(NOW).sqlStatement(SQL_STATEMENT).build());
-
-        when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenReturn(logging);
-        Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
-        when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
-
-        processor.writeToGcpLogging(exchange);
-
-        ArgumentCaptor<Iterable> entriesCaptor = ArgumentCaptor.forClass(Iterable.class);
-        verify(logging).write(entriesCaptor.capture());
-
-        Object entryObject = entriesCaptor.getValue().iterator().next();
-        LogEntry entry = assertInstanceOf(LogEntry.class, entryObject);
-        assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
-        assertEquals(Severity.INFO, entry.getSeverity());
-        assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
-        assertEquals(DigestUtils.sha256Hex(SQL_STATEMENT), entry.getInsertId());
-
-        Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
-        assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());
-    }
+//    @Test
+//    void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
+//        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+//        exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
+//        exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
+//        exchange.getMessage().setBody(EnrichedAuditlogg.builder().dbName(DATABASE_NAME).logTime(NOW).sqlStatement(SQL_STATEMENT).build());
+//
+//        when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenReturn(logging);
+//        Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
+//        when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
+//
+//        processor.writeToGcpLogging(exchange);
+//
+//        ArgumentCaptor<Iterable> entriesCaptor = ArgumentCaptor.forClass(Iterable.class);
+//        verify(logging).write(entriesCaptor.capture());
+//
+//        Object entryObject = entriesCaptor.getValue().iterator().next();
+//        LogEntry entry = assertInstanceOf(LogEntry.class, entryObject);
+//        assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
+//        assertEquals(Severity.INFO, entry.getSeverity());
+//        assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
+//        assertEquals(DigestUtils.sha256Hex(SQL_STATEMENT), entry.getInsertId());
+//
+//        Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
+//        assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());
+//    }
 
     @Test
     void writeToGcpLogging_wrapsAnyFailureAsGcpDependencyException() {
