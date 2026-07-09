@@ -9,17 +9,17 @@ import javax.sql.DataSource;
 @Configuration
 public class IdempotentRepositoryConfig {
 
-    public static final String POSTGRES_CONSUMER = "postgresLogGroupConsumer";
-    public static final String LOG_LINE_CONSUMER = "logLineMessageConsumer";
+    public static final String POSTGRES_CONSUMER = "postgresLogStreamConsumer";
+    public static final String LOG_PACKET_CONSUMER = "standardizedLogPacketConsumer";
 
     @Bean
-    public JdbcMessageIdRepository postgresLogGroupIdempotentRepository(DataSource dataSource) {
+    public JdbcMessageIdRepository postgresLogStreamIdempotentRepository(DataSource dataSource) {
         return new JdbcMessageIdRepository(dataSource, POSTGRES_CONSUMER);
     }
 
     @Bean
-    public JdbcMessageIdRepository logLineMessageIdempotentRepository(DataSource dataSource) {
-        return new JdbcMessageIdRepository(dataSource, LOG_LINE_CONSUMER);
+    public JdbcMessageIdRepository logPacketIdempotentRepository(DataSource dataSource) {
+        return new JdbcMessageIdRepository(dataSource, LOG_PACKET_CONSUMER);
     }
 }
 

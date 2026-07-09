@@ -3,8 +3,8 @@ routing:
     consumer: "google-storage://loggkamel-prod-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
     invalid-message: "loggkamel-prod-postgresql-invalid-message"
     invalid-message-routing: ${routing.postgres.consumer}
-  loggline:
-    bucket: "google-storage://loggkamel-prod-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler"
+  packet:
+    bucket: "google-storage://loggkamel-prod-logglines?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
     invalid-message: "loggkamel-prod-logglines-invalid-message"
-    invalid-message-routing: ${routing.loggline.bucket}
+    invalid-message-routing: ${routing.packet.bucket}
 
