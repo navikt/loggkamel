@@ -65,7 +65,7 @@ public class GCPStandardizedLogLineProducerProcessor {
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
-            String fileName = exchange.getIn().getHeader(FILE_NAME, String.class);
+            String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
             Integer lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
             log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
             throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
