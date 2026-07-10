@@ -63,13 +63,8 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
                     .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
-                    // TODO: remove random addition after testing
-                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters() + UUID.randomUUID()))
+                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
                     .build();
-
-            //TODO: debug logging, remove afterward
-            log.info("Logging Client for projectId: {}", logging.getOptions().getProjectId());
-            log.info("Message as LogEntry: {}", entry);
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
