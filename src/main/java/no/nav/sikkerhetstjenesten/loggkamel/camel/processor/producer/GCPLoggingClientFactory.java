@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GCPLoggingClientFactory {
 
-    @Cacheable(cacheNames = CacheConfig.GCP_LOGGING_BY_ID, key = "#projectId", sync = true)
+//    @Cacheable(cacheNames = CacheConfig.GCP_LOGGING_BY_ID, key = "#projectId", sync = true)
     public Logging create(String projectId) {
         return LoggingOptions.newBuilder()
                 .setProjectId(projectId)
