@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -62,7 +63,8 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
                     .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
-                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement()))
+                    // TODO: remove random addition after testing
+                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters() + UUID.randomUUID()))
                     .build();
 
             //TODO: debug logging, remove afterward
