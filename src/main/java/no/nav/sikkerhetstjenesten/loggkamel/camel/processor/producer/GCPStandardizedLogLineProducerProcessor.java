@@ -69,14 +69,12 @@ public class GCPStandardizedLogLineProducerProcessor {
 
             //TODO: debug logging, remove afterward
             log.info("Logging Client for projectId: {}", logging.getOptions().getProjectId());
-//            log.info("EnrichedAuditLogg being saved: {}", enrichedAuditLogg);
-//            log.info("Message as JSON Payload: {}", logMessageAsJsonPayload);
             log.info("Message as LogEntry: {}", entry);
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
             String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
-            int lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
+            Integer lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
             log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
             throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
         }
