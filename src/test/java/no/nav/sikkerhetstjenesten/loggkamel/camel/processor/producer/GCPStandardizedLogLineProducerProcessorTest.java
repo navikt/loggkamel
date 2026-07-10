@@ -23,8 +23,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.GCPStandardizedLogLineProducerProcessor.CLOUD_LOGGING_ENTRY_NAME;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -33,8 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GCPStandardizedLogLineProducerProcessorTest {
@@ -52,9 +53,6 @@ class GCPStandardizedLogLineProducerProcessorTest {
 
     @Mock
     private ObjectMapper objectMapper;
-
-    @Mock
-    private GCPLoggingClientFactory gcpLoggingClientFactory;
 
     @Mock
     private Logging logging;
@@ -81,7 +79,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     @Test
     void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
+        exchange.setVariable(LOGGING_CLIENT, logging);
         exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder()
                 .dbName(DATABASE_NAME)
@@ -89,7 +87,6 @@ class GCPStandardizedLogLineProducerProcessorTest {
                 .sqlStatement(SQL_STATEMENT)
                 .sqlParameters(SQL_PARAMETERS).build());
 
-        when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenReturn(logging);
         Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
         when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
 
@@ -112,11 +109,19 @@ class GCPStandardizedLogLineProducerProcessorTest {
     @Test
     void writeToGcpLogging_wrapsAnyFailureAsGcpDependencyException() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(TEAM_GCP_PROJECT_ID, PROVIDED_GCP_ID);
+        exchange.setVariable(LOGGING_CLIENT, logging);
         exchange.setVariable(PLACE_IN_PACKET, 1);
         exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
+        exchange.getMessage().setBody(EnrichedAuditlogg.builder()
+                .dbName(DATABASE_NAME)
+                .logTime(NOW)
+                .sqlStatement(SQL_STATEMENT)
+                .sqlParameters(SQL_PARAMETERS).build());
 
-        when(gcpLoggingClientFactory.create(PROVIDED_GCP_ID)).thenThrow(new RuntimeException("boom"));
+        Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
+        when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
+
+        doThrow(new RuntimeException("boom")).when(logging).write(any());
 
         GCPDependencyException exception = assertThrows(GCPDependencyException.class, () -> processor.writeToGcpLogging(exchange));
 

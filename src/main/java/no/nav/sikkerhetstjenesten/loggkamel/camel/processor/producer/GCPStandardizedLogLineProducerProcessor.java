@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -34,13 +34,11 @@ public class GCPStandardizedLogLineProducerProcessor {
 
     private final Metrics metrics;
     private final ObjectMapper objectMapper;
-    private final GCPLoggingClientFactory gcpLoggingClientFactory;
 
     @Autowired
-    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper, GCPLoggingClientFactory gcpLoggingClientFactory) {
+    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper) {
         this.metrics = metrics;
         this.objectMapper = objectMapper;
-        this.gcpLoggingClientFactory = gcpLoggingClientFactory;
     }
 
     public void incrementMetrics(Exchange exchange) {
@@ -52,9 +50,8 @@ public class GCPStandardizedLogLineProducerProcessor {
     }
 
     public void writeToGcpLogging(Exchange exchange) {
-        String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
-
-        try (Logging logging = gcpLoggingClientFactory.create(targetGCPProjectId)) {
+        try {
+            Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
             EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
             Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
             Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
@@ -68,7 +65,7 @@ public class GCPStandardizedLogLineProducerProcessor {
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
-            String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
+            String fileName = exchange.getIn().getHeader(FILE_NAME, String.class);
             Integer lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
             log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
             throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
