@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -62,13 +63,13 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
                     .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
-                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement()))
+                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
                     .build();
 
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
             String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
-            int lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
+            Integer lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
             log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
             throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
         }
