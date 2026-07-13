@@ -60,22 +60,22 @@ class NativeLogPacketConsumerProcessorTest {
     @Test
     void populateFilenameHeader_usesObjectNameWhenCamelFileNameIsMissing() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
+        exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
         processor.populateFilenameHeader(exchange);
 
-        assertEquals(NAME_FROM_BUCKET, exchange.getIn().getHeader(FILE_NAME, String.class));
+        assertEquals(NAME_FROM_BUCKET, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 
     @Test
     void populateFilenameHeader_keepsExistingCamelFileName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader(FILE_NAME, NAME_FROM_CAMEL);
-        exchange.getIn().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
+        exchange.getMessage().setHeader(FILE_NAME, NAME_FROM_CAMEL);
+        exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
         processor.populateFilenameHeader(exchange);
 
-        assertEquals(NAME_FROM_CAMEL, exchange.getIn().getHeader(FILE_NAME, String.class));
+        assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 
     @Test

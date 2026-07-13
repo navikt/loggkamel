@@ -34,10 +34,10 @@ public class PostgresLogStreamConsumerProcessor {
 
     public void initializeConsumerState(Exchange exchange) {
         exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
-        if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
-            exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
+        if (exchange.getMessage().getHeader(FILE_NAME, String.class) == null) {
+            exchange.getMessage().setHeader(FILE_NAME, exchange.getMessage().getHeader(OBJECT_NAME, String.class));
         }
-        exchange.getIn().setHeader(ORIGINAL_FILENAME, exchange.getIn().getHeader(FILE_NAME, String.class));
+        exchange.getMessage().setHeader(ORIGINAL_FILENAME, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 
     public void incrementMetrics(Exchange exchange) {
@@ -45,7 +45,7 @@ public class PostgresLogStreamConsumerProcessor {
     }
 
     public void decompressIfGzip(Exchange exchange) {
-        String fileName = exchange.getIn().getHeader(FILE_NAME, String.class);
+        String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);
         if (fileName == null || !fileName.endsWith(COMPRESSION_EXTENSION)) {
             return;
         }
@@ -64,6 +64,6 @@ public class PostgresLogStreamConsumerProcessor {
         }
 
         // Since we know that the filename ends with the expected compression extension, we can remove the extension here
-        exchange.getIn().setHeader(FILE_NAME, fileName.substring(0, fileName.length() - COMPRESSION_EXTENSION.length()));
+        exchange.getMessage().setHeader(FILE_NAME, fileName.substring(0, fileName.length() - COMPRESSION_EXTENSION.length()));
     }
 }

@@ -56,7 +56,7 @@ public class NativeLogPacketProducerProcessor {
         }
 
         exchange.getMessage().setBody(objectMapper.writeValueAsString(auditloggLineMessageList));
-        exchange.getIn().setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());
+        exchange.getMessage().setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());
     }
 }
 

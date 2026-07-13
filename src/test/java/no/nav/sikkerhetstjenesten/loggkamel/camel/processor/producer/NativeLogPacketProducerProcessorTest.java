@@ -77,8 +77,6 @@ class NativeLogPacketProducerProcessorTest {
 
         when(objectMapper.writeValueAsString(anyList())).thenReturn(AUDITLOGG_LIST_AS_STRING);
 
-        when(exchange.getIn()).thenReturn(message);
-
         processor.mapToAuditloggLineMessageList(exchange);
 
         ArgumentCaptor<List> auditloggListCaptor = ArgumentCaptor.forClass(List.class);

@@ -41,7 +41,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     .process(exchange -> {
                         Logging logging = exchange.getVariable(NativeLogPacketConsumerProcessor.LOGGING_CLIENT, Logging.class);
                         if (logging == null) {
-                            log.warn("No logging client found for packet {}, cannot flush or close. Possible loss of logs", exchange.getIn().getHeader(FILE_NAME));
+                            log.warn("No logging client found for packet {}, cannot flush or close. Possible loss of logs", exchange.getMessage().getHeader(FILE_NAME));
                             return;
                         }
                         logging.flush();

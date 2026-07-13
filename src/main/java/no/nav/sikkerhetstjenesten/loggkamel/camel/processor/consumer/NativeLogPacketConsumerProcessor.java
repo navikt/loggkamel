@@ -32,8 +32,8 @@ public class NativeLogPacketConsumerProcessor {
     }
 
     public void populateFilenameHeader(Exchange exchange) {
-        if (exchange.getIn().getHeader(FILE_NAME, String.class) == null) {
-            exchange.getIn().setHeader(FILE_NAME, exchange.getIn().getHeader(OBJECT_NAME, String.class));
+        if (exchange.getMessage().getHeader(FILE_NAME, String.class) == null) {
+            exchange.getMessage().setHeader(FILE_NAME, exchange.getMessage().getHeader(OBJECT_NAME, String.class));
         }
     }
 
@@ -53,7 +53,7 @@ public class NativeLogPacketConsumerProcessor {
     }
 
     public void initializeExchangeVariablesForLogLine(Exchange exchange) {
-        AuditloggLineMessage loggLineMessage = exchange.getIn().getBody(AuditloggLineMessage.class);
+        AuditloggLineMessage loggLineMessage = exchange.getMessage().getBody(AuditloggLineMessage.class);
 
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
