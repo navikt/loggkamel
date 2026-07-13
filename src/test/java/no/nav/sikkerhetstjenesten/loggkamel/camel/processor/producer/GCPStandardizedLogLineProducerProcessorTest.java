@@ -80,7 +80,6 @@ class GCPStandardizedLogLineProducerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(LOGGING_CLIENT, logging);
         exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
-        exchange.setVariable(PLACE_IN_PACKET, 1);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder()
                 .dbName(DATABASE_NAME)
                 .logTime(NOW)
@@ -100,7 +99,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
         assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
         assertEquals(Severity.INFO, entry.getSeverity());
         assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
-        assertEquals(DigestUtils.sha256Hex(PROVIDED_FILENAME + 1 + SQL_STATEMENT + SQL_PARAMETERS), entry.getInsertId());
+        assertEquals(DigestUtils.sha256Hex( SQL_STATEMENT + SQL_PARAMETERS), entry.getInsertId());
 
         Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
         assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());

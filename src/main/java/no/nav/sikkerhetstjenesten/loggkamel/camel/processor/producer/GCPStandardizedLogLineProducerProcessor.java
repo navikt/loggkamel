@@ -54,8 +54,6 @@ public class GCPStandardizedLogLineProducerProcessor {
             Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
 
             EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
-            String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
-            Integer placeInPacket = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
 
             Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
             Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
@@ -64,7 +62,7 @@ public class GCPStandardizedLogLineProducerProcessor {
                     .setSeverity(Severity.INFO)
                     .setLogName(CLOUD_LOGGING_ENTRY_NAME)
                     .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
-                    .setInsertId(DigestUtils.sha256Hex(filename + placeInPacket + enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
+                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
                     .build();
 
             logging.write(Collections.singleton(entry));
