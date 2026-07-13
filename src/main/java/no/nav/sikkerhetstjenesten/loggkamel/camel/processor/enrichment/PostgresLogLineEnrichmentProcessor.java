@@ -68,6 +68,7 @@ public class PostgresLogLineEnrichmentProcessor {
 
         if (!matcher.find()) {
             log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
+            log.debug("Log failed to match expected pattern, cannot extract enrichment attributes. Failing log line: {}", body);
             throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
