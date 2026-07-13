@@ -29,19 +29,20 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PostgresLogLineEnrichmentProcessorTest {
 
-    private static final String logTime = "2026-04-09 16:51:06.264 CEST";
-    private static final ZonedDateTime logTimeAsZonedDateTime = ZonedDateTime.parse(logTime, PostgresLogLineEnrichmentProcessor.DATE_TIME_FORMATTER);
-    private static final String navIdent = "navIdent";
-    private static final String dbName = "dbName";
-    private static final EnrichedAuditlogg.AuditType auditType = EnrichedAuditlogg.AuditType.SESSION;
-    private static final String statementId = "statementId";
-    private static final String substatementId = "substatementId";
-    private static final EnrichedAuditlogg.AuditClass pgAuditClass = EnrichedAuditlogg.AuditClass.READ;
-    private static final String pgAuditCommand = "SELECT";
-    private static final String pgAuditObjectType = "objectType";
-    private static final String pgAuditObjectName = "objectName";
-    private static final String sqlStatement = "sqlStatement, contains commas, for testing";
-    private static final String sqlParameter = "a set of parameters, separated by commas";
+    private static final String LOG_TIME = "2026-04-09 16:51:06.264 CEST";
+    private static final ZonedDateTime LOG_TIME_AS_ZONEDDATETIME = ZonedDateTime.parse(LOG_TIME, PostgresLogLineEnrichmentProcessor.DATE_TIME_FORMATTER);
+    private static final String NAV_IDENT = "navIdent";
+    private static final String DB_NAME = "dbName";
+    private static final EnrichedAuditlogg.AuditType AUDIT_TYPE = EnrichedAuditlogg.AuditType.SESSION;
+    private static final String STATEMENT_ID = "statementId";
+    private static final String SUBSTATEMENT_ID = "substatementId";
+    private static final EnrichedAuditlogg.AuditClass PG_AUDIT_CLASS = EnrichedAuditlogg.AuditClass.READ;
+    private static final String PG_AUDIT_COMMAND = "SELECT";
+    private static final String PG_AUDIT_OBJECT_TYPE = "objectType";
+    private static final String PG_AUDIT_OBJECT_NAME = "objectName";
+    private static final String SQL_STATEMENT = "sqlStatement, contains commas, for testing";
+    private static final String SQL_PARAMETER = "a set of parameters, separated by commas";
+    private static final String ANSATT_EPOST = "ansattEpost";
 
     @Mock
     Exchange exchange;
@@ -107,7 +108,7 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLENAVIDENT")).thenReturn(null);
 
-        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(pgAuditClass)).thenReturn(logLineOperationTypes);
+        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(PG_AUDIT_CLASS)).thenReturn(logLineOperationTypes);
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
@@ -119,15 +120,14 @@ class PostgresLogLineEnrichmentProcessorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideLogLinesTestingVOIDAndUnknownLogParsing")
+    @MethodSource("provideLogLinesWithValidFormats")
     void enrich_happyPath(String logMessageBody) {
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
-        String ePost = "epost";
-        when(entraProxyService.getAnsattFraNavIdent(navIdent)).thenReturn(entraProxyAnsatt);
-        when(entraProxyAnsatt.getEpost()).thenReturn(ePost);
+        when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyAnsatt.getEpost()).thenReturn(ANSATT_EPOST);
 
-        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(pgAuditClass)).thenReturn(logLineOperationTypes);
+        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(PG_AUDIT_CLASS)).thenReturn(logLineOperationTypes);
 
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
@@ -137,32 +137,35 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);
-
     }
 
-    private static Stream<String> provideLogLinesTestingVOIDAndUnknownLogParsing() {
+    private static Stream<String> provideLogLinesWithValidFormats() {
         return Stream.of(
-                String.format("%s:127.0.0.1(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType.name(), statementId, substatementId, pgAuditClass.name(), pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter),
-                String.format("%s:127.0.0.1(48754):%s@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", logTime, navIdent, dbName, auditType.name(), statementId, substatementId, pgAuditClass.name(), pgAuditCommand, pgAuditObjectType, pgAuditObjectName, sqlStatement, sqlParameter)
+                // v-oidc- formatted string contains navIdent
+                String.format("%s:127.0.0.1(48754):v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", LOG_TIME, NAV_IDENT, DB_NAME, AUDIT_TYPE.name(), STATEMENT_ID, SUBSTATEMENT_ID, PG_AUDIT_CLASS.name(), PG_AUDIT_COMMAND, PG_AUDIT_OBJECT_TYPE, PG_AUDIT_OBJECT_NAME, SQL_STATEMENT, SQL_PARAMETER),
+                // Ident field with unknown formatting, we use the whole thing as a navIdent
+                String.format("%s:127.0.0.1(48754):%s@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", LOG_TIME, NAV_IDENT, DB_NAME, AUDIT_TYPE.name(), STATEMENT_ID, SUBSTATEMENT_ID, PG_AUDIT_CLASS.name(), PG_AUDIT_COMMAND, PG_AUDIT_OBJECT_TYPE, PG_AUDIT_OBJECT_NAME, SQL_STATEMENT, SQL_PARAMETER),
+                // Instead of giving an IP address and process number, the running location is given as [local]
+                String.format("%s:[local]:v-oidc-%s-1770722124-C2f1p5OH-axsys-prod-admin@%s:[2704416]:DBeaver 25.0.4 - Metadata <axsys-prod>> LOG:  AUDIT: %s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\"\n", LOG_TIME, NAV_IDENT, DB_NAME, AUDIT_TYPE.name(), STATEMENT_ID, SUBSTATEMENT_ID, PG_AUDIT_CLASS.name(), PG_AUDIT_COMMAND, PG_AUDIT_OBJECT_TYPE, PG_AUDIT_OBJECT_NAME, SQL_STATEMENT, SQL_PARAMETER)
         );
     }
 
     private EnrichedAuditlogg expectedLogEnrichment(String logMessageBody) {
         return EnrichedAuditlogg.builder()
                 .originalMessage(logMessageBody)
-                .logTime(logTimeAsZonedDateTime)
-                .navIdent(navIdent)
-                .dbName(dbName)
-                .auditType(auditType)
-                .statementId(statementId)
-                .substatementId(substatementId)
-                .pgAuditClass(pgAuditClass)
-                .pgCommand(pgAuditCommand)
-                .pgObjectType(pgAuditObjectType)
-                .pgObjectName(pgAuditObjectName)
-                .sqlStatement(sqlStatement)
-                .sqlParameters(sqlParameter)
-                .epost(entraProxyAnsatt.getEpost())
+                .logTime(LOG_TIME_AS_ZONEDDATETIME)
+                .navIdent(NAV_IDENT)
+                .dbName(DB_NAME)
+                .auditType(AUDIT_TYPE)
+                .statementId(STATEMENT_ID)
+                .substatementId(SUBSTATEMENT_ID)
+                .pgAuditClass(PG_AUDIT_CLASS)
+                .pgCommand(PG_AUDIT_COMMAND)
+                .pgObjectType(PG_AUDIT_OBJECT_TYPE)
+                .pgObjectName(PG_AUDIT_OBJECT_NAME)
+                .sqlStatement(SQL_STATEMENT)
+                .sqlParameters(SQL_PARAMETER)
+                .epost(ANSATT_EPOST)
                 .build();
     }
 

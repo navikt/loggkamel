@@ -61,7 +61,7 @@ public class PostgresLogLineEnrichmentProcessor {
     }
 
     private EnrichedAuditlogg extractEnrichmentFromLog(String body) {
-        String regex = "^(.*):\\d+\\.\\d+\\.\\d+\\.\\d+\\(\\d+\\):(.*)@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
+        String regex = "^(.*):.*:(.*)@(.*?):.*(SESSION|OBJECT),(.*),(.*),(READ|WRITE|FUNCTION|ROLE|DDL|MISC|MISC_SET),(.*?),(.*?),(.*?),(\"|)?([\\s\\S]*)\\11,(\"|)?(.*)\\13";
 
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(body);
