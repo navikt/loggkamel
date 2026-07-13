@@ -76,10 +76,10 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
 
     private void prepareExchangeForGCPCopyToInvalidMessageDestination(Exchange exchange) {
         if (invalidMessageRouting.startsWith("google-storage://")) {
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
-            exchange.getIn().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getMessage().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
+            exchange.getMessage().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
         }
     }
 }

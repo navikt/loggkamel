@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 
@@ -34,13 +34,11 @@ public class GCPStandardizedLogLineProducerProcessor {
 
     private final Metrics metrics;
     private final ObjectMapper objectMapper;
-    private final GCPLoggingClientFactory gcpLoggingClientFactory;
 
     @Autowired
-    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper, GCPLoggingClientFactory gcpLoggingClientFactory) {
+    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper) {
         this.metrics = metrics;
         this.objectMapper = objectMapper;
-        this.gcpLoggingClientFactory = gcpLoggingClientFactory;
     }
 
     public void incrementMetrics(Exchange exchange) {
@@ -52,10 +50,11 @@ public class GCPStandardizedLogLineProducerProcessor {
     }
 
     public void writeToGcpLogging(Exchange exchange) {
-        String targetGCPProjectId = exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class);
+        try {
+            Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
 
-        try (Logging logging = gcpLoggingClientFactory.create(targetGCPProjectId)) {
             EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
+
             Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
             Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
 

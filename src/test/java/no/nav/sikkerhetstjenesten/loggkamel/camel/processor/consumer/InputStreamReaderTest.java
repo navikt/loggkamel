@@ -5,6 +5,7 @@ import com.google.cloud.storage.Blob;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,9 +31,13 @@ class InputStreamReaderTest {
     @InjectMocks
     InputStreamReader inputStreamReader;
 
+    @BeforeEach
+    void setUp() {
+        when(exchange.getMessage()).thenReturn(message);
+    }
+
     @Test
     void prepareBodyAsInputStream_doesNothingWhenBodyIsAlreadyInputStream() {
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody()).thenReturn(mock(InputStream.class));
 
         inputStreamReader.prepareBodyAsInputStream(exchange);
@@ -42,7 +47,6 @@ class InputStreamReaderTest {
 
     @Test
     void prepareBodyAsInputStream_makesInputStreamFromBlob() {
-        when(exchange.getMessage()).thenReturn(message);
         Blob blob = mock(Blob.class);
         when(message.getBody()).thenReturn(blob);
         ReadChannel readChannel = mock(ReadChannel.class);
@@ -56,8 +60,6 @@ class InputStreamReaderTest {
 
     @Test
     void prepareBodyAsInputStream_exceptionIfBodyNotCoercibleToInputStream() {
-        when(exchange.getIn()).thenReturn(message);
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody()).thenReturn("This is not an InputStream or Blob");
         when(message.getBody(InputStream.class)).thenReturn(null);
 
@@ -66,7 +68,6 @@ class InputStreamReaderTest {
 
     @Test
     void prepareBodyAsInputStream_coercesBodyToInputStream() {
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody()).thenReturn("This is not an InputStream or Blob");
         InputStream stream = mock(InputStream.class);
         when(message.getBody(InputStream.class)).thenReturn(stream);

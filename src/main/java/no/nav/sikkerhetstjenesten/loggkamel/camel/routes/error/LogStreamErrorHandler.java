@@ -83,11 +83,11 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
 
     private void prepareExchangeForGCPCopyToInvalidMessageDestination(Exchange exchange, String originBucket, String destinationBucket) {
         if (originBucket.startsWith("google-storage://")) {
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
-            exchange.getIn().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getIn().getHeader(ORIGINAL_FILENAME));
-            exchange.getIn().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getMessage().getHeader(ORIGINAL_FILENAME));
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, destinationBucket);
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getMessage().getHeader(ORIGINAL_FILENAME));
+            exchange.getMessage().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
         }
     }
 }

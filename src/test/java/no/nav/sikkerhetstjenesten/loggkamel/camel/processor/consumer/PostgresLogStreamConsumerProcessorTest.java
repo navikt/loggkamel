@@ -5,6 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -45,10 +46,13 @@ class PostgresLogStreamConsumerProcessorTest {
     @InjectMocks
     PostgresLogStreamConsumerProcessor processor;
 
+    @BeforeEach
+    void setUp() {
+        lenient().when(exchange.getMessage()).thenReturn(message);
+    }
+
     @Test
     void initializeConsumerState_setsTeknoLogiVariable() {
-        when(exchange.getIn()).thenReturn(message);
-
         processor.initializeConsumerState(exchange);
 
         verify(exchange).setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
@@ -56,7 +60,6 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void initializeConsumerState_populatesFilenameFromObjectNameWhenAbsent() {
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
         when(message.getHeader(OBJECT_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
@@ -67,7 +70,6 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void initializeConsumerState_setOriginalFilename() {
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.initializeConsumerState(exchange);
@@ -85,21 +87,21 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.decompressIfGzip(exchange);
 
+        verify(exchange).getMessage();
         verifyNoMoreInteractions(exchange, message);
     }
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHeaderIsAbsent() {
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
         processor.decompressIfGzip(exchange);
 
+        verify(exchange).getMessage();
         verifyNoMoreInteractions(exchange, message);
     }
 
@@ -107,9 +109,7 @@ class PostgresLogStreamConsumerProcessorTest {
     void decompressIfGzip_setsBodyToGZIPInputStreamAndUpdatesHeader() throws Exception {
         InputStream inputStream = new ByteArrayInputStream(gzip("audit log line content"));
 
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         processor.decompressIfGzip(exchange);
@@ -123,9 +123,7 @@ class PostgresLogStreamConsumerProcessorTest {
         String originalContent = "audit log line content";
         InputStream inputStream = new ByteArrayInputStream(gzip(originalContent));
 
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         processor.decompressIfGzip(exchange);
@@ -141,9 +139,7 @@ class PostgresLogStreamConsumerProcessorTest {
     void decompressIfGzip_throwsInvalidPostgresLogGroupExceptionOnCorruptGzip() {
         InputStream inputStream = new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
 
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
-        when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         InvalidPostgresLogGroupException exception = assertThrows(

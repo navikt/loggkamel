@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
+import com.google.cloud.logging.Logging;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
@@ -37,6 +38,15 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
         if (logPacketConsumerUri.startsWith("google-storage://")) {
             onCompletion()
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
+                    .process(exchange -> {
+                        Logging logging = exchange.getVariable(NativeLogPacketConsumerProcessor.LOGGING_CLIENT, Logging.class);
+                        if (logging == null) {
+                            log.warn("No logging client found for packet {}, cannot flush or close. Possible loss of logs", exchange.getMessage().getHeader(FILE_NAME));
+                            return;
+                        }
+                        logging.flush();
+                        logging.close();
+                    })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
                     .setBody(constant(null))
