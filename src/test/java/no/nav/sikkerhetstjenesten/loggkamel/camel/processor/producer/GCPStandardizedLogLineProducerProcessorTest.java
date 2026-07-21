@@ -7,7 +7,9 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
@@ -23,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
@@ -54,6 +55,9 @@ class GCPStandardizedLogLineProducerProcessorTest {
     private ObjectMapper objectMapper;
 
     @Mock
+    private GCPTimestampProvider  gcpTimestampProvider;
+
+    @Mock
     private Logging logging;
 
     @Mock
@@ -76,6 +80,13 @@ class GCPStandardizedLogLineProducerProcessorTest {
     }
 
     @Test
+    void writeToGcpLogging_exceptionOnNullMessage() {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+
+        assertThrows(InvalidLogLineException.class, () -> processor.writeToGcpLogging(exchange));
+    }
+
+    @Test
     void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(LOGGING_CLIENT, logging);
@@ -88,6 +99,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
 
         Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
         when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
+        when(gcpTimestampProvider.getTimestampFromLogTime(NOW)).thenReturn(NOW.toInstant());
 
         processor.writeToGcpLogging(exchange);
 
