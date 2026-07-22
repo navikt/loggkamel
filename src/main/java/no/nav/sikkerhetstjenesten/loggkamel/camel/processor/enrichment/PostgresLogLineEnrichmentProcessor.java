@@ -15,15 +15,21 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
+
 @Service
 public class PostgresLogLineEnrichmentProcessor {
     private static final Logger log = LoggerFactory.getLogger(PostgresLogLineEnrichmentProcessor.class);
+
+    static final List<String> PG_AUDIT_MESSAGE_LEVELS = List.of("DEBUG5", "DEBUG4", "DEBUG3", "DEBUG2", "DEBUG1", "INFO", "NOTICE", "WARNING", "ERROR", "LOG", "FATAL", "PANIC");
+    static final List<String> PG_AUDIT_CONTEXT_LABELS = List.of("HINT", "STATEMENT", "DETAIL", "CONTEXT");
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
     static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
@@ -52,6 +58,12 @@ public class PostgresLogLineEnrichmentProcessor {
             throw new InvalidPostgresLogLineException("Audit log message is blank");
         }
 
+        if (messageContainsPostgresNonLogStatement(body)) {
+            exchange.setVariable(MESSAGE_SHOULD_BE_SKIPPED, true);
+            exchange.getMessage().setBody(null);
+            return;
+        }
+
         EnrichedAuditlogg enrichedAuditlogg;
         try {
             enrichedAuditlogg = extractEnrichmentFromLog(body);
@@ -68,6 +80,22 @@ public class PostgresLogLineEnrichmentProcessor {
         // performing the operation preemptively here
         LogLineOperationTypes logLineOperationTypes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
         exchange.setVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, logLineOperationTypes);
+    }
+
+    private boolean messageContainsPostgresNonLogStatement(String body) {
+        if (body.contains(" LOG: ")) {
+            return false;
+        }
+
+        if (PG_AUDIT_MESSAGE_LEVELS.stream().anyMatch(level -> body.contains(" " + level + ": "))) {
+            return true;
+        }
+
+        if (PG_AUDIT_CONTEXT_LABELS.stream().anyMatch(level -> body.contains(" " + level + ": "))) {
+            return true;
+        }
+
+        return false;
     }
 
     private EnrichedAuditlogg extractEnrichmentFromLog(String body) {

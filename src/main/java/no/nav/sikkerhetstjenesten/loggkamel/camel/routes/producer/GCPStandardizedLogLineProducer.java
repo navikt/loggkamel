@@ -13,6 +13,7 @@ public class GCPStandardizedLogLineProducer extends StandardizedLogLineProducer 
     public void configure() {
         super.errorHandling();
 
+        //TODO: set up feature flag control over producer route
         from(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
             .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
             .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} line ${variable.PlaceInPacket} to GCP Logging")
