@@ -24,9 +24,7 @@ public class StandardizedLogLineFilter extends LogPacketErrorHandler {
                 .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName} line ${variable.PlaceInPacket}")
                 .filter().method(StandardizedLogLineFilterProcessor.class, "messageIsMissingImmediateSkipHeader")
                 .filter().method(StandardizedLogLineFilterProcessor.class, "doesLineActionMatchRelevantAuditloggArkiv")
-                //TODO: switch back to producer routing
-                .to("mock:FOR_TESTING")
-//                .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
+                .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
                 ;
     }
 }

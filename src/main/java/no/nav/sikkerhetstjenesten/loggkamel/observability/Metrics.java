@@ -21,6 +21,7 @@ public class Metrics {
 
     public enum Action {produced, consumed}
 
+    //TODO: update metrics to reflect stream/packet/line usage
     public enum Multiplicity {grouped, single}
 
     //TODO: clean up backout queue type, as we no longer use separate dead letter queues
