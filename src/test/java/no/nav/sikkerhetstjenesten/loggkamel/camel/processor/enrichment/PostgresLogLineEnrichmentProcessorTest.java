@@ -22,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -79,6 +80,40 @@ class PostgresLogLineEnrichmentProcessorTest {
     void setup() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideMissingLogBodies")
+    void enrich_throwsOnMissingLogBody(String logMessageBody) {
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
+
+        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
+    }
+
+    private static Stream<String> provideMissingLogBodies() {
+        return Stream.of(
+                null,
+                ""
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideLogMessagesWithExpectedErrorAndContextNotices")
+    void enrich_skipsOnExpectedErrorsInLogs(String logMessageBody) {
+        when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
+
+        postgresLogLineEnrichmentProcessor.enrich(exchange);
+
+        verify(exchange).setVariable(MESSAGE_SHOULD_BE_SKIPPED, true);
+        verify(message).setBody(null);
+    }
+
+    private static Stream<String> provideLogMessagesWithExpectedErrorAndContextNotices() {
+        return Stream.of(
+                "<2026-02-20 09:22:15.417 CET:155.55.63.45(41074):v-oidc-A165413-1771575386-vp8kYc08-sokos-ske-krav-user@sokos-ske-krav:[2747844]:IntelliJ IDEA 2025.3.2> ERROR:  date/time field value out of range: \"2026-20-02\" at character 66",
+                "<2026-02-20 09:22:15.417 CET:155.55.63.45(41074):v-oidc-A165413-1771575386-vp8kYc08-sokos-ske-krav-user@sokos-ske-krav:[2747844]:IntelliJ IDEA 2025.3.2> HINT:  Perhaps you need a different \"datestyle\" setting.",
+                "<2026-02-20 09:22:15.417 CET:155.55.63.45(41074):v-oidc-A165413-1771575386-vp8kYc08-sokos-ske-krav-user@sokos-ske-krav:[2747844]:IntelliJ IDEA 2025.3.2> STATEMENT:  select * from feilmelding where DATE(tidspunkt_opprettet) = DATE('2026-20-02')"
+        );
     }
 
     @Test
