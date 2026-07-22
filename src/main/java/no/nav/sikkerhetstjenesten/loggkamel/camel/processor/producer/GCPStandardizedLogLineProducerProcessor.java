@@ -7,7 +7,9 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedAuditlogg;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
@@ -34,11 +36,13 @@ public class GCPStandardizedLogLineProducerProcessor {
 
     private final Metrics metrics;
     private final ObjectMapper objectMapper;
+    private final GCPTimestampProvider gcpTimestampProvider;
 
     @Autowired
-    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper) {
+    public GCPStandardizedLogLineProducerProcessor(Metrics metrics, ObjectMapper objectMapper,  GCPTimestampProvider gcpTimestampProvider) {
         this.metrics = metrics;
         this.objectMapper = objectMapper;
+        this.gcpTimestampProvider = gcpTimestampProvider;
     }
 
     public void incrementMetrics(Exchange exchange) {
@@ -50,21 +54,25 @@ public class GCPStandardizedLogLineProducerProcessor {
     }
 
     public void writeToGcpLogging(Exchange exchange) {
+        Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
+
+        EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
+
+        if (logging == null || enrichedAuditLogg == null) {
+            throw new InvalidLogLineException("Log line upload attempted with missing logging client or log body");
+        }
+
+        Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
+        Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
+
+        LogEntry entry = LogEntry.newBuilder(logMessageAsJsonPayload)
+                .setSeverity(Severity.INFO)
+                .setLogName(CLOUD_LOGGING_ENTRY_NAME)
+                .setTimestamp(gcpTimestampProvider.getTimestampFromLogTime(enrichedAuditLogg.getLogTime()))
+                .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
+                .build();
+
         try {
-            Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
-
-            EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
-
-            Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
-            Payload.JsonPayload logMessageAsJsonPayload = Payload.JsonPayload.of(logMessageAsMap);
-
-            LogEntry entry = LogEntry.newBuilder(logMessageAsJsonPayload)
-                    .setSeverity(Severity.INFO)
-                    .setLogName(CLOUD_LOGGING_ENTRY_NAME)
-                    .setTimestamp(enrichedAuditLogg.getLogTime().toInstant())
-                    .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
-                    .build();
-
             logging.write(Collections.singleton(entry));
         } catch (Exception e) {
             String fileName = exchange.getMessage().getHeader(FILE_NAME, String.class);

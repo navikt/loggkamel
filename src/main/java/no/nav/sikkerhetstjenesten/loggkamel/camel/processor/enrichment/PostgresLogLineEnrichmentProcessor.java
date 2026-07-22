@@ -1,5 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
@@ -14,8 +16,10 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class PostgresLogLineEnrichmentProcessor {
@@ -28,12 +32,17 @@ public class PostgresLogLineEnrichmentProcessor {
     private final EntraProxyService entraProxyService;
     private final LogLineOperationsEnricher logLineOperationsEnricher;
     private final Metrics metrics;
+    private final Validator validator;
 
     @Autowired
-    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService, LogLineOperationsEnricher logLineOperationsEnricher, Metrics metrics) {
+    public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService,
+                                              LogLineOperationsEnricher logLineOperationsEnricher,
+                                              Metrics metrics,
+                                              Validator validator) {
         this.logLineOperationsEnricher = logLineOperationsEnricher;
         this.entraProxyService = entraProxyService;
         this.metrics = metrics;
+        this.validator = validator;
     }
 
     public void enrich(Exchange exchange) {
@@ -46,6 +55,7 @@ public class PostgresLogLineEnrichmentProcessor {
         EnrichedAuditlogg enrichedAuditlogg;
         try {
             enrichedAuditlogg = extractEnrichmentFromLog(body);
+            validateEnrichedAuditlogg(enrichedAuditlogg);
         } catch (InvalidPostgresLogLineException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -113,5 +123,15 @@ public class PostgresLogLineEnrichmentProcessor {
         }
 
         return entraProxyAnsatt.getEpost();
+    }
+
+    private void validateEnrichedAuditlogg(EnrichedAuditlogg enrichedAuditlogg) {
+        Set<ConstraintViolation<EnrichedAuditlogg>> violations = validator.validate(enrichedAuditlogg);
+        if (!violations.isEmpty()) {
+            throw new InvalidPostgresLogLineException("Validation failed: " +
+                    violations.stream()
+                            .map(v -> v.getPropertyPath() + " " + v.getMessage())
+                            .collect(Collectors.joining(", ")));
+        }
     }
 }
