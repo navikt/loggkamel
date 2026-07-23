@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
@@ -39,9 +40,7 @@ class NativeLogStreamFilterProcessorTest {
     void matchingAuditloggArkivButNotFiksa() {
         when(auditloggArkivResponseDTO.getFiksa()).thenReturn(false);
 
-        when(auditloggArkivResponseDTO.getTeknologi()).thenReturn(TeknologiEnum.DB2);
-
-        assertFalse(nativeLogStreamFilterProcessor.doesArkivTaskRequireForwardingLogs(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamFilterProcessor.doesArkivTaskRequireForwardingLogs(exchange));
     }
 
     @Test
