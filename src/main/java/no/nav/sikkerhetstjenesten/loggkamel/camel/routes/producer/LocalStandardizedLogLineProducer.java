@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.LocalStandardizedLogLineProducerProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class LocalStandardizedLogLineProducer extends StandardizedLogLineProduce
 
     @Override
     public void configure() {
-        super.errorHandling();
+        super.errorHandling(Metrics.Multiplicity.line);
 
         from(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
