@@ -136,7 +136,7 @@ class PostgresLogStreamConsumerProcessorTest {
     }
 
     @Test
-    void decompressIfGzip_throwsInvalidPostgresLogGroupExceptionOnCorruptGzip() {
+    void decompressIfGzip_throwsInvalidPostgresLogStreamExceptionOnCorruptGzip() {
         InputStream inputStream = new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
 
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);

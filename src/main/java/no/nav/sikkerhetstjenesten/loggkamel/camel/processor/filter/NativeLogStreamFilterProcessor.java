@@ -18,11 +18,11 @@ public class NativeLogStreamFilterProcessor {
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
 
         if (!auditloggArkivResponseDTO.getFiksa()) {
-            throw new InvalidLogStreamException("Logs provided for a database with an Arkiv task that isn't fiksa, database: " + auditloggArkivResponseDTO.getDbname());
+            throw new InvalidLogStreamException("Logs provided for a database with an Arkiv task that isn't enabled, database: " + auditloggArkivResponseDTO.getDbname() + ". Sending to invalid messages queue");
         }
 
         if (!auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && !auditloggArkivResponseDTO.getLoggingEndringer()) {
-            log.info("Audit logg arkiv found for database {} and teknologi {}, but arkiv configuration isn't complete or logging isn't enabled, filtering out log line", auditloggArkivResponseDTO.getDbname(), auditloggArkivResponseDTO.getTeknologi().name());
+            log.info("Audit logg arkiv found for database {} and teknologi {}, but logging isn't enabled, filtering out log stream", auditloggArkivResponseDTO.getDbname(), auditloggArkivResponseDTO.getTeknologi().name());
             return false;
         }
 

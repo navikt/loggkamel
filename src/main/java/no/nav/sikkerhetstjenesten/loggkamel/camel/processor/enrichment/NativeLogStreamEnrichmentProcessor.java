@@ -47,7 +47,7 @@ public class NativeLogStreamEnrichmentProcessor {
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = getAuditloggArkiv(dbname, teknologi);
 
         if (auditloggArkivResponseDTO == null) {
-            log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
+            log.info("No audit logg arkiv found for database {} and teknologi {}, sending to backout queue", dbname, teknologi.name());
             throw new InvalidLogStreamException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
         }
 

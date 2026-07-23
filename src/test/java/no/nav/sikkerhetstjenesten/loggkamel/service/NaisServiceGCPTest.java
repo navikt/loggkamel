@@ -56,7 +56,7 @@ class NaisServiceGCPTest {
     }
 
     @Test
-    void noNaisEnvironmentsFoundConvertedToInvalidLogGroupException() {
+    void noNaisEnvironmentsFoundConvertedToInvalidLogStreamException() {
         when(naisGraphqlClient.document(anyString())).thenReturn(requestSpec);
         when(requestSpec.variable(TEAM_NAME, NAIS_TEAM)).thenReturn(requestSpec);
         when(requestSpec.retrieve(TEAM)).thenReturn(retrieveSpec);
