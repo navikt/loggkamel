@@ -57,12 +57,12 @@ class NativeLogPacketProducerProcessorTest {
     private NativeLogPacketProducerProcessor processor;
 
     @Test
-    void incrementMetrics_incrementsProducedSingleMetric() {
+    void incrementMetrics_incrementsProducedPacketMetric() {
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TEKNOLOGI_IN_EXCHANGE);
 
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TEKNOLOGI_IN_EXCHANGE, Metrics.Action.produced);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.packet, TEKNOLOGI_IN_EXCHANGE, Metrics.Action.produced);
     }
 
     @Test

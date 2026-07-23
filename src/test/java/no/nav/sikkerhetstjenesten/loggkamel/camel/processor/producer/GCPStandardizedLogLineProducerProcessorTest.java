@@ -75,7 +75,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
 
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.line, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
         verify(metrics).incrementDatabaseSpecificAction(DATABASE_NAME, TEKNOLOGI_IN_MESSAGE, Metrics.Action.produced);
     }
 

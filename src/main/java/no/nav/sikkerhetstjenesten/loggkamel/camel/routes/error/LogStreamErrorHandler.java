@@ -46,7 +46,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
                 .handled(true)
                 .useOriginalBody() //testing
                 .process(exchange -> {
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.deadletter);
+                    metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL);
                 })
                 .process(exchange -> {
                     prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);
@@ -59,7 +59,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
                 .handled(true)
                 .useOriginalBody() //testing
                 .process(exchange -> {
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
+                    metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL);
                 })
                 .process(exchange -> {
                     prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);
@@ -73,7 +73,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
                 .handled(true)
                 .useOriginalBody() //testing
                 .process(exchange -> {
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.BackoutQueueType.invalid);
+                    metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL);
                 })
                 .process(exchange -> {
                     prepareExchangeForGCPCopyToInvalidMessageDestination(exchange, postgresInvalidMessageRouting, postgresInvalidMessageDestinationUri);

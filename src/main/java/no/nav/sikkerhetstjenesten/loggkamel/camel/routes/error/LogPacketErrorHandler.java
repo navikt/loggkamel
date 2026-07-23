@@ -29,7 +29,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
 
     public abstract void configure();
 
-    public void errorHandling() {
+    public void errorHandling(Metrics.Multiplicity multiplicity) {
         // Use of the original message is allowed to enable local backout testing. Without stream caching this would
         // result in partially-read streams being sent to backout queues in GCP, if the GCP flow didn't drop message body
         // entirely and instead command GCP to copy the original file to the backout queue entirely outside of loggkamel
@@ -44,7 +44,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.deadletter);
+                    metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
                 })
                 .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);
@@ -56,7 +56,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.invalid);
+                    metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
                 })
                 .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);
@@ -68,7 +68,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
-                    metrics.incrementUnhappyPath(Metrics.Multiplicity.single, teknologi, Metrics.BackoutQueueType.invalid);
+                    metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
                 })
                 .process(this::prepareExchangeForGCPCopyToInvalidMessageDestination)
                 .to(invalidMessageRouting);

@@ -23,6 +23,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.Nati
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum.POSTGRESQL;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,28 +110,37 @@ class NativeLogPacketConsumerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setBody(auditloggLineMessage);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
-        when(auditloggLineMessageHeader.getTeknologi()).thenReturn(TeknologiEnum.POSTGRESQL);
+        when(auditloggLineMessageHeader.getTeknologi()).thenReturn(POSTGRESQL);
         when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
         when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
 
         processor.initializeExchangeVariablesForLogLine(exchange);
 
-        assertEquals(TeknologiEnum.POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
+        assertEquals(POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
         assertEquals(auditloggArkivResponseDTO, exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class));
         assertEquals(TEAM_PROJECT_ID, exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class));
     }
 
     @Test
-    void incrementMetrics_incrementsHappyPathAndDatabaseSpecificMetrics() {
+    void incrementMetricsForPacket_incrementsHappyPathAndDatabaseSpecificMetrics() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
+        exchange.setVariable(TEKNOLOGI, POSTGRESQL);
+
+        processor.incrementMetricsForPacket(exchange);
+
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.packet, POSTGRESQL, Metrics.Action.consumed);
+    }
+
+    @Test
+    void incrementMetricsForLine_incrementsHappyPathAndDatabaseSpecificMetrics() {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setVariable(TEKNOLOGI, POSTGRESQL);
         exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
         when(auditloggArkivResponseDTO.getDbname()).thenReturn(DB_NAME);
 
-        processor.incrementMetrics(exchange);
+        processor.incrementMetricsForLine(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.single, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
-        verify(metrics).incrementDatabaseSpecificAction(DB_NAME, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
+        verify(metrics).incrementDatabaseSpecificAction(DB_NAME, POSTGRESQL, Metrics.Action.consumed);
     }
 }
 
