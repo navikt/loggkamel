@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class NativeLogLineEnricherAssigner extends LogPacketErrorHandler {
 
     @Override
     public void configure() {
-        super.errorHandling();
+        super.errorHandling(Metrics.Multiplicity.line);
 
         from(NATIVE_LOG_LINE_ENRICHER_ROUTE)
                 .routeId(NATIVE_LOG_LINE_ENRICHER_ASSIGNER_ID)

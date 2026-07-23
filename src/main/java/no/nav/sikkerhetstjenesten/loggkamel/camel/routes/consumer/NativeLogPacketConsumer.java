@@ -4,6 +4,7 @@ import com.google.cloud.logging.Logging;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
 import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
@@ -54,7 +55,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     .to(logPacketConsumerUri);
         }
 
-        super.errorHandling();
+        super.errorHandling(Metrics.Multiplicity.packet);
 
         onException(DuplicateKeyException.class)
                 .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
@@ -73,9 +74,10 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                 .bean(InputStreamReader.class, "prepareBodyAsInputStream")
                 .bean(NativeLogPacketConsumerProcessor.class, "mapToLogLineList")
                 .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesForPacket")
+                .bean(NativeLogPacketConsumerProcessor.class, "incrementMetricsForPacket")
                 .split(body())
                     .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesForLogLine")
-                    .bean(NativeLogPacketConsumerProcessor.class, "incrementMetrics")
+                    .bean(NativeLogPacketConsumerProcessor.class, "incrementMetricsForLine")
                     .to(NATIVE_LOG_LINE_ENRICHER_ROUTE);
     }
 }

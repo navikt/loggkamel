@@ -47,7 +47,7 @@ public class GCPStandardizedLogLineProducerProcessor {
 
     public void incrementMetrics(Exchange exchange) {
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
-        metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi, Metrics.Action.produced);
+        metrics.incrementHappyPath(Metrics.Multiplicity.line, teknologi, Metrics.Action.produced);
 
         String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
         metrics.incrementDatabaseSpecificAction(dbName, teknologi, Metrics.Action.produced);

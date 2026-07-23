@@ -61,10 +61,13 @@ public class NativeLogPacketConsumerProcessor {
         exchange.setVariable(PLACE_IN_PACKET, loggLineMessage.getHeader().getPlaceInPacket());
     }
 
-    public void incrementMetrics(Exchange exchange) {
+    public void incrementMetricsForPacket(Exchange exchange) {
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
-        metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi, Metrics.Action.consumed);
+        metrics.incrementHappyPath(Metrics.Multiplicity.packet, teknologi, Metrics.Action.consumed);
+    }
 
+    public void incrementMetricsForLine(Exchange exchange) {
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
         String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
         metrics.incrementDatabaseSpecificAction(dbName, teknologi, Metrics.Action.consumed);
     }
