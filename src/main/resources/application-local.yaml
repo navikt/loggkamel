@@ -58,7 +58,7 @@ routing:
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
     invalid-message-routing: ${routing.packet.invalid-message}
-  arkiv:
+  logline:
     producer: "file:src/main/resources/files/output"
 
 entra-proxy:

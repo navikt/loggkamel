@@ -6,7 +6,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Auditlogg
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.CONTENT_TYPE;
@@ -48,7 +48,7 @@ public class NativeLogPacketProducerProcessor {
                             .header(AuditloggLineMessageHeader.builder()
                                     .teknologi(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class))
                                     .teamGcpProjectId(exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class))
-                                    .auditloggArkivResponseDTO(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class))
+                                    .auditloggTaskDTO(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class))
                                     .placeInPacket(i + 1)
                                     .build())
                             .build()

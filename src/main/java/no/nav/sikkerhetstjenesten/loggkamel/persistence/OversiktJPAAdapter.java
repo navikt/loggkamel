@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,20 +13,20 @@ import java.util.List;
 public class OversiktJPAAdapter {
 
     private final OversiktRepository repository;
-    private final AuditloggArkivMapper mapper;
+    private final AuditloggTaskMapper mapper;
 
     @Autowired
-    public OversiktJPAAdapter(OversiktRepository repository, AuditloggArkivMapper mapper) {
+    public OversiktJPAAdapter(OversiktRepository repository, AuditloggTaskMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
 
-    public AuditloggArkivResponseDTO createAuditloggArkiv(AuditloggArkivRequestDTO arkivToSave) {
-        AuditloggArkivEntity persistedArkiv = saveAuditloggArkivEntity(mapper.auditloggArkivRequestDTOToEntity(arkivToSave));
-        return mapper.auditloggArkivEntityToResponseDTO(persistedArkiv);
+    public AuditloggTaskDTO createAuditloggTask(AuditloggTaskRequestDTO taskToSave) {
+        AuditloggTaskEntity persistedTask = saveAuditloggTaskEntity(mapper.auditloggTaskRequestDTOToEntity(taskToSave));
+        return mapper.auditloggTaskEntityToDTO(persistedTask);
     }
 
-    private AuditloggArkivEntity saveAuditloggArkivEntity(AuditloggArkivEntity toSave) {
+    private AuditloggTaskEntity saveAuditloggTaskEntity(AuditloggTaskEntity toSave) {
         try {
             return repository.save(toSave);
         } catch (DataIntegrityViolationException e) {
@@ -34,33 +34,33 @@ public class OversiktJPAAdapter {
         }
     }
 
-    public AuditloggArkivResponseDTO updateAuditloggArkiv(AuditloggArkivRequestDTO arkivToUpdate) {
+    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO taskToUpdate) {
 
-        AuditloggArkivEntity existingArkiv = repository.findByDbnameAndTeknologi(arkivToUpdate.getDbname(), arkivToUpdate.getTeknologi());
-        if (existingArkiv == null) {
-            throw new ForbiddenOperationException("Task with dbname " + arkivToUpdate.getDbname() + " and teknologi " + arkivToUpdate.getTeknologi() + " does not exist");
+        AuditloggTaskEntity existingTask = repository.findByDbnameAndTeknologi(taskToUpdate.getDbname(), taskToUpdate.getTeknologi());
+        if (existingTask == null) {
+            throw new ForbiddenOperationException("Task with dbname " + taskToUpdate.getDbname() + " and teknologi " + taskToUpdate.getTeknologi() + " does not exist");
         }
-        AuditloggArkivEntity arkivEntityWithUpdatedValues = mapper.auditloggArkivRequestDTOToEntity(arkivToUpdate);
-        arkivEntityWithUpdatedValues.setId(existingArkiv.getId());
+        AuditloggTaskEntity taskEntityWithUpdatedValues = mapper.auditloggTaskRequestDTOToEntity(taskToUpdate);
+        taskEntityWithUpdatedValues.setId(existingTask.getId());
 
-        AuditloggArkivEntity persistedArkiv = saveAuditloggArkivEntity(arkivEntityWithUpdatedValues);
-        return mapper.auditloggArkivEntityToResponseDTO(persistedArkiv);
+        AuditloggTaskEntity persistedTask = saveAuditloggTaskEntity(taskEntityWithUpdatedValues);
+        return mapper.auditloggTaskEntityToDTO(persistedTask);
     }
 
-    public AuditloggArkivResponseDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
-        return mapper.auditloggArkivEntityToResponseDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
+    public AuditloggTaskDTO findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+        return mapper.auditloggTaskEntityToDTO(repository.findByDbnameAndTeknologi(dbname, teknologi));
     }
 
-    public void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
-        AuditloggArkivEntity toUpdate = repository.findByDbnameAndTeknologi(dbname, teknologi);
+    public void registerLogsReceivedForAuditloggTask(String dbname, TeknologiEnum teknologi) {
+        AuditloggTaskEntity toUpdate = repository.findByDbnameAndTeknologi(dbname, teknologi);
         toUpdate.setFunnetLogger(true);
-        saveAuditloggArkivEntity(toUpdate);
+        saveAuditloggTaskEntity(toUpdate);
     }
 
-    public List<AuditloggArkivResponseDTO> getAllTasksByNaisteam(String naisteam) {
-        List<AuditloggArkivEntity> foundEntities = repository.findAllArkivByNaisteam(naisteam);
+    public List<AuditloggTaskDTO> getAllTasksByNaisteam(String naisteam) {
+        List<AuditloggTaskEntity> foundEntities = repository.findAllTasksByNaisteam(naisteam);
 
-        return foundEntities.stream().map(mapper::auditloggArkivEntityToResponseDTO).toList();
+        return foundEntities.stream().map(mapper::auditloggTaskEntityToDTO).toList();
     }
 
     public List<String> findAllDistinctNaisteam() {

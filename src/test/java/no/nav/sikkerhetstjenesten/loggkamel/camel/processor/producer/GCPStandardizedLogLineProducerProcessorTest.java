@@ -12,7 +12,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedA
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
@@ -61,7 +61,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     private Logging logging;
 
     @Mock
-    private AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    private AuditloggTaskDTO auditloggTaskDTO;
 
     @InjectMocks
     private GCPStandardizedLogLineProducerProcessor processor;
@@ -70,8 +70,8 @@ class GCPStandardizedLogLineProducerProcessorTest {
     void incrementMetrics_incrementsHappyPathAndDatabaseSpecificMetrics() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(TEKNOLOGI, TEKNOLOGI_IN_MESSAGE);
-        exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
-        when(auditloggArkivResponseDTO.getDbname()).thenReturn(DATABASE_NAME);
+        exchange.setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
+        when(auditloggTaskDTO.getDbname()).thenReturn(DATABASE_NAME);
 
         processor.incrementMetrics(exchange);
 

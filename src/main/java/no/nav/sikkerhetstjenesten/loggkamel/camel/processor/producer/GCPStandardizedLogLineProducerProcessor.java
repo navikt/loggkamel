@@ -12,7 +12,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.EnrichedA
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class GCPStandardizedLogLineProducerProcessor {
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
         metrics.incrementHappyPath(Metrics.Multiplicity.line, teknologi, Metrics.Action.produced);
 
-        String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
+        String dbName = exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class).getDbname();
         metrics.incrementDatabaseSpecificAction(dbName, teknologi, Metrics.Action.produced);
     }
 

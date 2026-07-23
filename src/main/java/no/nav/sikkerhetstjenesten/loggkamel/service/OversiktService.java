@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,34 +18,34 @@ public class OversiktService {
         this.adapter = adapter;
     }
 
-    public AuditloggArkivResponseDTO createAuditloggArkiv(AuditloggArkivRequestDTO request) {
-        return adapter.createAuditloggArkiv(request);
+    public AuditloggTaskDTO createAuditloggTask(AuditloggTaskRequestDTO request) {
+        return adapter.createAuditloggTask(request);
     }
 
-    public AuditloggArkivResponseDTO updateAuditloggArkiv(AuditloggArkivRequestDTO request) {
-        return adapter.updateAuditloggArkiv(request);
+    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO request) {
+        return adapter.updateAuditloggTask(request);
     }
 
-    public AuditloggArkivResponseDTO getAuditloggArkivByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
+    public AuditloggTaskDTO getAuditloggTaskByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
         return adapter.findByDbnameAndTeknologi(dbname, teknologi);
     }
 
-    public void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
-        adapter.registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
+    public void registerLogsReceivedForAuditloggTask(String dbname, TeknologiEnum teknologi) {
+        adapter.registerLogsReceivedForAuditloggTask(dbname, teknologi);
     }
 
-    public List<AuditloggArkivResponseDTO> getAuditloggArkivByNaisteam(String naisteam) {
+    public List<AuditloggTaskDTO> getAuditloggTaskByNaisteam(String naisteam) {
         return adapter.getAllTasksByNaisteam(naisteam);
     }
 
-    public boolean naisteamHasActiveArkivTasks(String naisteam) {
+    public boolean naisteamHasActiveAuditloggTasks(String naisteam) {
         return adapter.getAllTasksByNaisteam(naisteam).stream()
                 .anyMatch(task -> task.getFiksa() && (task.getLoggingLeseoperasjoner() || task.getLoggingEndringer()));
     }
 
-    public List<String> findAllNaisteamWithActiveArkivTasks() {
+    public List<String> findAllNaisteamWithActiveAuditloggTasks() {
         return adapter.findAllDistinctNaisteam().stream()
-                .filter(this::naisteamHasActiveArkivTasks)
+                .filter(this::naisteamHasActiveAuditloggTasks)
                 .toList();
     }
 }

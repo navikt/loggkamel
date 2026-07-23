@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.CONTENT_TYPE;
@@ -51,7 +51,7 @@ class NativeLogPacketProducerProcessorTest {
     Message message;
 
     @Mock
-    AuditloggArkivResponseDTO  auditloggArkivResponseDTO;
+    AuditloggTaskDTO auditloggTaskDTO;
 
     @InjectMocks
     private NativeLogPacketProducerProcessor processor;
@@ -72,8 +72,8 @@ class NativeLogPacketProducerProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TEKNOLOGI_IN_EXCHANGE);
         when(exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class)).thenReturn(TEAM_GCP_PROJECT_ID_VALUE);
-        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
-        when(auditloggArkivResponseDTO.getDbname()).thenReturn(DB_NAME);
+        when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
 
         when(objectMapper.writeValueAsString(anyList())).thenReturn(AUDITLOGG_LIST_AS_STRING);
 
@@ -87,7 +87,7 @@ class NativeLogPacketProducerProcessorTest {
 
         assertEquals(TEKNOLOGI_IN_EXCHANGE, typedCapturedList.get(0).getHeader().getTeknologi());
         assertEquals(TEAM_GCP_PROJECT_ID_VALUE, typedCapturedList.get(0).getHeader().getTeamGcpProjectId());
-        assertEquals(DB_NAME, typedCapturedList.get(0).getHeader().getAuditloggArkivResponseDTO().getDbname());
+        assertEquals(DB_NAME, typedCapturedList.get(0).getHeader().getAuditloggTaskDTO().getDbname());
         assertEquals(LOG_LINE_1, typedCapturedList.get(0).getBody());
         assertEquals(1, typedCapturedList.get(0).getHeader().getPlaceInPacket());
 

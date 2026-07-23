@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 
 @Data
 @Builder
@@ -15,11 +15,11 @@ public class AuditloggLineMessageHeader {
 
     public static final String TEKNOLOGI = "Teknologi";
     public static final String TEAM_GCP_PROJECT_ID = "TeamGcpProjectId";
-    public static final String AUDITLOGG_ARKIV = "AuditloggArkiv";
+    public static final String AUDITLOGG_TASK = "AuditloggTask";
     public static final String PLACE_IN_PACKET = "PlaceInPacket";
 
     TeknologiEnum teknologi;
     String teamGcpProjectId;
-    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    AuditloggTaskDTO auditloggTaskDTO;
     int placeInPacket;
 }

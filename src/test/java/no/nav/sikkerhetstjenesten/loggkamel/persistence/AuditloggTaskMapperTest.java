@@ -1,14 +1,14 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AuditloggArkivMapperTest {
+class AuditloggTaskMapperTest {
 
     private final static Long ID = 1L;
     private final static Instant CREATED = Instant.parse("2024-01-01T00:00:00Z");
@@ -19,14 +19,14 @@ class AuditloggArkivMapperTest {
     private static final Boolean FIKSA = true;
     private static final Boolean FUNNET_LOGGER = true;
 
-    AuditloggArkivMapper mapper = new AuditloggArkivMapperImpl();
+    AuditloggTaskMapper mapper = new AuditloggTaskMapperImpl();
 
     @Test
     void dtoToEntity() {
-        AuditloggArkivRequestDTO dto = createRequestDTO(true, false, true);
-        AuditloggArkivEntity mappedEntity = mapper.auditloggArkivRequestDTOToEntity(dto);
+        AuditloggTaskRequestDTO dto = createRequestDTO(true, false, true);
+        AuditloggTaskEntity mappedEntity = mapper.auditloggTaskRequestDTOToEntity(dto);
 
-        AuditloggArkivEntity expectedEntity = createEntity(true, false, true);
+        AuditloggTaskEntity expectedEntity = createEntity(true, false, true);
         // null the fields that the mapper ignores
         expectedEntity.setId(null);
         expectedEntity.setCreated(null);
@@ -47,14 +47,14 @@ class AuditloggArkivMapperTest {
 
     @Test
     void entityToDTO() {
-        AuditloggArkivEntity entity = createEntity(true, false, true);
-        AuditloggArkivResponseDTO dto = mapper.auditloggArkivEntityToResponseDTO(entity);
+        AuditloggTaskEntity entity = createEntity(true, false, true);
+        AuditloggTaskDTO dto = mapper.auditloggTaskEntityToDTO(entity);
 
         assertEquals(createResponseDTO(true, false, true, true), dto);
     }
 
-    private AuditloggArkivEntity createEntity(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
-        return AuditloggArkivEntity.builder()
+    private AuditloggTaskEntity createEntity(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
+        return AuditloggTaskEntity.builder()
                 .id(ID)
                 .created(CREATED)
                 .updated(UPDATED)
@@ -69,8 +69,8 @@ class AuditloggArkivMapperTest {
                 .build();
     }
 
-    private AuditloggArkivResponseDTO createResponseDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
-        return AuditloggArkivResponseDTO.builder()
+    private AuditloggTaskDTO createResponseDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
+        return AuditloggTaskDTO.builder()
                 .created(CREATED)
                 .updated(UPDATED)
                 .naisteam(NAISTEAM)
@@ -85,8 +85,8 @@ class AuditloggArkivMapperTest {
                 .build();
     }
 
-    private AuditloggArkivRequestDTO createRequestDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
-        return AuditloggArkivRequestDTO.builder()
+    private AuditloggTaskRequestDTO createRequestDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
+        return AuditloggTaskRequestDTO.builder()
                 .naisteam(NAISTEAM)
                 .teknologi(TEKNOLOGI)
                 .dbname(DBNAME)

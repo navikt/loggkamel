@@ -7,7 +7,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Auditlogg
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,14 +64,14 @@ public class NativeLogPacketConsumerProcessor {
         AuditloggLineMessage loggLineMessage = exchange.getMessage().getBody(AuditloggLineMessage.class);
 
         exchange.setVariable(TEKNOLOGI, loggLineMessage.getHeader().getTeknologi());
-        exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
+        exchange.setVariable(AUDITLOGG_TASK, loggLineMessage.getHeader().getAuditloggTaskDTO());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
         exchange.setVariable(PLACE_IN_PACKET, loggLineMessage.getHeader().getPlaceInPacket());
     }
 
     public void incrementMetricsForLine(Exchange exchange) {
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
-        String dbName = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class).getDbname();
+        String dbName = exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class).getDbname();
         metrics.incrementDatabaseSpecificAction(dbName, teknologi, Metrics.Action.consumed);
     }
 }

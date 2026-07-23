@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -44,39 +44,39 @@ public class NativeLogStreamEnrichmentProcessor {
 
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
 
-        AuditloggArkivResponseDTO auditloggArkivResponseDTO = getAuditloggArkiv(dbname, teknologi);
+        AuditloggTaskDTO auditloggTaskDTO = getAuditloggTask(dbname, teknologi);
 
-        if (auditloggArkivResponseDTO == null) {
-            log.info("No audit logg arkiv found for database {} and teknologi {}, sending to backout queue", dbname, teknologi.name());
-            throw new InvalidLogStreamException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
+        if (auditloggTaskDTO == null) {
+            log.info("No auditlogg task found for database {} and teknologi {}, sending to backout queue", dbname, teknologi.name());
+            throw new InvalidLogStreamException("No auditlogg task found for database " + dbname + " and teknologi " + teknologi.name());
         }
 
-        log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
-        registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
+        log.debug("Found auditloggTask, setting properties for log enrichment: {}", auditloggTaskDTO);
+        registerLogsReceivedForAuditloggTask(dbname, teknologi);
 
-        String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
+        String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
         if (teamGcpProjectId == null || teamGcpProjectId.isEmpty()) {
-            log.info("Could not find GCP project id for naisteam {}, sending log message to backout queue", auditloggArkivResponseDTO.getNaisteam());
-            throw new InvalidLogStreamException("Could not find GCP project id for naisteam " + auditloggArkivResponseDTO.getNaisteam());
+            log.info("Could not find GCP project id for naisteam {}, sending log message to backout queue", auditloggTaskDTO.getNaisteam());
+            throw new InvalidLogStreamException("Could not find GCP project id for naisteam " + auditloggTaskDTO.getNaisteam());
         }
-        log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
+        log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggTaskDTO.getNaisteam());
 
-        exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
+        exchange.setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
         exchange.setVariable(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
-    private AuditloggArkivResponseDTO getAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
+    private AuditloggTaskDTO getAuditloggTask(String dbname, TeknologiEnum teknologi) {
         try {
-            return oversiktService.getAuditloggArkivByDbnameAndTeknologi(dbname, teknologi);
+            return oversiktService.getAuditloggTaskByDbnameAndTeknologi(dbname, teknologi);
         } catch (RuntimeException e) {
-            log.warn("Error while fetching audit logg arkiv for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
-            throw new DatabaseDependencyException("Error while fetching audit logg arkiv for database " + dbname + " and teknologi " + teknologi.name(), e);
+            log.warn("Error while fetching auditlogg task for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
+            throw new DatabaseDependencyException("Error while fetching auditlogg task for database " + dbname + " and teknologi " + teknologi.name(), e);
         }
     }
 
-    private void registerLogsReceivedForAuditloggArkiv(String dbname, TeknologiEnum teknologi) {
+    private void registerLogsReceivedForAuditloggTask(String dbname, TeknologiEnum teknologi) {
         try {
-            oversiktService.registerLogsReceivedForAuditloggArkiv(dbname, teknologi);
+            oversiktService.registerLogsReceivedForAuditloggTask(dbname, teknologi);
         } catch (RuntimeException e) {
             log.warn("Error while registering logs received for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while registering logs received for database " + dbname + " and teknologi " + teknologi.name(), e);
