@@ -41,7 +41,7 @@ public class PostgresLogStreamConsumerProcessor {
     }
 
     public void incrementMetrics(Exchange exchange) {
-        metrics.incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
+        metrics.incrementHappyPath(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
     public void decompressIfGzip(Exchange exchange) {

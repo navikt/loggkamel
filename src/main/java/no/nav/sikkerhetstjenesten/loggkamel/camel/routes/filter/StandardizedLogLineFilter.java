@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter.StandardizedLogLineFilterProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +18,13 @@ public class StandardizedLogLineFilter extends LogPacketErrorHandler {
 
     @Override
     public void configure() {
-        super.errorHandling();
+        super.errorHandling(Metrics.Multiplicity.line);
 
         from(STANDARDIZED_LOG_LINE_FILTER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_FILTER_ID)
                 .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName} line ${variable.PlaceInPacket}")
                 .filter().method(StandardizedLogLineFilterProcessor.class, "messageIsMissingImmediateSkipHeader")
                 .filter().method(StandardizedLogLineFilterProcessor.class, "doesLineActionMatchRelevantAuditloggArkiv")
-                .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
-                ;
+                .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE);
     }
 }

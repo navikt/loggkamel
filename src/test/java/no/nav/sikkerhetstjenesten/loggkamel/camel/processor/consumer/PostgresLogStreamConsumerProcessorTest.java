@@ -79,10 +79,10 @@ class PostgresLogStreamConsumerProcessorTest {
     }
 
     @Test
-    void incrementMetrics_callsHappyPathWithPostgresqlGrouped() {
+    void incrementMetrics_callsHappyPathWithPostgresqlStream() {
         processor.incrementMetrics(exchange);
 
-        verify(metrics).incrementHappyPath(Metrics.Multiplicity.grouped, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
+        verify(metrics).incrementHappyPath(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
     @Test

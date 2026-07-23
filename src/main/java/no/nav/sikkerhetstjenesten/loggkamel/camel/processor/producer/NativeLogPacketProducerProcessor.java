@@ -34,7 +34,7 @@ public class NativeLogPacketProducerProcessor {
 
     public void incrementMetrics(Exchange exchange) {
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
-        metrics.incrementHappyPath(Metrics.Multiplicity.single, teknologi, Metrics.Action.produced);
+        metrics.incrementHappyPath(Metrics.Multiplicity.packet, teknologi, Metrics.Action.produced);
     }
 
     public void mapToAuditloggLineMessageList(Exchange exchange) throws JsonProcessingException {
