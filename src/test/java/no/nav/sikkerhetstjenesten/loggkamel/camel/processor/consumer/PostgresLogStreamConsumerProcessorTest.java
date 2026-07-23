@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
@@ -136,14 +136,14 @@ class PostgresLogStreamConsumerProcessorTest {
     }
 
     @Test
-    void decompressIfGzip_throwsInvalidPostgresLogGroupExceptionOnCorruptGzip() {
+    void decompressIfGzip_throwsInvalidPostgresLogStreamExceptionOnCorruptGzip() {
         InputStream inputStream = new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
 
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
-        InvalidPostgresLogGroupException exception = assertThrows(
-            InvalidPostgresLogGroupException.class,
+        InvalidPostgresLogStreamException exception = assertThrows(
+            InvalidPostgresLogStreamException.class,
             () -> processor.decompressIfGzip(exchange)
         );
 

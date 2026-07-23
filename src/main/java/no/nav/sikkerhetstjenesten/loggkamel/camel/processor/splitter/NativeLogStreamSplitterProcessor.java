@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class NativeLogStreamSplitterProcessor {
 
         if (logStreamFilename == null || logStreamFilename.isEmpty()) {
             log.warn("Filename header is missing while splitting log stream");
-            throw new InvalidLogGroupException("Filename header is missing while splitting log stream");
+            throw new InvalidLogStreamException("Filename header is missing while splitting log stream");
         }
 
         String logPacketFilename = createFilenameWithUUID(logStreamFilename);
@@ -54,7 +54,7 @@ public class NativeLogStreamSplitterProcessor {
         InputStream logGroupInputStream = exchange.getMessage().getBody(InputStream.class);
 
         if (logGroupInputStream == null) {
-            throw new InvalidLogGroupException("Input stream is missing while splitting log group");
+            throw new InvalidLogStreamException("Input stream is missing while splitting log group");
         }
 
         return new LogPacketIterator(logGroupInputStream, LOG_PACKET_MAX_SIZE);

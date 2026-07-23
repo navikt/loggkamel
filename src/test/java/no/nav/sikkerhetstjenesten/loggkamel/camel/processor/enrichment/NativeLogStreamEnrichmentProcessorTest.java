@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
@@ -51,7 +51,7 @@ class NativeLogStreamEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -59,7 +59,7 @@ class NativeLogStreamEnrichmentProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -83,7 +83,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
@@ -128,7 +128,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn("");
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test

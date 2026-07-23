@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
@@ -58,7 +58,7 @@ public class PostgresLogStreamConsumerProcessor {
             log.debug("Assigned GZIPInputStream to message body");
         } catch (IOException e) {
             String errorMessage = e.getMessage() != null ? e.getMessage() : "unknown error";
-            throw new InvalidPostgresLogGroupException(
+            throw new InvalidPostgresLogStreamException(
                 "Failed to open gzip stream for file " + fileName + ", error: " + errorMessage, e
             );
         }

@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -16,8 +17,12 @@ public class NativeLogStreamFilterProcessor {
     public boolean doesArkivTaskRequireForwardingLogs(Exchange exchange) {
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
 
-        if (!auditloggArkivResponseDTO.getFiksa() || (!auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && !auditloggArkivResponseDTO.getLoggingEndringer())) {
-            log.info("Audit logg arkiv found for database {} and teknologi {}, but arkiv configuration isn't complete or logging isn't enabled, filtering out log line", auditloggArkivResponseDTO.getDbname(), auditloggArkivResponseDTO.getTeknologi().name());
+        if (!auditloggArkivResponseDTO.getFiksa()) {
+            throw new InvalidLogStreamException("Logs provided for a database with an Arkiv task that isn't enabled, database: " + auditloggArkivResponseDTO.getDbname() + ". Sending to invalid messages queue");
+        }
+
+        if (!auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && !auditloggArkivResponseDTO.getLoggingEndringer()) {
+            log.info("Audit logg arkiv found for database {} and teknologi {}, but logging isn't enabled, filtering out log stream", auditloggArkivResponseDTO.getDbname(), auditloggArkivResponseDTO.getTeknologi().name());
             return false;
         }
 

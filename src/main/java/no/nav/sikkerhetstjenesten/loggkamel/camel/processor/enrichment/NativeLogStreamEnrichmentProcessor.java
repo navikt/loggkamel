@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
@@ -36,7 +36,7 @@ public class NativeLogStreamEnrichmentProcessor {
 
         if (filename == null || !filename.contains(".")) {
             log.warn("Filename header is missing or does not contain expected format: {}", filename);
-            throw new InvalidLogGroupException("Filename header is missing or does not contain expected format: " + filename);
+            throw new InvalidLogStreamException("Filename header is missing or does not contain expected format: " + filename);
         }
 
         //database name is the first part of the filename, before the first period
@@ -47,8 +47,8 @@ public class NativeLogStreamEnrichmentProcessor {
         AuditloggArkivResponseDTO auditloggArkivResponseDTO = getAuditloggArkiv(dbname, teknologi);
 
         if (auditloggArkivResponseDTO == null) {
-            log.info("No audit logg arkiv found for database {} and teknologi {}, filtering out log line", dbname, teknologi.name());
-            throw new InvalidLogGroupException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
+            log.info("No audit logg arkiv found for database {} and teknologi {}, sending to backout queue", dbname, teknologi.name());
+            throw new InvalidLogStreamException("No audit logg arkiv found for database " + dbname + " and teknologi " + teknologi.name());
         }
 
         log.debug("Found auditloggArkiv, setting properties for log enrichment: {}", auditloggArkivResponseDTO);
@@ -57,7 +57,7 @@ public class NativeLogStreamEnrichmentProcessor {
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggArkivResponseDTO.getNaisteam());
         if (teamGcpProjectId == null || teamGcpProjectId.isEmpty()) {
             log.info("Could not find GCP project id for naisteam {}, sending log message to backout queue", auditloggArkivResponseDTO.getNaisteam());
-            throw new InvalidLogGroupException("Could not find GCP project id for naisteam " + auditloggArkivResponseDTO.getNaisteam());
+            throw new InvalidLogStreamException("Could not find GCP project id for naisteam " + auditloggArkivResponseDTO.getNaisteam());
         }
         log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggArkivResponseDTO.getNaisteam());
 

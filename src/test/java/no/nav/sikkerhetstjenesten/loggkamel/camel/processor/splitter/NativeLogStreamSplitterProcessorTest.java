@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ class NativeLogStreamSplitterProcessorTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange));
     }
 
     @Test
