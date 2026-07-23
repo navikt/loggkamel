@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.Blob;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogStreamException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +63,7 @@ class InputStreamReaderTest {
         when(message.getBody()).thenReturn("This is not an InputStream or Blob");
         when(message.getBody(InputStream.class)).thenReturn(null);
 
-        assertThrows(InvalidPostgresLogGroupException.class, () -> inputStreamReader.prepareBodyAsInputStream(exchange));
+        assertThrows(InvalidPostgresLogStreamException.class, () -> inputStreamReader.prepareBodyAsInputStream(exchange));
     }
 
     @Test

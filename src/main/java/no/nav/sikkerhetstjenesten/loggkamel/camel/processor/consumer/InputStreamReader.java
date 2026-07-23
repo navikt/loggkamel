@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.Blob;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogStreamException;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class InputStreamReader {
         // If the body isn't an input stream but can at least be converted to one by camel, we coerce that conversion
         InputStream inputStream = exchange.getMessage().getBody(InputStream.class);
         if (inputStream == null) {
-            throw new InvalidPostgresLogGroupException("Unable to convert message body to InputStream for file " + exchange.getMessage().getHeader(FILE_NAME, String.class));
+            throw new InvalidPostgresLogStreamException("Unable to convert message body to InputStream for file " + exchange.getMessage().getHeader(FILE_NAME, String.class));
         }
         log.debug("Converting message body to InputStream");
         exchange.getMessage().setBody(inputStream);

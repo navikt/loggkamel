@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 import no.nav.boot.conditionals.Cluster;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,14 +53,14 @@ public class NaisServiceGCP implements NaisService {
         }
 
         if (naisTeamEnvironments == null) {
-            throw new InvalidLogGroupException("Fant ingen GCP Projecter for team " + naisTeam + " i nais api response");
+            throw new InvalidLogStreamException("Fant ingen GCP Projecter for team " + naisTeam + " i nais api response");
         }
 
         String currentCluster = Cluster.currentCluster().clusterName();
         Optional<GCPProject> currentEnvGCPProject = naisTeamEnvironments.getEnvironments().stream().filter(env -> env.getName().equals(currentCluster)).findFirst();
 
         if (currentEnvGCPProject.isEmpty()) {
-            throw new InvalidLogGroupException("Fant ingen GCP Projecter for team " + naisTeam + " i miljø " + currentCluster);
+            throw new InvalidLogStreamException("Fant ingen GCP Projecter for team " + naisTeam + " i miljø " + currentCluster);
         }
 
         return currentEnvGCPProject.get().getGcpProjectID();

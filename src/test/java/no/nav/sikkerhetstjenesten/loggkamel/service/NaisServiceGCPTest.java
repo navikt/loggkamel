@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogGroupException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -63,7 +63,7 @@ class NaisServiceGCPTest {
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenReturn(null);
 
-        assertThrows(InvalidLogGroupException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogStreamException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -75,7 +75,7 @@ class NaisServiceGCPTest {
         when(naisTeamEnvironmentsMono.block()).thenReturn(naisTeamEnvironments);
         when(naisTeamEnvironments.getEnvironments()).thenReturn(java.util.List.of());
 
-        assertThrows(InvalidLogGroupException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogStreamException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
