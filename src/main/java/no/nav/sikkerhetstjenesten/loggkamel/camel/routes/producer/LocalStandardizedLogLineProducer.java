@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnLocalOrTest
 public class LocalStandardizedLogLineProducer extends StandardizedLogLineProducer {
 
-    @Value("${routing.arkiv.producer}")
+    @Value("${routing.logline.producer}")
     String producerUri;
 
     @Override

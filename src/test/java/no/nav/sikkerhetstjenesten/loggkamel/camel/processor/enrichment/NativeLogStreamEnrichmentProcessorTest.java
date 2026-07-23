@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.apache.camel.Exchange;
@@ -35,7 +35,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     Message message;
 
     @Mock
-    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    AuditloggTaskDTO auditloggTaskDTO;
 
     @Mock
     OversiktService oversiktService;
@@ -63,38 +63,38 @@ class NativeLogStreamEnrichmentProcessorTest {
     }
 
     @Test
-    void errorWhenFetchingAuditloggArkiv() {
+    void errorWhenFetchingAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(DatabaseDependencyException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
-    void noMatchingAuditloggArkiv() {
+    void noMatchingAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
 
     @Test
-    void errorWhenRegisteringReceivedLogsForAuditloggArkiv() {
+    void errorWhenRegisteringReceivedLogsForAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
-        doThrow(new RuntimeException("Database error")).when(oversiktService).registerLogsReceivedForAuditloggArkiv(DBNAME, TeknologiEnum.DB2);
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        doThrow(new RuntimeException("Database error")).when(oversiktService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
 
         assertThrows(DatabaseDependencyException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -106,9 +106,9 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
-        when(auditloggArkivResponseDTO.getNaisteam()).thenReturn(NAIS_TEAM);
+        when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenThrow(new RuntimeException("Nais service error"));
 
@@ -122,9 +122,9 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
-        when(auditloggArkivResponseDTO.getNaisteam()).thenReturn(NAIS_TEAM);
+        when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn("");
 
@@ -138,15 +138,15 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggArkivByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggArkivResponseDTO);
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
-        when(auditloggArkivResponseDTO.getNaisteam()).thenReturn(NAIS_TEAM);
+        when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
         when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn(GCP_PROJECT_ID);
 
         assertDoesNotThrow(() -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
 
-        verify(oversiktService).registerLogsReceivedForAuditloggArkiv(DBNAME, TeknologiEnum.DB2);
+        verify(oversiktService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
     }
 
 }

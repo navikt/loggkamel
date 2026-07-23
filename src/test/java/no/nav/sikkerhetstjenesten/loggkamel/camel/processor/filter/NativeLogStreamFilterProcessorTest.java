@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -26,40 +26,40 @@ class NativeLogStreamFilterProcessorTest {
     Message message;
 
     @Mock
-    AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    AuditloggTaskDTO auditloggTaskDTO;
 
     @InjectMocks
     NativeLogStreamFilterProcessor nativeLogStreamFilterProcessor;
 
     @BeforeEach
     void setup() {
-        when(exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class)).thenReturn(auditloggArkivResponseDTO);
+        when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(auditloggTaskDTO);
     }
 
     @Test
-    void matchingAuditloggArkivButNotFiksa() {
-        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(false);
+    void matchingAuditloggTaskButNotFiksa() {
+        when(auditloggTaskDTO.getFiksa()).thenReturn(false);
 
-        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamFilterProcessor.doesArkivTaskRequireForwardingLogs(exchange));
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }
 
     @Test
-    void matchingAuditloggArkivButLoggingNotEnabled() {
-        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
-        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(false);
-        when(auditloggArkivResponseDTO.getLoggingEndringer()).thenReturn(false);
+    void matchingAuditloggTaskButLoggingNotEnabled() {
+        when(auditloggTaskDTO.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(false);
 
-        when(auditloggArkivResponseDTO.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+        when(auditloggTaskDTO.getTeknologi()).thenReturn(TeknologiEnum.DB2);
 
-        assertFalse(nativeLogStreamFilterProcessor.doesArkivTaskRequireForwardingLogs(exchange));
+        assertFalse(nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }
 
     @Test
     void logGroupPassesFilter() {
-        when(auditloggArkivResponseDTO.getFiksa()).thenReturn(true);
-        when(auditloggArkivResponseDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(true);
 
-        assertTrue(nativeLogStreamFilterProcessor.doesArkivTaskRequireForwardingLogs(exchange));
+        assertTrue(nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }
 
 }

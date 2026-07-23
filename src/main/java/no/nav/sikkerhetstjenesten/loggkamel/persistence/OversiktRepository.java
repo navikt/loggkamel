@@ -5,11 +5,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-interface OversiktRepository extends JpaRepository<AuditloggArkivEntity, Long> {
-    AuditloggArkivEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
+interface OversiktRepository extends JpaRepository<AuditloggTaskEntity, Long> {
+    AuditloggTaskEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
 
-    List<AuditloggArkivEntity> findAllArkivByNaisteam(String naisteam);
+    List<AuditloggTaskEntity> findAllTasksByNaisteam(String naisteam);
 
-    @Query("SELECT DISTINCT e.naisteam FROM AuditloggArkivEntity e WHERE e.naisteam IS NOT NULL")
+    @Query("SELECT DISTINCT e.naisteam FROM AuditloggTaskEntity e WHERE e.naisteam IS NOT NULL")
     List<String> findAllDistinctNaisteam();
 }

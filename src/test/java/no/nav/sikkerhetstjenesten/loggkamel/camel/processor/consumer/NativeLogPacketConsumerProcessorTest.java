@@ -7,7 +7,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.Auditlogg
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum.POSTGRESQL;
@@ -47,7 +47,7 @@ class NativeLogPacketConsumerProcessorTest {
     private AuditloggLineMessageHeader auditloggLineMessageHeader;
 
     @Mock
-    private AuditloggArkivResponseDTO auditloggArkivResponseDTO;
+    private AuditloggTaskDTO auditloggTaskDTO;
 
     @Mock
     private Metrics metrics;
@@ -111,13 +111,13 @@ class NativeLogPacketConsumerProcessorTest {
         exchange.getMessage().setBody(auditloggLineMessage);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
         when(auditloggLineMessageHeader.getTeknologi()).thenReturn(POSTGRESQL);
-        when(auditloggLineMessageHeader.getAuditloggArkivResponseDTO()).thenReturn(auditloggArkivResponseDTO);
+        when(auditloggLineMessageHeader.getAuditloggTaskDTO()).thenReturn(auditloggTaskDTO);
         when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
 
         processor.initializeExchangeVariablesForLogLine(exchange);
 
         assertEquals(POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
-        assertEquals(auditloggArkivResponseDTO, exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class));
+        assertEquals(auditloggTaskDTO, exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class));
         assertEquals(TEAM_PROJECT_ID, exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class));
     }
 
@@ -135,8 +135,8 @@ class NativeLogPacketConsumerProcessorTest {
     void incrementMetricsForLine_incrementsHappyPathAndDatabaseSpecificMetrics() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(TEKNOLOGI, POSTGRESQL);
-        exchange.setVariable(AUDITLOGG_ARKIV, auditloggArkivResponseDTO);
-        when(auditloggArkivResponseDTO.getDbname()).thenReturn(DB_NAME);
+        exchange.setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
 
         processor.incrementMetricsForLine(exchange);
 

@@ -1,13 +1,13 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOperationTypes;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_ARKIV;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.PLACE_IN_PACKET;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
 import static org.apache.camel.Exchange.FILE_NAME;
@@ -26,17 +26,17 @@ public class StandardizedLogLineFilterProcessor {
         return true;
     }
 
-    public boolean doesLineActionMatchRelevantAuditloggArkiv(Exchange exchange) {
+    public boolean doesLineActionMatchRelevantAuditloggTask(Exchange exchange) {
         log.debug("LogLineFilterProcessor called for logfile: {}, line: {}", exchange.getMessage().getHeader(FILE_NAME), exchange.getVariable(PLACE_IN_PACKET));
 
-        AuditloggArkivResponseDTO auditloggArkivResponseDTO = exchange.getVariable(AUDITLOGG_ARKIV, AuditloggArkivResponseDTO.class);
+        AuditloggTaskDTO auditloggTaskDTO = exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class);
         LogLineOperationTypes routingAttributes = exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class);
 
-        if (auditloggArkivResponseDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
+        if (auditloggTaskDTO.getLoggingLeseoperasjoner() && routingAttributes.isRead()) {
             return true;
         }
 
-        if (auditloggArkivResponseDTO.getLoggingEndringer() && routingAttributes.isModification()) {
+        if (auditloggTaskDTO.getLoggingEndringer() && routingAttributes.isModification()) {
             return true;
         }
 

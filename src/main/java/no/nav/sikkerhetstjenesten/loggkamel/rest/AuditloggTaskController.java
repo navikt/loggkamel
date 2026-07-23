@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnGCP;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,35 +23,35 @@ import static org.springframework.http.HttpStatus.OK;
 // TODO: look into input sanitization to avoid sql, log injection
 // TODO: declare controller using Spring annotations
 // TODO: require authentication for controller, validate token. Likely switch from previous machine-machine to employee auth
-//@ProtectedRestController(value = "/api/v1/arkiv", issuer = "azuread", claimMap = {})
+//@ProtectedRestController(value = "/api/v1/task", issuer = "azuread", claimMap = {})
 @ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "AuditloggArkivController", description = "Denne kontrolleren skal brukes for å kontrollere audit logg arkiv")
-public class AuditloggArkivController {
+@Tag(name = "AuditloggTaskController", description = "Denne brukes til å kontrollere hvilke databaser det skal overføres auditlogger for (tasks)")
+public class AuditloggTaskController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuditloggArkivController.class);
+    private static final Logger log = LoggerFactory.getLogger(AuditloggTaskController.class);
 
     private final OversiktService oversiktService;
 
     @Autowired
-    public AuditloggArkivController(OversiktService oversiktService) {
+    public AuditloggTaskController(OversiktService oversiktService) {
         this.oversiktService = oversiktService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(OK)
-    @Operation(summary = "Registrerer en DB for Audit Log Arkivering")
-    public AuditloggArkivResponseDTO createAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
-        log.debug("Creating audit logg arkiv: {}", auditloggArkivRequestDTO);
-        return oversiktService.createAuditloggArkiv(auditloggArkivRequestDTO);
+    @Operation(summary = "Registrer en ny overførings-task")
+    public AuditloggTaskDTO createAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
+        log.debug("Creating auditlogg task: {}", auditloggTaskRequestDTO);
+        return oversiktService.createAuditloggTask(auditloggTaskRequestDTO);
     }
 
     @PutMapping()
     @ResponseStatus(OK)
-    @Operation(summary = "Oppdatere Audit Log Arkivering for en gitt DB navn og teknologi")
-    public AuditloggArkivResponseDTO updateAuditloggArkiv(@RequestBody AuditloggArkivRequestDTO auditloggArkivRequestDTO) {
-        log.debug("Updating audit logg arkiv: {}", auditloggArkivRequestDTO);
-        return oversiktService.updateAuditloggArkiv(auditloggArkivRequestDTO);
+    @Operation(summary = "Oppdater en overførings-task")
+    public AuditloggTaskDTO updateAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
+        log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);
+        return oversiktService.updateAuditloggTask(auditloggTaskRequestDTO);
     }
 }
