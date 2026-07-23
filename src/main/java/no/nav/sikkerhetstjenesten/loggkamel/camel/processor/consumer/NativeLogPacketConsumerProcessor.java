@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.logging.LoggingOptions;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessage;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggArkivResponseDTO;
@@ -44,12 +45,19 @@ public class NativeLogPacketConsumerProcessor {
 
     public void initializeExchangeVariablesForPacket(Exchange exchange) {
         List<AuditloggLineMessage> loggLineMessageList = exchange.getMessage().getBody(List.class);
-        String gcpProjectId = loggLineMessageList.get(0).getHeader().getTeamGcpProjectId();
+        AuditloggLineMessageHeader firstHeader = loggLineMessageList.getFirst().getHeader();
+        String gcpProjectId = firstHeader.getTeamGcpProjectId();
 
         exchange.setVariable(LOGGING_CLIENT, LoggingOptions.newBuilder()
                 .setProjectId(gcpProjectId)
                 .build()
                 .getService());
+        exchange.setVariable(TEKNOLOGI, firstHeader.getTeknologi());
+    }
+
+    public void incrementMetricsForPacket(Exchange exchange) {
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
+        metrics.incrementHappyPath(Metrics.Multiplicity.packet, teknologi, Metrics.Action.consumed);
     }
 
     public void initializeExchangeVariablesForLogLine(Exchange exchange) {
@@ -59,11 +67,6 @@ public class NativeLogPacketConsumerProcessor {
         exchange.setVariable(AUDITLOGG_ARKIV, loggLineMessage.getHeader().getAuditloggArkivResponseDTO());
         exchange.setVariable(TEAM_GCP_PROJECT_ID, loggLineMessage.getHeader().getTeamGcpProjectId());
         exchange.setVariable(PLACE_IN_PACKET, loggLineMessage.getHeader().getPlaceInPacket());
-    }
-
-    public void incrementMetricsForPacket(Exchange exchange) {
-        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
-        metrics.incrementHappyPath(Metrics.Multiplicity.packet, teknologi, Metrics.Action.consumed);
     }
 
     public void incrementMetricsForLine(Exchange exchange) {

@@ -57,7 +57,7 @@ class NativeLogPacketProducerProcessorTest {
     private NativeLogPacketProducerProcessor processor;
 
     @Test
-    void incrementMetrics_incrementsProducedLineMetric() {
+    void incrementMetrics_incrementsProducedPacketMetric() {
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TEKNOLOGI_IN_EXCHANGE);
 
         processor.incrementMetrics(exchange);
