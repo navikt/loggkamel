@@ -33,6 +33,7 @@ public class Metrics {
                 for (Action action : Action.values()) {
                     meterRegistry.counter(HAPPY_PATH_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), ACTION_LABEL, action.name());
                 }
+                meterRegistry.counter(BACKOUT_QUEUE_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase());
             }
         }
         meterRegistry.counter(UNKNOWN_NAV_IDENT_METRIC);
