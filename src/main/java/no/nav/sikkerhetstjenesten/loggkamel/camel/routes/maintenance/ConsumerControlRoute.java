@@ -1,22 +1,12 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.maintenance;
 
-import io.getunleash.Unleash;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.maintenance.ConsumerControlRouteProcessor;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.NativeLogPacketConsumer.NATIVE_LOG_PACKET_CONSUMER_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.PostgresLogStreamConsumer.POSTGRES_LOG_CONSUMER_ID;
 
 @Component
 public class ConsumerControlRoute extends RouteBuilder {
-
-    @Autowired
-    private Unleash unleash;
-
-    private static final String POSTGRES_LOGS_FEATURE_FLAG = "consume-postgres-logs";
-    private static final String LOG_LINES_FEATURE_FLAG = "consume-log-lines";
 
     public static final String CONSUMER_CONTROL_ROUTE_ID = "consumer-control-route";
 
@@ -25,26 +15,7 @@ public class ConsumerControlRoute extends RouteBuilder {
         from("quartz:" + CONSUMER_CONTROL_ROUTE_ID + "?cron=0+*+*+*+*+?") // Check whether to enable every minute
                 .routeId(CONSUMER_CONTROL_ROUTE_ID)
                 .log(LoggingLevel.DEBUG, "Checking whether to disable consumer routes based on feature flags")
-                .process(exchange -> {
-                    boolean consumePostgresLogs = unleash.isEnabled(POSTGRES_LOGS_FEATURE_FLAG, false);
-                    if (consumePostgresLogs && exchange.getContext().getRouteController().getRouteStatus(POSTGRES_LOG_CONSUMER_ID).isStopped()) {
-                        log.info("Feature flag 'consume-postgres-logs' is enabled, starting route {}", POSTGRES_LOG_CONSUMER_ID);
-                        exchange.getContext().getRouteController().startRoute(POSTGRES_LOG_CONSUMER_ID);
-                    } else if (!consumePostgresLogs && exchange.getContext().getRouteController().getRouteStatus(POSTGRES_LOG_CONSUMER_ID).isStarted()) {
-                        log.info("Feature flag 'consume-postgres-logs' is disabled, stopping route {}", POSTGRES_LOG_CONSUMER_ID);
-                        exchange.getContext().getRouteController().stopRoute(POSTGRES_LOG_CONSUMER_ID);
-                    }
-                })
-                .process(exchange -> {
-                    boolean consumeLogLines = unleash.isEnabled(LOG_LINES_FEATURE_FLAG, false);
-                    if (consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(NATIVE_LOG_PACKET_CONSUMER_ID).isStopped()) {
-                        log.info("Feature flag 'consume-log-lines' is enabled, starting route {}", NATIVE_LOG_PACKET_CONSUMER_ID);
-                        exchange.getContext().getRouteController().startRoute(NATIVE_LOG_PACKET_CONSUMER_ID);
-                    } else if (!consumeLogLines && exchange.getContext().getRouteController().getRouteStatus(NATIVE_LOG_PACKET_CONSUMER_ID).isStarted()) {
-                        log.info("Feature flag 'consume-log-lines' is disabled, stopping route {}", NATIVE_LOG_PACKET_CONSUMER_ID);
-                        exchange.getContext().getRouteController().stopRoute(NATIVE_LOG_PACKET_CONSUMER_ID);
-                    }
-                })
+                .bean(ConsumerControlRouteProcessor.class, "updateAllRoutes")
                 .log(LoggingLevel.DEBUG, "Consumer route control check complete");
     }
 }
