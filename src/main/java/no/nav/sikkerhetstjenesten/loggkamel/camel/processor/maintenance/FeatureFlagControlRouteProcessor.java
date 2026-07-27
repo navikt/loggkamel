@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.maintenance;
 
 import io.getunleash.Unleash;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -17,23 +18,16 @@ public class FeatureFlagControlRouteProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(FeatureFlagControlRouteProcessor.class);
 
+    @AllArgsConstructor
+    @Getter
     enum RouteConfiguration {
         POSTGRES_LOGS("consume-postgres-logs", POSTGRES_LOG_CONSUMER_ID, false),
         LOG_PACKETS("consume-log-lines", NATIVE_LOG_PACKET_CONSUMER_ID, false),
         LOG_LINES("publish-log-lines", STANDARDIZED_LOG_LINE_PRODUCER_ID, true);
 
-        @Getter
         private final String featureFlag;
-        @Getter
         private final String routeId;
-        @Getter
         private final Boolean defaultState;
-
-        RouteConfiguration(String featureFlag, String routeId, boolean defaultState) {
-            this.featureFlag = featureFlag;
-            this.routeId = routeId;
-            this.defaultState = defaultState;
-        }
     }
 
     @Autowired
