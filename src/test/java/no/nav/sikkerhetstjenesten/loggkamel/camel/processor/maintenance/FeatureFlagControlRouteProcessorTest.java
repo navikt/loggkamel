@@ -12,16 +12,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.maintenance.ConsumerControlRouteProcessor.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.PostgresLogStreamConsumer.POSTGRES_LOG_CONSUMER_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ConsumerControlRouteProcessorTest {
+class FeatureFlagControlRouteProcessorTest {
 
     @Mock
     Exchange exchange;
@@ -39,7 +37,7 @@ class ConsumerControlRouteProcessorTest {
     Unleash unleash;
 
     @InjectMocks
-    ConsumerControlRouteProcessor processor;
+    FeatureFlagControlRouteProcessor processor;
 
     @BeforeEach
     void setUp() {
@@ -58,33 +56,33 @@ class ConsumerControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_stoppedRouteIsStarted() throws Exception {
-        when(unleash.isEnabled(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG, false)).thenReturn(true);
-        when(unleash.isEnabled(CONSUME_LOG_PACKETS_FEATURE_FLAG, false)).thenReturn(false);
-        when(unleash.isEnabled(PUBLIC_LOG_LINES_FEATURE_FLAG, false)).thenReturn(false);
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+            when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
+        }
         when(serviceStatus.isStarted()).thenReturn(false);
 
         processor.updateAllRoutes(exchange);
 
-        verify(routeController).startRoute(FEATURE_FLAGS_TO_CONTROLLED_ROUTES.get(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG));
+        verify(routeController).startRoute(POSTGRES_LOG_CONSUMER_ID);
     }
 
     @Test
     void updateAllRoutes_runningRouteIsStopped() throws Exception {
-        when(unleash.isEnabled(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG, false)).thenReturn(false);
-        when(unleash.isEnabled(CONSUME_LOG_PACKETS_FEATURE_FLAG, false)).thenReturn(false);
-        when(unleash.isEnabled(PUBLIC_LOG_LINES_FEATURE_FLAG, false)).thenReturn(false);
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+            when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(false);
+        }
         when(serviceStatus.isStarted()).thenReturn(true);
 
         processor.updateAllRoutes(exchange);
 
-        verify(routeController).stopRoute(FEATURE_FLAGS_TO_CONTROLLED_ROUTES.get(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG));
+        verify(routeController).stopRoute(POSTGRES_LOG_CONSUMER_ID);
     }
 
     @Test
     void updateAllRoutes_routeInCorrectStatusNotModified() throws Exception {
-        when(unleash.isEnabled(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG, false)).thenReturn(true);
-        when(unleash.isEnabled(CONSUME_LOG_PACKETS_FEATURE_FLAG, false)).thenReturn(true);
-        when(unleash.isEnabled(PUBLIC_LOG_LINES_FEATURE_FLAG, false)).thenReturn(true);
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+            when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
+        }
         when(serviceStatus.isStarted()).thenReturn(true);
 
         processor.updateAllRoutes(exchange);
@@ -95,15 +93,15 @@ class ConsumerControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_allRoutesUpdated() throws Exception {
-        for (Map.Entry<String, String> entry : FEATURE_FLAGS_TO_CONTROLLED_ROUTES.entrySet()) {
-            when(unleash.isEnabled(entry.getKey(), false)).thenReturn(true);
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+            when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
         }
         when(serviceStatus.isStarted()).thenReturn(false);
 
         processor.updateAllRoutes(exchange);
 
-        for (Map.Entry<String, String> entry : FEATURE_FLAGS_TO_CONTROLLED_ROUTES.entrySet()) {
-            verify(routeController).startRoute(entry.getValue());
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+            verify(routeController).startRoute(routeConfig.getRouteId());
         }
     }
 
