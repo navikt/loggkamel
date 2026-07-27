@@ -51,7 +51,8 @@ class FeatureFlagControlRouteProcessorTest {
         String originalExceptionMessage = "slkfdjlkjsadf";
         when(unleash.isEnabled(anyString(), eq(false))).thenThrow(new RuntimeException(originalExceptionMessage));
 
-        assertThrowsExactly(RuntimeException.class, () -> processor.updateAllRoutes(exchange), originalExceptionMessage);
+        RuntimeException ex = assertThrowsExactly(RuntimeException.class, () -> processor.updateAllRoutes(exchange), originalExceptionMessage);
+        assertEquals(originalExceptionMessage, ex.getMessage());
     }
 
     @Test

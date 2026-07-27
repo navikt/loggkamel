@@ -14,8 +14,8 @@ public class FeatureFlagControlRoute extends RouteBuilder {
     public void configure() {
         from("quartz:" + FEATURE_FLAG_CONTROL_ROUTE_ID + "?cron=0+*+*+*+*+?") // Check whether to enable every minute
                 .routeId(FEATURE_FLAG_CONTROL_ROUTE_ID)
-                .log(LoggingLevel.DEBUG, "Checking whether to disable consumer routes based on feature flags")
+                .log(LoggingLevel.DEBUG, "Checking whether to disable routes based on feature flags")
                 .bean(FeatureFlagControlRouteProcessor.class, "updateAllRoutes")
-                .log(LoggingLevel.DEBUG, "Consumer route control check complete");
+                .log(LoggingLevel.DEBUG, "Route control check complete");
     }
 }
