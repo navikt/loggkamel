@@ -56,7 +56,7 @@ class FeatureFlagControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_stoppedRouteIsStarted() throws Exception {
-        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : FeatureFlagControlRouteProcessor.RouteConfiguration.values()) {
             when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
         }
         when(serviceStatus.isStarted()).thenReturn(false);
@@ -68,7 +68,7 @@ class FeatureFlagControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_runningRouteIsStopped() throws Exception {
-        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : FeatureFlagControlRouteProcessor.RouteConfiguration.values()) {
             when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(false);
         }
         when(serviceStatus.isStarted()).thenReturn(true);
@@ -80,7 +80,7 @@ class FeatureFlagControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_routeInCorrectStatusNotModified() throws Exception {
-        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : FeatureFlagControlRouteProcessor.RouteConfiguration.values()) {
             when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
         }
         when(serviceStatus.isStarted()).thenReturn(true);
@@ -93,14 +93,14 @@ class FeatureFlagControlRouteProcessorTest {
 
     @Test
     void updateAllRoutes_allRoutesUpdated() throws Exception {
-        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : FeatureFlagControlRouteProcessor.RouteConfiguration.values()) {
             when(unleash.isEnabled(routeConfig.getFeatureFlag(), routeConfig.getDefaultState())).thenReturn(true);
         }
         when(serviceStatus.isStarted()).thenReturn(false);
 
         processor.updateAllRoutes(exchange);
 
-        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : processor.ROUTE_CONFIGURATIONS ) {
+        for (FeatureFlagControlRouteProcessor.RouteConfiguration routeConfig : FeatureFlagControlRouteProcessor.RouteConfiguration.values()) {
             verify(routeController).startRoute(routeConfig.getRouteId());
         }
     }

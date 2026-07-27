@@ -1,16 +1,12 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.maintenance;
 
-import com.google.common.collect.ImmutableList;
 import io.getunleash.Unleash;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.NativeLogPacketConsumer.NATIVE_LOG_PACKET_CONSUMER_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer.PostgresLogStreamConsumer.POSTGRES_LOG_CONSUMER_ID;
@@ -21,29 +17,30 @@ public class FeatureFlagControlRouteProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(FeatureFlagControlRouteProcessor.class);
 
-    static final String CONSUME_POSTGRES_STREAMS_FEATURE_FLAG = "consume-postgres-logs";
-    static final String CONSUME_LOG_PACKETS_FEATURE_FLAG = "consume-log-lines";
-    static final String PUBLISH_LOG_LINES_FEATURE_FLAG = "publish-log-lines";
+    enum RouteConfiguration {
+        POSTGRES_LOGS("consume-postgres-logs", POSTGRES_LOG_CONSUMER_ID, false),
+        LOG_PACKETS("consume-log-lines", NATIVE_LOG_PACKET_CONSUMER_ID, false),
+        LOG_LINES("publish-log-lines", STANDARDIZED_LOG_LINE_PRODUCER_ID, true);
 
-    @AllArgsConstructor
-    @Getter
-    class RouteConfiguration {
-        private String featureFlag;
-        private String routeId;
-        private Boolean defaultState;
+        @Getter
+        private final String featureFlag;
+        @Getter
+        private final String routeId;
+        @Getter
+        private final Boolean defaultState;
+
+        RouteConfiguration(String featureFlag, String routeId, boolean defaultState) {
+            this.featureFlag = featureFlag;
+            this.routeId = routeId;
+            this.defaultState = defaultState;
+        }
     }
-
-    final ImmutableList<RouteConfiguration> ROUTE_CONFIGURATIONS = ImmutableList.of(
-            new RouteConfiguration(CONSUME_POSTGRES_STREAMS_FEATURE_FLAG, POSTGRES_LOG_CONSUMER_ID, false),
-            new RouteConfiguration(CONSUME_LOG_PACKETS_FEATURE_FLAG, NATIVE_LOG_PACKET_CONSUMER_ID, false),
-            new RouteConfiguration(PUBLISH_LOG_LINES_FEATURE_FLAG, STANDARDIZED_LOG_LINE_PRODUCER_ID, true)
-    );
 
     @Autowired
     private Unleash unleash;
 
     public void updateAllRoutes(Exchange exchange) throws Exception {
-        for (RouteConfiguration routeConfig : ROUTE_CONFIGURATIONS) {
+        for (RouteConfiguration routeConfig : RouteConfiguration.values()) {
             updateRouteStatus(exchange, routeConfig);
         }
     }
