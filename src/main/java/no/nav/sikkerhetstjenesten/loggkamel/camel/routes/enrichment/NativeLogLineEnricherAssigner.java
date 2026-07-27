@@ -13,8 +13,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.Postg
 @Component
 public class NativeLogLineEnricherAssigner extends LogPacketErrorHandler {
 
-    public static String NATIVE_LOG_LINE_ENRICHER_ASSIGNER_ID = "native-log-line-enricher-assigner";
-    public static String NATIVE_LOG_LINE_ENRICHER_ROUTE = "direct:" + NATIVE_LOG_LINE_ENRICHER_ASSIGNER_ID;
+    public static final String NATIVE_LOG_LINE_ENRICHER_ASSIGNER_ID = "native-log-line-enricher-assigner";
+    public static final String NATIVE_LOG_LINE_ENRICHER_ROUTE = "direct:" + NATIVE_LOG_LINE_ENRICHER_ASSIGNER_ID;
 
     @Override
     public void configure() {

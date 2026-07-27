@@ -12,8 +12,8 @@ public class NativeLogPacketProducer extends LogStreamErrorHandler {
     @Value("${routing.packet.bucket}")
     String logPacketBucket;
 
-    public static String NATIVE_LOG_PACKET_PRODUCER = "native-log-packet-producer";
-    public static String NATIVE_LOG_PACKET_PRODUCER_ROUTE = "direct:" + NATIVE_LOG_PACKET_PRODUCER;
+    public static final String NATIVE_LOG_PACKET_PRODUCER = "native-log-packet-producer";
+    public static final String NATIVE_LOG_PACKET_PRODUCER_ROUTE = "direct:" + NATIVE_LOG_PACKET_PRODUCER;
 
     @Override
     public void configure() {

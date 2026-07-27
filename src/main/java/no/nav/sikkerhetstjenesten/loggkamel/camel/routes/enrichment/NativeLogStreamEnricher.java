@@ -10,8 +10,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.NativeLog
 @Component
 public class NativeLogStreamEnricher extends LogStreamErrorHandler {
 
-    public static String NATIVE_LOG_STREAM_ENRICHER_ID = "native-log-stream-enricher";
-    public static String NATIVE_LOG_STREAM_ENRICHER_ROUTE = "direct:" + NATIVE_LOG_STREAM_ENRICHER_ID;
+    public static final String NATIVE_LOG_STREAM_ENRICHER_ID = "native-log-stream-enricher";
+    public static final String NATIVE_LOG_STREAM_ENRICHER_ROUTE = "direct:" + NATIVE_LOG_STREAM_ENRICHER_ID;
 
     @Override
     public void configure() {

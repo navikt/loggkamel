@@ -10,8 +10,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeL
 @Component
 public class NativeLogStreamSplitter extends LogStreamErrorHandler {
 
-    public static String NATIVE_LOG_STREAM_SPLITTER_ID = "native-log-stream-splitter";
-    public static String NATIVE_LOG_STREAM_SPLITTER_ROUTE = "direct:" + NATIVE_LOG_STREAM_SPLITTER_ID;
+    public static final String NATIVE_LOG_STREAM_SPLITTER_ID = "native-log-stream-splitter";
+    public static final String NATIVE_LOG_STREAM_SPLITTER_ROUTE = "direct:" + NATIVE_LOG_STREAM_SPLITTER_ID;
 
     @Override
     public void configure() {

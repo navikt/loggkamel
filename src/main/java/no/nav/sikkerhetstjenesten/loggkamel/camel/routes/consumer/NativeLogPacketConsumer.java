@@ -28,7 +28,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
     @Qualifier("logPacketIdempotentRepository")
     private JdbcMessageIdRepository logPacketIdempotentRepository;
 
-    public static String NATIVE_LOG_PACKET_CONSUMER_ID = "native-log-packet-consumer";
+    public static final String NATIVE_LOG_PACKET_CONSUMER_ID = "native-log-packet-consumer";
 
     @Value("${routing.packet.bucket}")
     private String logPacketConsumerUri;
