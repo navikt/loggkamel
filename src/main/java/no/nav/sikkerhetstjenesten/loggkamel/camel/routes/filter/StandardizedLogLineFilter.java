@@ -11,8 +11,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.Standar
 @Component
 public class StandardizedLogLineFilter extends LogPacketErrorHandler {
 
-    public static String STANDARDIZED_LOG_LINE_FILTER_ID = "standardized-log-line-filter";
-    public static String STANDARDIZED_LOG_LINE_FILTER_ROUTE = "direct:" + STANDARDIZED_LOG_LINE_FILTER_ID;
+    public static final String STANDARDIZED_LOG_LINE_FILTER_ID = "standardized-log-line-filter";
+    public static final String STANDARDIZED_LOG_LINE_FILTER_ROUTE = "direct:" + STANDARDIZED_LOG_LINE_FILTER_ID;
 
     public static final String MESSAGE_SHOULD_BE_SKIPPED = "MessageShouldBeSkipped";
 

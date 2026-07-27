@@ -22,7 +22,7 @@ public class PostgresLogStreamConsumer extends LogStreamErrorHandler {
 
     private static final String KEEP_SOURCE_FILE = "keepSourceFile";
 
-    public static String POSTGRES_LOG_CONSUMER_ID = "postgres-log-stream-consumer";
+    public static final String POSTGRES_LOG_CONSUMER_ID = "postgres-log-stream-consumer";
 
     @Value("${routing.postgres.consumer}")
     private String postgresStreamConsumerUri;

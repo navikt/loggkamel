@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LogLineOperationTypes {
 
-    public static String LOG_LINE_OPERATION_TYPES = "LogLineOperationTypes";
+    public static final String LOG_LINE_OPERATION_TYPES = "LogLineOperationTypes";
 
     boolean isRead;
     boolean isModification;

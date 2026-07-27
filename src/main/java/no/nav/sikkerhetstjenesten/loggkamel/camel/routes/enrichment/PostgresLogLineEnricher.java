@@ -11,8 +11,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.Standardi
 @Component
 public class PostgresLogLineEnricher extends LogPacketErrorHandler {
 
-    public static String POSTGRES_LOG_LINE_ENRICHER_ID = "postgres-log-line-enricher";
-    public static String POSTGRES_LOG_LINE_ENRICHER_ROUTE = "direct:" + POSTGRES_LOG_LINE_ENRICHER_ID;
+    public static final String POSTGRES_LOG_LINE_ENRICHER_ID = "postgres-log-line-enricher";
+    public static final String POSTGRES_LOG_LINE_ENRICHER_ROUTE = "direct:" + POSTGRES_LOG_LINE_ENRICHER_ID;
 
     @Override
     public void configure() {
