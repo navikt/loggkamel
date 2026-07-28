@@ -35,6 +35,6 @@ jobs:
         run: ./mvnw clean install -P github-actions -DskipTests=true --threads=2 --batch-mode --settings ./.mvn/settings.xml
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81
         with:
           category: "/language:java"
