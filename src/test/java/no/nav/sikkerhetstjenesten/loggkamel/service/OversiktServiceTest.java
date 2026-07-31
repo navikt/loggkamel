@@ -4,12 +4,14 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,13 +24,14 @@ class OversiktServiceTest {
 
     private static final String DBNAME = "dbName";
     private static final TeknologiEnum TEKNOLOGI = TeknologiEnum.ORACLE;
-    private static final String NAISTEAM = "naisteam";
+    private static final String NAISTEAM_1 = "naisteam1";
+    private static final String NAISTEAM_2 = "naisteam2";
 
     @Mock
     AuditloggTaskRequestDTO auditloggTaskRequestDTO;
 
     @Mock
-    AuditloggTaskDTO auditloggTaskDTO;
+    AuditloggTaskDTO auditloggTaskDTO1;
 
     @Mock
     AuditloggTaskDTO auditloggTaskDTO2;
@@ -41,9 +44,9 @@ class OversiktServiceTest {
 
     @Test
     void createAuditloggTask_successful() {
-        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO);
+        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO1);
 
-        assertEquals(auditloggTaskDTO, service.createAuditloggTask(auditloggTaskRequestDTO));
+        assertEquals(auditloggTaskDTO1, service.createAuditloggTask(auditloggTaskRequestDTO));
     }
 
     @Test
@@ -55,9 +58,9 @@ class OversiktServiceTest {
 
     @Test
     void updateAuditloggTask_successful() {
-        when(adapter.updateAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO);
+        when(adapter.updateAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO1);
 
-        assertEquals(auditloggTaskDTO, service.updateAuditloggTask(auditloggTaskRequestDTO));
+        assertEquals(auditloggTaskDTO1, service.updateAuditloggTask(auditloggTaskRequestDTO));
     }
 
     @Test
@@ -69,9 +72,9 @@ class OversiktServiceTest {
 
     @Test
     void getAuditloggTaskByDbnameAndTeknologi_successful() {
-        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO);
+        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO1);
 
-        assertEquals(auditloggTaskDTO, service.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertEquals(auditloggTaskDTO1, service.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
@@ -97,44 +100,81 @@ class OversiktServiceTest {
 
     @Test
     void getAuditloggTaskByNaisteam_successful() {
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditloggTaskDTO, auditloggTaskDTO2));
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
-        assertEquals(List.of(auditloggTaskDTO, auditloggTaskDTO2), service.getAuditloggTaskByNaisteam(NAISTEAM));
+        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.getAuditloggTaskByNaisteam(NAISTEAM_1));
     }
 
     @Test
     void getAuditloggTaskByNaisteam_exceptionPassesThrough() {
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.getAuditloggTaskByNaisteam(NAISTEAM));
+        assertThrows(RuntimeException.class, () -> service.getAuditloggTaskByNaisteam(NAISTEAM_1));
+    }
+
+    @Test
+    void getAllTasksGroupedByNaisteam_noRegisteredTasks() {
+        when(adapter.findAllDistinctNaisteam()).thenReturn(Collections.emptyList());
+
+        List<NaisTeamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
+
+        assertEquals(Collections.emptyList(), tasksGroupedByTeam);
+    }
+
+    @Test
+    void getAllTasksGroupedByNaisteam_success() {
+        when(adapter.findAllDistinctNaisteam()).thenReturn(List.of(NAISTEAM_1, NAISTEAM_2));
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_2)).thenReturn(List.of(auditloggTaskDTO2));
+
+        List<NaisTeamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
+
+        NaisTeamDTO naisTeamDTOForNaisTeam1 = NaisTeamDTO.builder()
+                .naisteam(NAISTEAM_1)
+                .tasksForTeam(List.of(auditloggTaskDTO1))
+                .build();
+
+        NaisTeamDTO naisTeamDTOForNaisTeam2 = NaisTeamDTO.builder()
+                .naisteam(NAISTEAM_2)
+                .tasksForTeam(List.of(auditloggTaskDTO2))
+                .build();
+
+        assertTrue(tasksGroupedByTeam.containsAll(List.of(naisTeamDTOForNaisTeam1,  naisTeamDTOForNaisTeam2)));
+    }
+
+    @Test
+    void getAllTasksGroupedByNaisteam_exceptionPassesThrough() {
+        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.getAllTasksGroupedByNaisteam());
     }
 
     @Test
     void naisteamHasActiveAuditloggTasks_successful() {
-        when(auditloggTaskDTO.getFiksa()).thenReturn(true);
-        when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(false);
-        when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(true);
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditloggTaskDTO));
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(true);
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
 
-        assertTrue(service.naisteamHasActiveAuditloggTasks(NAISTEAM));
+        assertTrue(service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
     }
 
     @Test
     void naisteamHasActiveAuditloggTasks_returnsFalseWhenNoActiveTasks() {
-        when(auditloggTaskDTO.getFiksa()).thenReturn(false);
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(false);
         when(auditloggTaskDTO2.getFiksa()).thenReturn(true);
         when(auditloggTaskDTO2.getLoggingLeseoperasjoner()).thenReturn(false);
         when(auditloggTaskDTO2.getLoggingEndringer()).thenReturn(false);
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(auditloggTaskDTO, auditloggTaskDTO2));
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
-        assertFalse(service.naisteamHasActiveAuditloggTasks(NAISTEAM));
+        assertFalse(service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
     }
 
     @Test
     void naisteamHasActiveAuditloggTasks_exceptionPassesThrough() {
-        when(adapter.getAllTasksByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.naisteamHasActiveAuditloggTasks(NAISTEAM));
+        assertThrows(RuntimeException.class, () -> service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
     }
 
     @Test
@@ -142,12 +182,12 @@ class OversiktServiceTest {
         String activeTeam = "active-team";
         String inactiveTeam = "inactive-team";
 
-        when(auditloggTaskDTO.getFiksa()).thenReturn(true);
-        when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
         when(auditloggTaskDTO2.getFiksa()).thenReturn(false);
         when(adapter.findAllDistinctNaisteam()).thenReturn(List.of(activeTeam, inactiveTeam));
-        when(adapter.getAllTasksByNaisteam(activeTeam)).thenReturn(List.of(auditloggTaskDTO));
-        when(adapter.getAllTasksByNaisteam(inactiveTeam)).thenReturn(List.of(auditloggTaskDTO2));
+        when(adapter.getTasksRegisteredToNaisteam(activeTeam)).thenReturn(List.of(auditloggTaskDTO1));
+        when(adapter.getTasksRegisteredToNaisteam(inactiveTeam)).thenReturn(List.of(auditloggTaskDTO2));
 
         assertEquals(List.of(activeTeam), service.findAllNaisteamWithActiveAuditloggTasks());
     }

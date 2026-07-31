@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,13 @@ public class NaisteamController {
     public List<AuditloggTaskDTO> getAuditloggTasksByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
         log.info("Getting auditlogg tasks by nais team: {}", naisTeam);
         return oversiktService.getAuditloggTaskByNaisteam(naisTeam);
+    }
+
+    @GetMapping("auditlogg/by-team")
+    @ResponseStatus(OK)
+    @Operation(summary = "Finner alle overførings-tasks for et gitt naisteam")
+    public List<NaisTeamDTO> getAuditloggTasksGroupedByNaisTeam() {
+        return oversiktService.getAllTasksGroupedByNaisteam();
     }
 
     @GetMapping("active/{naisTeam}")
