@@ -142,20 +142,20 @@ class OversiktJPAAdapterTest {
     }
 
     @Test
-    void getAllTasksByNaisteam_exceptionPassesThrough() {
+    void getTasksRegisteredToNaisteam_exceptionPassesThrough() {
         when(repository.findAllTasksByNaisteam(NAISTEAM)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> adapter.getAllTasksByNaisteam(NAISTEAM));
+        assertThrows(RuntimeException.class, () -> adapter.getTasksRegisteredToNaisteam(NAISTEAM));
     }
 
     @Test
-    void getAllTasksByNaisteam_successful() {
+    void getTasksRegisteredToNaisteam_successful() {
         when(repository.findAllTasksByNaisteam(NAISTEAM)).thenReturn(List.of(toSaveAuditloggTaskEntity, savedAuditloggTaskEntity));
 
         when(mapper.auditloggTaskEntityToDTO(toSaveAuditloggTaskEntity)).thenReturn(auditloggTaskDTO);
         when(mapper.auditloggTaskEntityToDTO(savedAuditloggTaskEntity)).thenReturn(auditloggTaskDTO2);
 
-        assertEquals(List.of(auditloggTaskDTO, auditloggTaskDTO2), adapter.getAllTasksByNaisteam(NAISTEAM));
+        assertEquals(List.of(auditloggTaskDTO, auditloggTaskDTO2), adapter.getTasksRegisteredToNaisteam(NAISTEAM));
     }
 
     @Test

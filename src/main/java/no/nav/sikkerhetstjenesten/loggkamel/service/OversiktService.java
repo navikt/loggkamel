@@ -4,6 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,11 +36,20 @@ public class OversiktService {
     }
 
     public List<AuditloggTaskDTO> getAuditloggTaskByNaisteam(String naisteam) {
-        return adapter.getAllTasksByNaisteam(naisteam);
+        return adapter.getTasksRegisteredToNaisteam(naisteam);
+    }
+
+    public List<NaisTeamDTO> getAllTasksGroupedByNaisteam() {
+        return adapter.findAllDistinctNaisteam().stream()
+                .map(naisteam ->
+                        NaisTeamDTO.builder()
+                                .naisteam(naisteam)
+                                .tasksForTeam(adapter.getTasksRegisteredToNaisteam(naisteam))
+                                .build()).toList();
     }
 
     public boolean naisteamHasActiveAuditloggTasks(String naisteam) {
-        return adapter.getAllTasksByNaisteam(naisteam).stream()
+        return adapter.getTasksRegisteredToNaisteam(naisteam).stream()
                 .anyMatch(task -> task.getFiksa() && (task.getLoggingLeseoperasjoner() || task.getLoggingEndringer()));
     }
 

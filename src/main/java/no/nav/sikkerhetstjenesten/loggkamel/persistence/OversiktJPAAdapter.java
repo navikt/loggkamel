@@ -57,7 +57,7 @@ public class OversiktJPAAdapter {
         saveAuditloggTaskEntity(toUpdate);
     }
 
-    public List<AuditloggTaskDTO> getAllTasksByNaisteam(String naisteam) {
+    public List<AuditloggTaskDTO> getTasksRegisteredToNaisteam(String naisteam) {
         List<AuditloggTaskEntity> foundEntities = repository.findAllTasksByNaisteam(naisteam);
 
         return foundEntities.stream().map(mapper::auditloggTaskEntityToDTO).toList();
