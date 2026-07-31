@@ -38,7 +38,7 @@ public class NaisteamController {
 
     @GetMapping("auditlogg/by-team")
     @ResponseStatus(OK)
-    @Operation(summary = "Finner alle overførings-tasks for et gitt naisteam")
+    @Operation(summary = "Finner alle overførings-tasks, samlet på naisteam")
     public List<NaisTeamDTO> getAuditloggTasksGroupedByNaisTeam() {
         return oversiktService.getAllTasksGroupedByNaisteam();
     }
