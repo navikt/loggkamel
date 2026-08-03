@@ -14,16 +14,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NativeLogStreamFilterProcessorTest {
 
-    @Mock
-    Exchange exchange;
+    private static final String DB_NAME = "dbName";
 
     @Mock
-    Message message;
+    Exchange exchange;
 
     @Mock
     AuditloggTaskDTO auditloggTaskDTO;
@@ -37,14 +37,35 @@ class NativeLogStreamFilterProcessorTest {
     }
 
     @Test
-    void matchingAuditloggTaskButNotFiksa() {
-        when(auditloggTaskDTO.getFiksa()).thenReturn(false);
+    void noAuditloggTaskInHeader() {
+        when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(null);
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }
 
     @Test
-    void matchingAuditloggTaskButLoggingNotEnabled() {
+    void auditloggTaskIsMarkedDiscard() {
+        when(auditloggTaskDTO.getDiscardLogs()).thenReturn(true);
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
+
+        assertFalse(nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
+
+        verifyNoMoreInteractions(auditloggTaskDTO);
+    }
+
+    @Test
+    void auditloggTaskButNotFiksa() {
+        when(auditloggTaskDTO.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO.getFiksa()).thenReturn(false);
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
+
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
+
+        verifyNoMoreInteractions(auditloggTaskDTO);
+    }
+
+    @Test
+    void auditloggTaskButLoggingNotEnabled() {
         when(auditloggTaskDTO.getFiksa()).thenReturn(true);
         when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(false);
         when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(false);

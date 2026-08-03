@@ -17,6 +17,16 @@ public class NativeLogStreamFilterProcessor {
     public boolean doesAuditloggTaskRequireForwardingLogs(Exchange exchange) {
         AuditloggTaskDTO auditloggTaskDTO = exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class);
 
+        if (auditloggTaskDTO == null) {
+            log.warn("Auditlogg task DTO is null");
+            throw new  InvalidLogStreamException("Auditlogg task DTO is null");
+        }
+
+        if (auditloggTaskDTO.getDiscardLogs()) {
+            log.info("Logs provided for a database labeled for immediate discard, database: {}", auditloggTaskDTO.getDbname());
+            return false;
+        }
+
         if (!auditloggTaskDTO.getFiksa()) {
             throw new InvalidLogStreamException("Logs provided for a database with an auditlogg task that isn't enabled, database: " + auditloggTaskDTO.getDbname() + ". Sending to invalid messages queue");
         }

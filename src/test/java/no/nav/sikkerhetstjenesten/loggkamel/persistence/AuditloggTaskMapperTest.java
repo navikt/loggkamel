@@ -18,6 +18,7 @@ class AuditloggTaskMapperTest {
     private final static String DBNAME = "testdb";
     private static final Boolean FIKSA = true;
     private static final Boolean FUNNET_LOGGER = true;
+    private static final Boolean DISCARD_LOGS = true;
 
     AuditloggTaskMapper mapper = new AuditloggTaskMapperImpl();
 
@@ -66,6 +67,7 @@ class AuditloggTaskMapperTest {
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
                 .funnetLogger(FUNNET_LOGGER)
+                .discardLogs(DISCARD_LOGS)
                 .build();
     }
 
@@ -82,6 +84,7 @@ class AuditloggTaskMapperTest {
                 .fiksa(FIKSA)
                 .loggingEndringer(loggingEndringer)
                 .funnetLogger(FUNNET_LOGGER)
+                .discardLogs(DISCARD_LOGS)
                 .build();
     }
 

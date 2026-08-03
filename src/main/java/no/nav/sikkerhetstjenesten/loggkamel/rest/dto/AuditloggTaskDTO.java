@@ -30,7 +30,6 @@ import java.time.Instant;
          }""", description = "funnetLogger = om loggkamel har sett logginnslag fra den databasen, fiksa = fått tilgang til å hente loggene til databasen")
 public class AuditloggTaskDTO {
 
-    @NonNull
     String naisteam;
     
     @NonNull
@@ -60,4 +59,7 @@ public class AuditloggTaskDTO {
 
     @NonNull
     Boolean funnetLogger;
+
+    @NonNull
+    Boolean discardLogs;
 }
