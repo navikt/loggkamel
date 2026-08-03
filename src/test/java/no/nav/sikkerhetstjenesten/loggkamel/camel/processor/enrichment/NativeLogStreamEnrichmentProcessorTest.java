@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,6 +98,23 @@ class NativeLogStreamEnrichmentProcessorTest {
         doThrow(new RuntimeException("Database error")).when(oversiktService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
 
         assertThrows(DatabaseDependencyException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
+    }
+
+    @Test
+    void dbMarkedForDiscardLogs_exitsBeforeSearchingForNaisteam() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+
+        when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
+
+        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskDTO.getDiscardLogs()).thenReturn(true);
+
+        nativeLogStreamEnrichmentProcessor.enrich(exchange);
+
+        verify(exchange).setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
+        verifyNoMoreInteractions(exchange);
+        verifyNoInteractions(naisService);
     }
 
     @Test

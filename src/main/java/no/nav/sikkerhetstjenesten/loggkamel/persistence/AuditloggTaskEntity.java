@@ -43,7 +43,7 @@ public class AuditloggTaskEntity {
     private Instant updated;
 
     @Size(max = 100)
-    @Column(name = "naisteam", nullable = false, length = 100)
+    @Column(name = "naisteam", length = 100)
     private String naisteam;
 
     @NotNull
@@ -76,6 +76,10 @@ public class AuditloggTaskEntity {
     @ColumnDefault("false")
     @Column(name = "funnet_logger")
     private Boolean funnetLogger;
+
+    @ColumnDefault("false")
+    @Column(name = "discard_logs", nullable = false)
+    private Boolean discardLogs;
 
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended
     @Override

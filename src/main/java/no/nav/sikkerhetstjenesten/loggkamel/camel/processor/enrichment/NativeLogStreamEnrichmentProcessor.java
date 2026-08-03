@@ -51,8 +51,15 @@ public class NativeLogStreamEnrichmentProcessor {
             throw new InvalidLogStreamException("No auditlogg task found for database " + dbname + " and teknologi " + teknologi.name());
         }
 
+        exchange.setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
+
         log.debug("Found auditloggTask, setting properties for log enrichment: {}", auditloggTaskDTO);
         registerLogsReceivedForAuditloggTask(dbname, teknologi);
+
+        if (auditloggTaskDTO.getDiscardLogs()) {
+            log.info("Received logs for a database marked for early log discarding {}, skipping rest of enrichment", dbname);
+            return;
+        }
 
         String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
         if (teamGcpProjectId == null || teamGcpProjectId.isEmpty()) {
@@ -61,7 +68,6 @@ public class NativeLogStreamEnrichmentProcessor {
         }
         log.debug("Found GCP project id {} for team {}, setting property for log enrichment", teamGcpProjectId, auditloggTaskDTO.getNaisteam());
 
-        exchange.setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
         exchange.setVariable(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
