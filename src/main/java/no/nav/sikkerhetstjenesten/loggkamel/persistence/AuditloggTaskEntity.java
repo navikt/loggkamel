@@ -78,7 +78,7 @@ public class AuditloggTaskEntity {
     private Boolean funnetLogger;
 
     @ColumnDefault("false")
-    @Column(name = "discard_logs")
+    @Column(name = "discard_logs", nullable = false)
     private Boolean discardLogs;
 
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended

@@ -14,7 +14,7 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkivlov, fiksa, created, updated, loggingEndringer, funnetLogger"}, example = """
+@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkivlov, fiksa, created, updated, loggingEndringer, funnetLogger, discardLogs"}, example = """
         {
              "naisteam": "sikkerhetstjenesten",
              "teknologi": "POSTGRESQL",
@@ -26,7 +26,8 @@ import java.time.Instant;
              "created": "2026-04-13T14:07:02.863834Z",
              "updated": "2026-04-29T10:30:11.275180Z",
              "loggingEndringer": true,
-             "funnetLogger": true
+             "funnetLogger": true,
+             "discardLogs": false
          }""", description = "funnetLogger = om loggkamel har sett logginnslag fra den databasen, fiksa = fått tilgang til å hente loggene til databasen")
 public class AuditloggTaskDTO {
 
