@@ -13,4 +13,4 @@ spring:
 
 ENTRA_PROXY_BASE_URL: http://entra-proxy
 NAIS_CONSOLE_BASE_URL: https://console.nav.cloud.nais.io/graphql
-
+LOGGKAMEL_PROXY_BASE_URL: http://loggkamel-proxy

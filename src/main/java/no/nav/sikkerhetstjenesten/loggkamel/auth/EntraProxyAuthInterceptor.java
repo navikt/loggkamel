@@ -16,6 +16,8 @@ import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
+//TODO: move business logic into an abstract AuthInterceptor class, make this class implement it with the namespace and app name passed in via
+// implemented methods
 @Component
 public class EntraProxyAuthInterceptor implements ClientHttpRequestInterceptor {
 

@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClientResponseException;
 
