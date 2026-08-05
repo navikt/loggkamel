@@ -44,15 +44,15 @@ public abstract class GenericAuthInterceptor implements ClientHttpRequestInterce
                 .toEntity(Map.class);
 
         if (authResponse.getBody() == null || authResponse.getBody().get("access_token") == null) {
-            throw new RuntimeException("Tomt svar fra EntraID token-endepunkt");
+            throw new RuntimeException("Tomt svar fra Naistoken-endepunkt");
         }
 
         return (String) authResponse.getBody().get("access_token");
     }
 
-    abstract String getServiceNamespace();
+    protected abstract String getServiceNamespace();
 
-    abstract String getServiceAppName();
+    protected abstract String getServiceAppName();
 
-    abstract String getServiceCluster();
+    protected abstract String getServiceCluster();
 }

@@ -15,15 +15,18 @@ public class EntraProxyAuthInterceptor extends GenericAuthInterceptor {
     @Value("${entra-proxy.cluster:#{''}}")
     private String entraProxyCluster;
 
-    String getServiceNamespace() {
+    @Override
+    protected String getServiceNamespace() {
         return entraProxyNamespace;
     }
 
-    String getServiceAppName() {
+    @Override
+    protected String getServiceAppName() {
         return entraProxyAppName;
     }
 
-    String getServiceCluster() {
+    @Override
+    protected String getServiceCluster() {
         return entraProxyCluster;
     }
 }
