@@ -12,7 +12,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, endringerUtenKrav, fiksa"}, example = """
+@Schema(requiredProperties = {"naisteam", "teknologi", "dbname", "okonomi", "loggingLeseoperasjoner", "endringerUtenKrav", "fiksa"}, example = """
   {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "endringerUtenKrav": false, "loggingLeseoperasjoner": false
   }""")
 public class AuditloggTaskRequestDTO {

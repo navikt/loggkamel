@@ -14,7 +14,7 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, endringerUtenKrav, fiksa, created, updated, loggingEndringer, funnetLogger, discardLogs"}, example = """
+@Schema(requiredProperties = {"naisteam", "teknologi", "dbname", "okonomi", "loggingLeseoperasjoner", "endringerUtenKrav", "fiksa", "created", "updated", "loggingEndringer", "funnetLogger", "discardLogs"}, example = """
         {
              "naisteam": "sikkerhetstjenesten",
              "teknologi": "POSTGRESQL",
