@@ -1,18 +1,18 @@
-no.nav.security.jwt:
-  issuer:
-    issuer1:
-      discoveryurl: http://localhost:${mock-oauth2-server.port}/issuerId/.well-known/openid-configuration
-      accepted_audience: someaudience
-  client:
-    registration:
-      entra-proxy:
-        token-endpoint-url: http://example.com
-        grant-type: client_credentials
-        scope: some-scope
-        authentication:
-          client-id: testclient
-          client-secret: testsecret
-          client-auth-method: client_secret_basic
+#no.nav.security.jwt:
+#  issuer:
+#    issuer1:
+#      discoveryurl: http://localhost:${mock-oauth2-server.port}/issuerId/.well-known/openid-configuration
+#      accepted_audience: someaudience
+#  client:
+#    registration:
+#      entra-proxy:
+#        token-endpoint-url: http://example.com
+#        grant-type: client_credentials
+#        scope: some-scope
+#        authentication:
+#          client-id: testclient
+#          client-secret: testsecret
+#          client-auth-method: client_secret_basic
 
 spring:
   cache:
@@ -60,9 +60,6 @@ routing:
     invalid-message-routing: ${routing.packet.invalid-message}
   logline:
     producer: "file:src/main/resources/files/output"
-
-entra-proxy:
-  scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
 
 executor:
   logPacketPublish:

@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.config;
 
-import no.nav.sikkerhetstjenesten.loggkamel.auth.EntraProxyAuthInterceptor;
+import no.nav.sikkerhetstjenesten.loggkamel.auth.LoggkamelProxyAuthInterceptor;
 import no.nav.sikkerhetstjenesten.loggkamel.client.LoggkamelProxyClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,14 +15,13 @@ public class LoggkamelProxyConfig {
     @Value("${LOGGKAMEL_PROXY_BASE_URL}")
     private String loggkamelProxyBaseUrl;
 
-    //TODO: replace with a new LoggkamelProxyAuthInterceptor, or put together a more general solution
     @Bean
-    public LoggkamelProxyClient loggkamelProxyClient(EntraProxyAuthInterceptor entraProxyAuthInterceptor) {
+    public LoggkamelProxyClient loggkamelProxyClient(LoggkamelProxyAuthInterceptor loggkamelProxyAuthInterceptor) {
         RestClient restClient = RestClient.builder()
                 .baseUrl(loggkamelProxyBaseUrl)
                 .requestInterceptors(interceptors -> {
                     interceptors.add(new LoggingRequestInterceptor());
-                    interceptors.add(entraProxyAuthInterceptor);
+                    interceptors.add(loggkamelProxyAuthInterceptor);
                 })
                 .build();
 
