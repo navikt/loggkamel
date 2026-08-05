@@ -36,6 +36,11 @@
       "cluster": "dev-gcp"
     }
   ],
+  "outbound": [
+    "console.nav.cloud.nais.io",
+    "sikkerhetstjenesten-unleash-api.nav.cloud.nais.io",
+    "https://loggkamel-proxy.dev-fss-pub.nais.io"
+  ],
   "nais": {
     "cluster": {
       "plan" : "startup-4",

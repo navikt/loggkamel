@@ -18,6 +18,8 @@ management:
     recording:
       enabled: true
 
+LOGGKAMEL_PROXY_BASE_URL: https://loggkamel-proxy.dev-fss-pub.nais.io
+
 routing:
   postgres:
     consumer: "google-storage://loggkamel-dev-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
