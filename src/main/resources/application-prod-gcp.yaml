@@ -1,5 +1,11 @@
 LOGGKAMEL_PROXY_BASE_URL: https://loggkamel-proxy.prod-fss-pub.nais.io
 
+entra-proxy:
+  cluster: prod-gcp
+
+loggkamel-proxy:
+  cluster: prod-fss
+
 routing:
   postgres:
     consumer: "google-storage://loggkamel-prod-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"

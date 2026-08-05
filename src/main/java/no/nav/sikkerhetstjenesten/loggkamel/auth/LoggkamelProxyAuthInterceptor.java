@@ -12,11 +12,18 @@ public class LoggkamelProxyAuthInterceptor extends GenericAuthInterceptor {
     @Value("${loggkamel-proxy.app-name:#{''}}")
     private String loggkamelProxyAppName;
 
+    @Value("${loggkamel-proxy.cluster:#{''}}")
+    private String loggkamelProxyCluster;
+
     String getServiceNamespace() {
         return loggkamelProxyNamespace;
     }
 
     String getServiceAppName() {
         return loggkamelProxyAppName;
+    }
+
+    String getServiceCluster() {
+        return loggkamelProxyCluster;
     }
 }

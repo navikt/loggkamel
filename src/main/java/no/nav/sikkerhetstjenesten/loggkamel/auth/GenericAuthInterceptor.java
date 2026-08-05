@@ -17,9 +17,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 public abstract class GenericAuthInterceptor implements ClientHttpRequestInterceptor {
 
-    @Value("${NAIS_CLUSTER_NAME:#{''}}")
-    private String clusterName;
-
     @Value("${NAIS_TOKEN_ENDPOINT:#{''}}")
     private String naisTokenEndpoint;
 
@@ -33,7 +30,7 @@ public abstract class GenericAuthInterceptor implements ClientHttpRequestInterce
     }
 
     private String getAuthToken() {
-        String target = String.format("api://%s.%s.%s/.default", clusterName, getServiceNamespace(), getServiceAppName());
+        String target = String.format("api://%s.%s.%s/.default", getServiceCluster(), getServiceNamespace(), getServiceAppName());
         Map<String, String> authRequestBody = Map.of(
                 "identity_provider", "entra_id",
                 "target", target
@@ -56,4 +53,6 @@ public abstract class GenericAuthInterceptor implements ClientHttpRequestInterce
     abstract String getServiceNamespace();
 
     abstract String getServiceAppName();
+
+    abstract String getServiceCluster();
 }
