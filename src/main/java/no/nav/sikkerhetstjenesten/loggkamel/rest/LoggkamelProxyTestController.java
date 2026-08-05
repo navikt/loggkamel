@@ -28,7 +28,7 @@ public class LoggkamelProxyTestController {
     @ResponseStatus(OK)
     public List<AuditloggLineDTO> getHardcodedTestResponse() {
         String databaseName = "AT408T";
-        LocalDateTime logStartTime = LocalDateTime.parse("2024-07-30T07:32:15.123");
+        LocalDateTime logStartTime = LocalDateTime.parse("2026-05-30T07:32:15.123");
         LocalDateTime logEndTime = LocalDateTime.parse("2026-07-30T07:32:15.123");
 
         log.info("Getting hardcoded list of AuditloggLines, testing LoggkamelProxy connection");
