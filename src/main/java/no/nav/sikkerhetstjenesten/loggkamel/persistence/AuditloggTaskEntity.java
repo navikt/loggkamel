@@ -62,8 +62,8 @@ public class AuditloggTaskEntity {
     private Boolean okonomi;
 
     @ColumnDefault("false")
-    @Column(name = "arkivlov")
-    private Boolean arkivlov;
+    @Column(name = "endringer_uten_krav")
+    private Boolean endringerUtenKrav;
 
     @ColumnDefault("false")
     @Column(name = "logging_leseoperasjoner")

@@ -1,0 +1,1 @@
+ALTER TABLE oversikt RENAME COLUMN arkivlov TO endringer_uten_krav;

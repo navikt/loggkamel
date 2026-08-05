@@ -14,13 +14,13 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkivlov, fiksa, created, updated, loggingEndringer, funnetLogger, discardLogs"}, example = """
+@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, endringerUtenKrav, fiksa, created, updated, loggingEndringer, funnetLogger, discardLogs"}, example = """
         {
              "naisteam": "sikkerhetstjenesten",
              "teknologi": "POSTGRESQL",
              "dbname": "sikkerhets-test",
              "okonomi": true,
-             "arkivlov": true,
+             "endringerUtenKrav": true,
              "loggingLeseoperasjoner": true,
              "fiksa": true,
              "created": "2026-04-13T14:07:02.863834Z",
@@ -43,7 +43,7 @@ public class AuditloggTaskDTO {
     Boolean okonomi;
     
     @NonNull
-    Boolean arkivlov;
+    Boolean endringerUtenKrav;
     
     @NonNull
     Boolean loggingLeseoperasjoner;
