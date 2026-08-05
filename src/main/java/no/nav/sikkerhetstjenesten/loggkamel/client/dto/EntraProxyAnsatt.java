@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.client;
+package no.nav.sikkerhetstjenesten.loggkamel.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
