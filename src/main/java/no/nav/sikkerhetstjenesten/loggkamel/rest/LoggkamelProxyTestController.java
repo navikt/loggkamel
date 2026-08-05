@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import no.nav.boot.conditionals.ConditionalOnDev;
 import no.nav.sikkerhetstjenesten.loggkamel.client.LoggkamelProxyClient;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.AuditloggLineDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.client.dto.AuditloggRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,10 @@ public class LoggkamelProxyTestController {
         LocalDateTime logEndTime = LocalDateTime.parse("2026-07-30T07:32:15.123");
 
         log.info("Getting hardcoded list of AuditloggLines, testing LoggkamelProxy connection");
-        return loggkamelProxyClient.getAuditloggLinesForDatabaseInDateRange(databaseName, logStartTime, logEndTime);
+        return loggkamelProxyClient.getAuditloggLinesForDatabaseInDateRange(AuditloggRequest.builder()
+                .databaseName(databaseName)
+                .logStartTime(logStartTime)
+                .logEndTime(logEndTime)
+                .build());
     }
 }
