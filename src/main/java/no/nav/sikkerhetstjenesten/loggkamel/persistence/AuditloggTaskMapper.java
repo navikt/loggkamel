@@ -24,7 +24,7 @@ public abstract class AuditloggTaskMapper {
     //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
     @Named("loggingEndringer")
     public boolean loggingEndringer(AuditloggTaskEntity entity) {
-        return entity.getOkonomi() || entity.getArkivlov();
+        return entity.getOkonomi() || entity.getEndringerUtenKrav();
     }
 
     @Named("setFiksaByTeknologi")

@@ -12,8 +12,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam","teknologi","dbname, okonomi, loggingLeseoperasjoner, arkivlov, fiksa"}, example = """
-  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "arkivlov": false, "loggingLeseoperasjoner": false
+@Schema(requiredProperties = {"naisteam", "teknologi", "dbname", "okonomi", "loggingLeseoperasjoner", "endringerUtenKrav", "fiksa"}, example = """
+  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "endringerUtenKrav": false, "loggingLeseoperasjoner": false
   }""")
 public class AuditloggTaskRequestDTO {
     @NonNull
@@ -29,7 +29,7 @@ public class AuditloggTaskRequestDTO {
     Boolean okonomi;
 
     @NonNull
-    Boolean arkivlov;
+    Boolean endringerUtenKrav;
 
     @NonNull
     Boolean loggingLeseoperasjoner;

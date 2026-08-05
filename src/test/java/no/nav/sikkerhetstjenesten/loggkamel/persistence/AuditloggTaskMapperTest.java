@@ -41,7 +41,7 @@ class AuditloggTaskMapperTest {
         assertEquals(expectedEntity.getTeknologi(), mappedEntity.getTeknologi());
         assertEquals(expectedEntity.getDbname(), mappedEntity.getDbname());
         assertEquals(expectedEntity.getOkonomi(), mappedEntity.getOkonomi());
-        assertEquals(expectedEntity.getArkivlov(), mappedEntity.getArkivlov());
+        assertEquals(expectedEntity.getEndringerUtenKrav(), mappedEntity.getEndringerUtenKrav());
         assertEquals(expectedEntity.getLoggingLeseoperasjoner(), mappedEntity.getLoggingLeseoperasjoner());
         assertEquals(false, mappedEntity.getFiksa());
     }
@@ -54,7 +54,7 @@ class AuditloggTaskMapperTest {
         assertEquals(createResponseDTO(true, false, true, true), dto);
     }
 
-    private AuditloggTaskEntity createEntity(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
+    private AuditloggTaskEntity createEntity(boolean endringerUtenKrav, boolean okonomi, boolean loggingLeseoperasjoner) {
         return AuditloggTaskEntity.builder()
                 .id(ID)
                 .created(CREATED)
@@ -62,7 +62,7 @@ class AuditloggTaskMapperTest {
                 .naisteam(NAISTEAM)
                 .teknologi(TEKNOLOGI)
                 .dbname(DBNAME)
-                .arkivlov(arkivlov)
+                .endringerUtenKrav(endringerUtenKrav)
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
@@ -71,14 +71,14 @@ class AuditloggTaskMapperTest {
                 .build();
     }
 
-    private AuditloggTaskDTO createResponseDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
+    private AuditloggTaskDTO createResponseDTO(boolean endringerUtenKrav, boolean okonomi, boolean loggingLeseoperasjoner, boolean loggingEndringer) {
         return AuditloggTaskDTO.builder()
                 .created(CREATED)
                 .updated(UPDATED)
                 .naisteam(NAISTEAM)
                 .teknologi(TEKNOLOGI)
                 .dbname(DBNAME)
-                .arkivlov(arkivlov)
+                .endringerUtenKrav(endringerUtenKrav)
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
@@ -88,12 +88,12 @@ class AuditloggTaskMapperTest {
                 .build();
     }
 
-    private AuditloggTaskRequestDTO createRequestDTO(boolean arkivlov, boolean okonomi, boolean loggingLeseoperasjoner) {
+    private AuditloggTaskRequestDTO createRequestDTO(boolean endringerUtenKrav, boolean okonomi, boolean loggingLeseoperasjoner) {
         return AuditloggTaskRequestDTO.builder()
                 .naisteam(NAISTEAM)
                 .teknologi(TEKNOLOGI)
                 .dbname(DBNAME)
-                .arkivlov(arkivlov)
+                .endringerUtenKrav(endringerUtenKrav)
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .build();
