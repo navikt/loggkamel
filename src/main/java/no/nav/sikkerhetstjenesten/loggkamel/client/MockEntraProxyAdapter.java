@@ -1,8 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client;
 
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyEnhet;
-
 public class MockEntraProxyAdapter implements EntraProxyAdapter {
     public static final String MOCK_ANSATT_NAV_TIDENT = "MOCK_NAV_TIDENT";
     public static final String MOCK_ANSATT_VISNING_NAVN = "MOCK_NAVN";

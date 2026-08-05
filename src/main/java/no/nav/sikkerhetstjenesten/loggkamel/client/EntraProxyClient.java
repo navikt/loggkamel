@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client;
 
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.service.annotation.GetExchange;
 

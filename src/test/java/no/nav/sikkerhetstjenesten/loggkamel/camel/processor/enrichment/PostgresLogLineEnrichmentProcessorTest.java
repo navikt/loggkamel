@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;

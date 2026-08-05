@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
