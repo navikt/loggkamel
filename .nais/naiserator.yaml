@@ -77,7 +77,7 @@ spec:
       external:
         {{#each outbound as |outbound|}}
             - host: '{{outbound}}'
-        {{/each } }
+        {{/each }}
     inbound:
       rules:
         {{#each inbound as |app|}}
