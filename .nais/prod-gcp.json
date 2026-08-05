@@ -39,7 +39,7 @@
   "outbound": [
     "console.nav.cloud.nais.io",
     "sikkerhetstjenesten-unleash-api.nav.cloud.nais.io",
-    "https://loggkamel-proxy.prod-fss-pub.nais.io"
+    "loggkamel-proxy.prod-fss-pub.nais.io"
   ],
   "nais": {
     "cluster": {
