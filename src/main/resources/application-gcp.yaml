@@ -41,26 +41,31 @@ logging:
     # Set to WARN to avoid leaking connection information in startup logs
     org.hibernate.orm.connections.pooling: WARN
 
-no.nav.security.jwt:
-  issuer:
-    azuread:
-      discovery-url: ${azure.app.well.known.url}
-      accepted_audience: ${azure.app.client.id}
-  client:
-    registration:
-      entra-proxy:
-        token-endpoint-url: ${azure.openid.config.token.endpoint}
-        grant-type: client_credentials
-        scope: ${entra-proxy.scope}
-        authentication:
-          client-id: ${azure.app.client.id}
-          client-jwk: ${azure.app.jwk}
-          client-auth-method: private_key_jwt
+#no.nav.security.jwt:
+#  issuer:
+#    azuread:
+#      discovery-url: ${azure.app.well.known.url}
+#      accepted_audience: ${azure.app.client.id}
+#  client:
+#    registration:
+#      entra-proxy:
+#        token-endpoint-url: ${azure.openid.config.token.endpoint}
+#        grant-type: client_credentials
+#        scope: ${entra-proxy.scope}
+#        authentication:
+#          client-id: ${azure.app.client.id}
+#          client-jwk: ${azure.app.jwk}
+#          client-auth-method: private_key_jwt
 
 entra-proxy:
   scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.entra-proxy/.default"
   namespace: "sikkerhetstjenesten"
   app-name: "entra-proxy"
+
+loggkamel-proxy:
+  scope: "api://${nais.cluster.type}-gcp.sikkerhetstjenesten.loggkamel-proxy/.default"
+  namespace: "sikkerhetstjenesten"
+  app-name: "loggkamel-proxy"
 
 springdoc:
   swagger-ui:
