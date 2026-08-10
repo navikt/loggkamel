@@ -21,4 +21,7 @@ public class AuditloggRequest {
 
     @NonNull
     LocalDateTime logEndTime;
+
+    @NonNull
+    Integer packetSize;
 }

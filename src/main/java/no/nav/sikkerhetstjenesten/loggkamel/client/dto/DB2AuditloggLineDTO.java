@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class AuditloggLineDTO {
+public class DB2AuditloggLineDTO {
 
     @NonNull
     LocalDateTime metricsTimestamp;

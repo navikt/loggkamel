@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -51,5 +51,7 @@ public class EnrichedAuditlogg {
     private String sqlParameters;
     @Email
     private String epost;
+
+    // Used for routing by GCP log sinks
     private final String requestType = "dbAuditEntry";
 }

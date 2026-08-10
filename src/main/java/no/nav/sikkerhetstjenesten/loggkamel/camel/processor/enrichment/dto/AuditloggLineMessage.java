@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

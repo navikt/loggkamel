@@ -12,7 +12,7 @@ import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 
 //TODO: When adding other consumers: make this class take a Teknologi and route strings, make the consumers pass that in
 public abstract class LogStreamErrorHandler extends RouteBuilder {
