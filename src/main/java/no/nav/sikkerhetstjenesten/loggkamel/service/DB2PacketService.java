@@ -10,6 +10,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.packet.PacketPersistenceService;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.service.LoggkamelProxyService
 @Component
 public class DB2PacketService {
 
+    private static final Logger log = LoggerFactory.getLogger(DB2PacketService.class);
+
     @Autowired
     private PacketPersistenceService packetPersistenceService;
 
@@ -40,6 +44,9 @@ public class DB2PacketService {
     ObjectMapper objectMapper;
 
     public void persistPacketsForTaskAndDateRange(AuditloggTaskDTO auditloggTaskDTO, LocalDate startDate, LocalDate endDate) {
+        //TODO: create a task timer, start
+        log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO, startDate, endDate);
+
         while (!startDate.isAfter(endDate)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
             String packetDate = startDate.format(formatter);
@@ -61,6 +68,9 @@ public class DB2PacketService {
 
             startDate = startDate.plusDays(1);
         }
+
+        //TODO: stop task timer, report how long the task took
+        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO, startDate, endDate);
     }
 
     void persistCurrentPacket(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate) {
@@ -89,7 +99,7 @@ public class DB2PacketService {
             i++;
         }
 
-        String currentPacketName = auditloggTaskDTO.getDbname() + "." + packetDate + UUID.randomUUID() + LOG_PACKET_EXTENSION;
+        String currentPacketName = auditloggTaskDTO.getDbname() + "." + packetDate + "." + UUID.randomUUID() + LOG_PACKET_EXTENSION;
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(currentPacketName, packetAsAuditloggLineMessages);
     }
 }

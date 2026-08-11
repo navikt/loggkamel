@@ -49,7 +49,7 @@ public class LoggkamelProxyTestController {
     }
 
     @GetMapping("auditlogg-packet")
-    @ResponseStatus(OK)
+    @ResponseStatus(OK) //TODO: update this to acknowledging the start of an async process
     public void getHardcodedAuditloggPacket() {
         log.info("Getting hardcoded list of AuditloggLines, testing how those are represented as json");
         String databaseName = "AT408T";
@@ -57,6 +57,7 @@ public class LoggkamelProxyTestController {
         LocalDate endDate =  LocalDate.parse("2026-07-30");
         AuditloggTaskDTO auditloggTaskDto = auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(databaseName, TeknologiEnum.DB2);
 
+        //TODO: make this async, don't wait for it to finish
         db2PacketService.persistPacketsForTaskAndDateRange(auditloggTaskDto, startDate, endDate);
     }
 }

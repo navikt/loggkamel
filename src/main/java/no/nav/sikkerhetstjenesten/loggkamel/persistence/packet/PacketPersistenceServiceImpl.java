@@ -14,6 +14,10 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
 
     @Override
     public void saveAuditloggLineMessagesWithFilename(String filename, List<AuditloggLineMessage> auditloggLineMessages) {
+        if (auditloggLineMessages == null || auditloggLineMessages.isEmpty()) {
+            return;
+        }
+
         //FOR TESTING
         log.info("Here is where I would save the packet with filename {}, contents {}",  filename, auditloggLineMessages);
     }
