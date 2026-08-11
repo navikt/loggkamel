@@ -2,8 +2,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 

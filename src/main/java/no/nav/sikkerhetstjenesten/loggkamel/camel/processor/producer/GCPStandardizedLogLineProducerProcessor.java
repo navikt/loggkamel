@@ -10,8 +10,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDepen
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.commons.codec.digest.DigestUtils;

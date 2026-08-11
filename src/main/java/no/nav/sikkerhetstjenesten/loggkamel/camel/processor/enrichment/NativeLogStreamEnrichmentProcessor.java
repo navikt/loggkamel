@@ -2,9 +2,9 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;

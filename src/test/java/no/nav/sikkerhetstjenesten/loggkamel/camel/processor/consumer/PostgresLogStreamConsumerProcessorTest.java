@@ -1,8 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogStreamException;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;

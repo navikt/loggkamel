@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.persistence;
+package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

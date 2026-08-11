@@ -2,8 +2,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;

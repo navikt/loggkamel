@@ -1,7 +1,7 @@
-package no.nav.sikkerhetstjenesten.loggkamel.observability;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.observability;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.springframework.stereotype.Component;
 
 @Component

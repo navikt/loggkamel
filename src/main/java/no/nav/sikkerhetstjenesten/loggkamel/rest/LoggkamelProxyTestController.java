@@ -3,15 +3,17 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.LoggkamelProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,10 +28,13 @@ public class LoggkamelProxyTestController {
     private static final Logger log = LoggerFactory.getLogger(LoggkamelProxyTestController.class);
 
     @Autowired
-    LoggkamelProxyService loggkamelProxyService;
+    private LoggkamelProxyService loggkamelProxyService;
 
     @Autowired
-    AuditloggTaskService auditloggTaskService;
+    private AuditloggTaskService auditloggTaskService;
+
+    @Autowired
+    private DB2PacketService db2PacketService;
 
     @GetMapping("db2")
     @ResponseStatus(OK)
@@ -45,14 +50,13 @@ public class LoggkamelProxyTestController {
 
     @GetMapping("auditlogg-packet")
     @ResponseStatus(OK)
-    public List<AuditloggLineMessage> getHardcodedAuditloggPacket() {
+    public void getHardcodedAuditloggPacket() {
+        log.info("Getting hardcoded list of AuditloggLines, testing how those are represented as json");
         String databaseName = "AT408T";
-        LocalDateTime logStartTime = LocalDateTime.parse("2026-05-30T07:32:15.123");
-        LocalDateTime logEndTime = LocalDateTime.parse("2026-07-30T07:32:15.123");
+        LocalDate startDate =  LocalDate.parse("2024-05-30");
+        LocalDate endDate =  LocalDate.parse("2026-07-30");
         AuditloggTaskDTO auditloggTaskDto = auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(databaseName, TeknologiEnum.DB2);
 
-        log.info("Getting hardcoded list of AuditloggLines, testing how those are represented as json");
-
-        return loggkamelProxyService.getDB2AuditloggMessagesForTaskInDateRange(auditloggTaskDto, logStartTime, logEndTime);
+        db2PacketService.persistPacketsForTaskAndDateRange(auditloggTaskDto, startDate, endDate);
     }
 }

@@ -7,7 +7,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.Enric
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.LogLineOperationTypes;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;

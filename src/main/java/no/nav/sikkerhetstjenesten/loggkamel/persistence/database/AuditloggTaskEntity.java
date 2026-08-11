@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.persistence;
+package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

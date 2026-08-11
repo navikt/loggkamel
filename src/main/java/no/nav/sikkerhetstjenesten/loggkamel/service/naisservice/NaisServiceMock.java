@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.service;
+package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import org.springframework.stereotype.Service;

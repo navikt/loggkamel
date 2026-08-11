@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 

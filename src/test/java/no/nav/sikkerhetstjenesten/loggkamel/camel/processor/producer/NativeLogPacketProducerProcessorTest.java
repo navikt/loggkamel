@@ -2,8 +2,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
