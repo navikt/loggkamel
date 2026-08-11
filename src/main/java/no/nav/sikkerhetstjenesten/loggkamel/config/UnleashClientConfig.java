@@ -37,6 +37,10 @@ public class UnleashClientConfig {
         return new Unleash() {
             @Override
             public boolean isEnabled(String toggleName, UnleashContext context, BiPredicate<String, UnleashContext> fallbackAction) {
+                //DEBUG: here for local testing, remove before merging
+                if (toggleName.equals("consume-log-lines")) {
+                    return false;
+                }
                 return true;
             }
 

@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class OversiktService {
+public class AuditloggTaskService {
     private final OversiktJPAAdapter adapter;
 
     @Autowired
-    public OversiktService(OversiktJPAAdapter adapter) {
+    public AuditloggTaskService(OversiktJPAAdapter adapter) {
         this.adapter = adapter;
     }
 

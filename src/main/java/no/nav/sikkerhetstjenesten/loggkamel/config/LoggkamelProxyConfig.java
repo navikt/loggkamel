@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class LoggkamelProxyConfig {
 
-    @Value("${LOGGKAMEL_PROXY_BASE_URL}")
+    @Value("${LOGGKAMEL_PROXY_BASE_URL:#{''}}")
     private String loggkamelProxyBaseUrl;
 
     @Bean

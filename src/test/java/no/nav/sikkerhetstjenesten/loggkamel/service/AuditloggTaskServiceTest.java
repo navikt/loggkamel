@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OversiktServiceTest {
+class AuditloggTaskServiceTest {
 
     private static final String DBNAME = "dbName";
     private static final TeknologiEnum TEKNOLOGI = TeknologiEnum.ORACLE;
@@ -40,7 +40,7 @@ class OversiktServiceTest {
     OversiktJPAAdapter adapter;
 
     @InjectMocks
-    OversiktService service;
+    AuditloggTaskService service;
 
     @Test
     void createAuditloggTask_successful() {

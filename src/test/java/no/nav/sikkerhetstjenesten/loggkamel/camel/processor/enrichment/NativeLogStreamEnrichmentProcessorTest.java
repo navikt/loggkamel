@@ -5,7 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogS
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     AuditloggTaskDTO auditloggTaskDTO;
 
     @Mock
-    OversiktService oversiktService;
+    AuditloggTaskService auditloggTaskService;
 
     @Mock
     NaisService naisService;
@@ -70,7 +70,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(DatabaseDependencyException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -82,7 +82,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(null);
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -94,8 +94,8 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
-        doThrow(new RuntimeException("Database error")).when(oversiktService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        doThrow(new RuntimeException("Database error")).when(auditloggTaskService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
 
         assertThrows(DatabaseDependencyException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -107,7 +107,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
         when(auditloggTaskDTO.getDiscardLogs()).thenReturn(true);
 
         nativeLogStreamEnrichmentProcessor.enrich(exchange);
@@ -124,7 +124,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
@@ -140,7 +140,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
@@ -156,7 +156,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
-        when(oversiktService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
+        when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTaskDTO);
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
@@ -164,7 +164,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         assertDoesNotThrow(() -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
 
-        verify(oversiktService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
+        verify(auditloggTaskService).registerLogsReceivedForAuditloggTask(DBNAME, TeknologiEnum.DB2);
     }
 
 }
