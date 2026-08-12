@@ -23,7 +23,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.LoggkamelProxyService.MAX_DB2_PACKET_SIZE;
@@ -48,39 +50,46 @@ public class DB2PacketService {
 
     @Async
     public void persistPacketsForTaskAndDateRange(AuditloggTaskDTO auditloggTaskDTO, LocalDate startDate, LocalDate endDate) {
-        log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO, startDate, endDate);
+        log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO.getDbname(), startDate, endDate);
         StopWatch stopWatch = new StopWatch("Fetching and packeting logs");
         stopWatch.start("Building and persisting packets for database " + auditloggTaskDTO.getDbname());
 
-        while (!startDate.isAfter(endDate)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-            String packetDate = startDate.format(formatter);
-            String dbName = auditloggTaskDTO.getDbname();
+        String dbName = auditloggTaskDTO.getDbname();
+        LocalDateTime packetStartDateTime = startDate.atStartOfDay();
+        LocalDateTime packetEndDateTime = endDate.atTime(LocalTime.MAX);
 
-            LocalDateTime packetStartDateTime = startDate.atStartOfDay();
-            LocalDateTime packetEndDateTime = startDate.atTime(LocalTime.MAX);
+        List<DB2AuditloggLineDTO> currentPacketContents =
+                loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
+        persistAuditloggLinesAsPacketsSeparatedByDate(currentPacketContents, auditloggTaskDTO);
 
-            List<DB2AuditloggLineDTO> currentPacketContents = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
-            persistCurrentPacket(currentPacketContents, auditloggTaskDTO, packetDate);
+        // Breaks if there are more than MAX_DB2_PACKET_SIZE logs with the same timestamp. Given that these timestamps have nanosecond precision, this is judged unlikely
+        while(currentPacketContents.size() >= MAX_DB2_PACKET_SIZE) {
+            packetStartDateTime = currentPacketContents.getLast().getMetricsTimestamp();
 
-            // Breaks if there are more than MAX_DB2_PACKET_SIZE logs with the same timestamp. Given that these timestamps have nanosecond precision, this is judged unlikely
-            while(currentPacketContents.size() >= MAX_DB2_PACKET_SIZE) {
-                packetStartDateTime = currentPacketContents.getLast().getMetricsTimestamp();
-
-                currentPacketContents = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
-                persistCurrentPacket(currentPacketContents, auditloggTaskDTO, packetDate);
-            }
-
-            startDate = startDate.plusDays(1);
+            currentPacketContents = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
+            persistAuditloggLinesAsPacketsSeparatedByDate(currentPacketContents, auditloggTaskDTO);
         }
 
         stopWatch.stop();
-        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}, runtime in millis: {}", auditloggTaskDTO, startDate, endDate, stopWatch.getTotalTimeMillis());
+        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}, runtime in millis: {}",
+                auditloggTaskDTO, startDate, endDate, stopWatch.getTotalTimeMillis());
     }
 
-    void persistCurrentPacket(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate) {
+    void persistAuditloggLinesAsPacketsSeparatedByDate(List<DB2AuditloggLineDTO> auditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO) {
         String gcpId = naisService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
 
+        Map<LocalDate, List<DB2AuditloggLineDTO>> auditloggLinesGroupedByDate =
+                auditloggLineDTOs.stream().collect(
+                        Collectors.groupingBy(auditloggLineDTO -> auditloggLineDTO.getMetricsTimestamp().toLocalDate()));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        for (Map.Entry<LocalDate, List<DB2AuditloggLineDTO>> entry : auditloggLinesGroupedByDate.entrySet()) {
+            String packetDate = entry.getKey().format(formatter);
+            persistPacketWithGivenDate(entry.getValue(), auditloggTaskDTO, packetDate, gcpId);
+        }
+    }
+
+    void persistPacketWithGivenDate(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate, String gcpId) {
         List<AuditloggLineMessage> packetAsAuditloggLineMessages =  new ArrayList<>();
         int i = 1;
         for (DB2AuditloggLineDTO db2LogLine : packetAsDB2AuditloggLineDTOs) {
