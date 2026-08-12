@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.OK;
 
 //TODO: remove after done testing loggkamelProxy, when it is integrated into DB2 log pull behavior
@@ -49,7 +50,7 @@ public class LoggkamelProxyTestController {
     }
 
     @GetMapping("auditlogg-packet")
-    @ResponseStatus(OK) //TODO: update this to acknowledging the start of an async process
+    @ResponseStatus(ACCEPTED)
     public void getHardcodedAuditloggPacket() {
         log.info("Getting hardcoded list of AuditloggLines, testing how those are represented as json");
         String databaseName = "AT408T";
@@ -57,7 +58,6 @@ public class LoggkamelProxyTestController {
         LocalDate endDate =  LocalDate.parse("2026-07-30");
         AuditloggTaskDTO auditloggTaskDto = auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(databaseName, TeknologiEnum.DB2);
 
-        //TODO: make this async, don't wait for it to finish
         db2PacketService.persistPacketsForTaskAndDateRange(auditloggTaskDto, startDate, endDate);
     }
 }

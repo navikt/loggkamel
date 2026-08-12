@@ -20,5 +20,7 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
 
         //FOR TESTING
         log.info("Here is where I would save the packet with filename {}, contents {}",  filename, auditloggLineMessages);
+
+        //TODO: save as a file in the packet bucket or file location
     }
 }

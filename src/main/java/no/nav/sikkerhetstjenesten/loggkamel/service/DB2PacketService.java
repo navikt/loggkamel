@@ -13,7 +13,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +33,7 @@ public class DB2PacketService {
 
     private static final Logger log = LoggerFactory.getLogger(DB2PacketService.class);
 
+    //TODO: move from autowired to constructor injection
     @Autowired
     private PacketPersistenceService packetPersistenceService;
 
@@ -43,9 +46,11 @@ public class DB2PacketService {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Async
     public void persistPacketsForTaskAndDateRange(AuditloggTaskDTO auditloggTaskDTO, LocalDate startDate, LocalDate endDate) {
-        //TODO: create a task timer, start
         log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO, startDate, endDate);
+        StopWatch stopWatch = new StopWatch("Fetching and packeting logs");
+        stopWatch.start("Building and persisting packets for database " + auditloggTaskDTO.getDbname());
 
         while (!startDate.isAfter(endDate)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -69,8 +74,8 @@ public class DB2PacketService {
             startDate = startDate.plusDays(1);
         }
 
-        //TODO: stop task timer, report how long the task took
-        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO, startDate, endDate);
+        stopWatch.stop();
+        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}, runtime in millis: {}", auditloggTaskDTO, startDate, endDate, stopWatch.getTotalTimeMillis());
     }
 
     void persistCurrentPacket(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate) {
