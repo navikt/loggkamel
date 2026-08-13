@@ -1,12 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.packet.PacketPersistenceService;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
@@ -21,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,23 +29,26 @@ public class DB2PacketService {
 
     private static final Logger log = LoggerFactory.getLogger(DB2PacketService.class);
 
-    //TODO: move from autowired to constructor injection
-    @Autowired
-    private PacketPersistenceService packetPersistenceService;
+    private final PacketPersistenceService packetPersistenceService;
+
+    private final LoggkamelProxyService loggkamelProxyService;
+
+    private final NaisService naisService;
+
+    private final DB2DTOMapper db2DTOMapper;
 
     @Autowired
-    private LoggkamelProxyService loggkamelProxyService;
-
-    @Autowired
-    NaisService naisService;
-
-    @Autowired
-    ObjectMapper objectMapper;
+    public DB2PacketService(PacketPersistenceService packetPersistenceService, LoggkamelProxyService loggkamelProxyService, NaisService naisService, DB2DTOMapper db2DTOMapper) {
+        this.packetPersistenceService = packetPersistenceService;
+        this.loggkamelProxyService = loggkamelProxyService;
+        this.naisService = naisService;
+        this.db2DTOMapper = db2DTOMapper;
+    }
 
     @Async
     public void persistPacketsForTaskAndDateRange(AuditloggTaskDTO auditloggTaskDTO, LocalDate startDate, LocalDate endDate) {
         log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO.getDbname(), startDate, endDate);
-        StopWatch stopWatch = new StopWatch("Fetching and packeting logs");
+        StopWatch stopWatch = new StopWatch("Fetching, bundling, persisting logs");
         stopWatch.start("Building and persisting packets for database " + auditloggTaskDTO.getDbname());
 
         String dbName = auditloggTaskDTO.getDbname();
@@ -72,7 +69,7 @@ public class DB2PacketService {
 
         stopWatch.stop();
         log.info("Finished persisting packet files for database {}, startDate {}, endDate {}, runtime in millis: {}",
-                auditloggTaskDTO, startDate, endDate, stopWatch.getTotalTimeMillis());
+                auditloggTaskDTO.getDbname(), startDate, endDate, stopWatch.getTotalTimeMillis());
     }
 
     void persistAuditloggLinesAsPacketsSeparatedByDate(List<DB2AuditloggLineDTO> auditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO) {
@@ -90,28 +87,7 @@ public class DB2PacketService {
     }
 
     void persistPacketWithGivenDate(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate, String gcpId) {
-        List<AuditloggLineMessage> packetAsAuditloggLineMessages =  new ArrayList<>();
-        int i = 1;
-        for (DB2AuditloggLineDTO db2LogLine : packetAsDB2AuditloggLineDTOs) {
-            AuditloggLineMessage auditloggLineMessage = null;
-            try {
-                auditloggLineMessage = AuditloggLineMessage.builder()
-                        .body(objectMapper.writeValueAsString(db2LogLine))
-                        .header(AuditloggLineMessageHeader.builder()
-                                .auditloggTaskDTO(auditloggTaskDTO)
-                                .teamGcpProjectId(gcpId)
-                                .teknologi(TeknologiEnum.DB2)
-                                .placeInPacket(i)
-                                .build())
-                        .build();
-            } catch (JsonProcessingException e) {
-                throw new InvalidLogLineException("Failed to convert db2LogLine to JSON String", e);
-            }
-
-            packetAsAuditloggLineMessages.add(auditloggLineMessage);
-
-            i++;
-        }
+        List<AuditloggLineMessage> packetAsAuditloggLineMessages = db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(packetAsDB2AuditloggLineDTOs, auditloggTaskDTO, gcpId);
 
         String currentPacketName = auditloggTaskDTO.getDbname() + "." + packetDate + "." + UUID.randomUUID() + LOG_PACKET_EXTENSION;
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(currentPacketName, packetAsAuditloggLineMessages);
