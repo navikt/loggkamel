@@ -18,6 +18,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -46,30 +47,41 @@ public class DB2PacketService {
     }
 
     @Async
-    public void persistPacketsForTaskAndDateRange(AuditloggTaskDTO auditloggTaskDTO, LocalDate startDate, LocalDate endDate) {
-        log.info("Starting persisting packet files for database {}, startDate {}, endDate {}", auditloggTaskDTO.getDbname(), startDate, endDate);
+    public void fetchLogsWithinDateRangeAndPersistAsPackets(AuditloggTaskDTO auditloggTaskDTO, LocalDate logPullStartDate, LocalDate logPullEndDate) {
+        log.info("Starting persisting log packet files for DB2 database {}, startDate {}, endDate {}", auditloggTaskDTO.getDbname(), logPullStartDate, logPullEndDate);
         StopWatch stopWatch = new StopWatch("Fetching, bundling, persisting logs");
         stopWatch.start("Building and persisting packets for database " + auditloggTaskDTO.getDbname());
 
         String dbName = auditloggTaskDTO.getDbname();
-        LocalDateTime packetStartDateTime = startDate.atStartOfDay();
-        LocalDateTime packetEndDateTime = endDate.atTime(LocalTime.MAX);
+        LocalDateTime logsStartDateTime = logPullStartDate.atStartOfDay();
+        LocalDateTime logsEndDateTime = logPullEndDate.atTime(LocalTime.MAX);
 
-        List<DB2AuditloggLineDTO> currentPacketContents =
-                loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
-        persistAuditloggLinesAsPacketsSeparatedByDate(currentPacketContents, auditloggTaskDTO);
+        List<DB2AuditloggLineDTO> logsPulledForDateRange =
+                loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, logsStartDateTime, logsEndDateTime);
+        int pulledPacketSize = logsPulledForDateRange.size();
+        persistAuditloggLinesAsPacketsSeparatedByDate(logsPulledForDateRange, auditloggTaskDTO);
 
+        // If the set of logs we got is of the maximum packet size, there may be more logs. Update start date and pull again
         // Breaks if there are more than MAX_DB2_PACKET_SIZE logs with the same timestamp. Given that these timestamps have nanosecond precision, this is judged unlikely
-        while(currentPacketContents.size() >= MAX_DB2_PACKET_SIZE) {
-            packetStartDateTime = currentPacketContents.getLast().getMetricsTimestamp();
+        while(pulledPacketSize >= MAX_DB2_PACKET_SIZE) {
+            logsStartDateTime = logsPulledForDateRange.getLast().getMetricsTimestamp();
 
-            currentPacketContents = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, packetStartDateTime, packetEndDateTime);
-            persistAuditloggLinesAsPacketsSeparatedByDate(currentPacketContents, auditloggTaskDTO);
+            LocalDateTime finalLogsStartDateTime = logsStartDateTime;
+            Set<DB2AuditloggLineDTO> logsAlreadyPersisted = logsPulledForDateRange.stream()
+                    .filter(db2AuditloggLineDTO -> finalLogsStartDateTime.isEqual(db2AuditloggLineDTO.getMetricsTimestamp())).collect(Collectors.toSet());
+
+            logsPulledForDateRange = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, logsStartDateTime, logsEndDateTime);
+            pulledPacketSize = logsPulledForDateRange.size();
+
+            // Want to avoid double-persisting logs, so filter logs out from the new response which were included in the prior response
+            logsPulledForDateRange = logsPulledForDateRange.stream().filter(db2AuditloggLineDTO -> !logsAlreadyPersisted.contains(db2AuditloggLineDTO)).toList();
+
+            persistAuditloggLinesAsPacketsSeparatedByDate(logsPulledForDateRange, auditloggTaskDTO);
         }
 
         stopWatch.stop();
-        log.info("Finished persisting packet files for database {}, startDate {}, endDate {}, runtime in millis: {}",
-                auditloggTaskDTO.getDbname(), startDate, endDate, stopWatch.getTotalTimeMillis());
+        log.info("Finished persisting log packet files for DB2 database {}, startDate {}, endDate {}, runtime in millis: {}",
+                auditloggTaskDTO.getDbname(), logPullStartDate, logPullEndDate, stopWatch.getTotalTimeMillis());
     }
 
     void persistAuditloggLinesAsPacketsSeparatedByDate(List<DB2AuditloggLineDTO> auditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO) {
@@ -79,17 +91,18 @@ public class DB2PacketService {
                 auditloggLineDTOs.stream().collect(
                         Collectors.groupingBy(auditloggLineDTO -> auditloggLineDTO.getMetricsTimestamp().toLocalDate()));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         for (Map.Entry<LocalDate, List<DB2AuditloggLineDTO>> entry : auditloggLinesGroupedByDate.entrySet()) {
-            String packetDate = entry.getKey().format(formatter);
-            persistPacketWithGivenDate(entry.getValue(), auditloggTaskDTO, packetDate, gcpId);
+            persistPacketWithGivenDate(entry.getValue(), entry.getKey(), auditloggTaskDTO, gcpId);
         }
     }
 
-    void persistPacketWithGivenDate(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO, String packetDate, String gcpId) {
+    void persistPacketWithGivenDate(List<DB2AuditloggLineDTO> packetAsDB2AuditloggLineDTOs, LocalDate packetDate, AuditloggTaskDTO auditloggTaskDTO, String gcpId) {
         List<AuditloggLineMessage> packetAsAuditloggLineMessages = db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(packetAsDB2AuditloggLineDTOs, auditloggTaskDTO, gcpId);
 
-        String currentPacketName = auditloggTaskDTO.getDbname() + "." + packetDate + "." + UUID.randomUUID() + LOG_PACKET_EXTENSION;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String packetDateAsString = packetDate.format(formatter);
+
+        String currentPacketName = auditloggTaskDTO.getDbname() + "." + packetDateAsString + "." + UUID.randomUUID() + LOG_PACKET_EXTENSION;
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(currentPacketName, packetAsAuditloggLineMessages);
     }
 }

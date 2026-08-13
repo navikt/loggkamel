@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -58,6 +57,6 @@ public class LoggkamelProxyTestController {
         LocalDate endDate =  LocalDate.parse("2026-07-30");
         AuditloggTaskDTO auditloggTaskDto = auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(databaseName, TeknologiEnum.DB2);
 
-        db2PacketService.persistPacketsForTaskAndDateRange(auditloggTaskDto, startDate, endDate);
+        db2PacketService.fetchLogsWithinDateRangeAndPersistAsPackets(auditloggTaskDto, startDate, endDate);
     }
 }

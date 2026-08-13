@@ -39,6 +39,7 @@ routing:
     invalid-message: "file:src/main/resources/files/postgres/invalid-messages"
     invalid-message-routing: ${routing.postgres.invalid-message}
   packet:
+    bucket-name: "blah" #TODO: fill in when doing local write implementation, or remove entirely
     bucket: "file:src/main/resources/files/intermediate"
     invalid-message: "file:src/main/resources/files/intermediate/invalid-messages"
     invalid-message-routing: ${routing.packet.invalid-message}

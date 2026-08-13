@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,11 +21,17 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
 
     private static final Logger log = LoggerFactory.getLogger(PacketPersistenceServiceImpl.class);
 
-    @Autowired
-    ObjectMapper  objectMapper;
+    private final ObjectMapper  objectMapper;
+    private final Storage loggkamelProjectStorage;
 
-//    @Value()
-    private String nativePacketBucketURI = "loggkamel-dev-logglines";
+    @Autowired
+    public PacketPersistenceServiceImpl(ObjectMapper objectMapper,  Storage storage) {
+        this.objectMapper = objectMapper;
+        this.loggkamelProjectStorage = storage;
+    }
+
+    @Value("${routing.packet.bucket-name:#{''}}")
+    private String nativePacketBucketName;
 
     @Override
     public void saveAuditloggLineMessagesWithFilename(String filename, List<AuditloggLineMessage> auditloggLineMessages) {
@@ -32,29 +39,19 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
             return;
         }
 
-        //FOR TESTING
-        log.info("Attempting to save the packet with filename {}, contents {}",  filename, auditloggLineMessages);
-
-        Storage loggkamelProjectStorage = StorageOptions.getDefaultInstance().getService();
-        Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketURI);
-
-        //DEBUG
-        log.info("Successfully connected to project storage and logglines bucket");
+        log.info("Saving DB2 packet with filename {}",  filename);
 
         String auditloggLineMessagesAsString = null;
         try {
             auditloggLineMessagesAsString = objectMapper.writeValueAsString(auditloggLineMessages);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new InvalidLogStreamException("Failure when converting DB2 auditloggLineMessages to JSON", e);
         }
         byte[] auditloggLineMessagesAsBytes = auditloggLineMessagesAsString.getBytes(UTF_8);
 
-        //DEBUG
-        log.info("Successfully converted the List<AuditloggLineMessage> to JSON string");
-
+        Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketName);
         bucketForNativePackets.create(filename, auditloggLineMessagesAsBytes);
 
-        //DEBUG
-        log.info("Successfully uploaded the file");
+        log.info("Successfully uploaded DB2 packet with filename {}",  filename);
     }
 }

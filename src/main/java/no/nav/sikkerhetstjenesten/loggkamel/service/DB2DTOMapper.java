@@ -40,7 +40,7 @@ public class DB2DTOMapper {
                                 .build())
                         .build();
             } catch (JsonProcessingException e) {
-                throw new InvalidLogLineException("Failed to convert db2LogLine to JSON String", e);
+                throw new InvalidLogLineException("Failed to convert db2LogLine to JSON String, conversion was for database: " + auditloggTaskDTO.getDbname(), e);
             }
 
             packetAsAuditloggLineMessages.add(auditloggLineMessage);
