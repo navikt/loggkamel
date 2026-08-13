@@ -21,9 +21,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @ExtendWith(MockitoExtension.class)
-class PacketPersistenceServiceImplTest {
+class GCPPacketPersistenceServiceTest {
 
     private static final String PACKET_BUCKET_NAME = "packet bucket name";
     private static final String FILENAME = "I am a name for a file";
@@ -47,7 +48,7 @@ class PacketPersistenceServiceImplTest {
     Storage loggkamelProjectStorage;
 
     @InjectMocks
-    PacketPersistenceServiceImpl packetPersistenceService;
+    GCPPacketPersistenceService packetPersistenceService;
 
     @Test
     void saveAuditloggLineMessagesWithFilename_nullOrEmptyList() {
@@ -71,7 +72,7 @@ class PacketPersistenceServiceImplTest {
 
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages);
 
-        verify(bucket).create(FILENAME, AUDITLOGG_LINES_AS_JSON.getBytes(StandardCharsets.UTF_8));
+        verify(bucket).create(FILENAME, AUDITLOGG_LINES_AS_JSON.getBytes(StandardCharsets.UTF_8), APPLICATION_JSON_VALUE);
     }
 
 }
