@@ -33,10 +33,13 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
         }
 
         //FOR TESTING
-        log.info("Here is where I would save the packet with filename {}, contents {}",  filename, auditloggLineMessages);
+        log.info("Attempting to save the packet with filename {}, contents {}",  filename, auditloggLineMessages);
 
         Storage loggkamelProjectStorage = StorageOptions.getDefaultInstance().getService();
         Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketURI);
+
+        //DEBUG
+        log.info("Successfully connected to project storage and logglines bucket");
 
         String auditloggLineMessagesAsString = null;
         try {
@@ -46,6 +49,12 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
         }
         byte[] auditloggLineMessagesAsBytes = auditloggLineMessagesAsString.getBytes(UTF_8);
 
+        //DEBUG
+        log.info("Successfully converted the List<AuditloggLineMessage> to JSON string");
+
         bucketForNativePackets.create(filename, auditloggLineMessagesAsBytes);
+
+        //DEBUG
+        log.info("Successfully uploaded the file");
     }
 }
