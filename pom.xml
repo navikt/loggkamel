@@ -33,6 +33,7 @@
     <nav.security-version>6.0.8</nav.security-version>
     <java-version>21</java-version>
     <mapstruct-version>1.6.3</mapstruct-version>
+    <argLine/>
   </properties>
 
   <dependencyManagement>
