@@ -50,7 +50,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
-                    .setBody(constant(null))
+                    .setBody(constant((Object) null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
                     .to(logPacketConsumerUri);
         }

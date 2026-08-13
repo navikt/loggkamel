@@ -39,7 +39,7 @@ public class PostgresLogStreamConsumer extends LogStreamErrorHandler {
                     .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                     .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
-                    .setBody(constant(null))
+                    .setBody(constant((Object) null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.originalFilename} from consumer bucket")
                     .to(postgresStreamConsumerUri);
         }
