@@ -24,7 +24,7 @@ public class PacketPersistenceServiceImpl implements PacketPersistenceService {
     ObjectMapper  objectMapper;
 
 //    @Value()
-    private String nativePacketBucketURI = "gs://loggkamel-dev-logglines";
+    private String nativePacketBucketURI = "loggkamel-dev-logglines";
 
     @Override
     public void saveAuditloggLineMessagesWithFilename(String filename, List<AuditloggLineMessage> auditloggLineMessages) {
