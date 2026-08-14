@@ -1,10 +1,11 @@
-package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
+package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.extern.jackson.Jacksonized;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 
 @Data
@@ -18,8 +19,12 @@ public class AuditloggLineMessageHeader {
     public static final String AUDITLOGG_TASK = "AuditloggTask";
     public static final String PLACE_IN_PACKET = "PlaceInPacket";
 
+    @NonNull
     TeknologiEnum teknologi;
+    @NonNull
     String teamGcpProjectId;
+    @NonNull
     AuditloggTaskDTO auditloggTaskDTO;
-    int placeInPacket;
+    @NonNull
+    Integer placeInPacket;
 }

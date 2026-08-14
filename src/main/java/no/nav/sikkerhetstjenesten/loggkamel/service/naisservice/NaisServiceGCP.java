@@ -1,10 +1,12 @@
-package no.nav.sikkerhetstjenesten.loggkamel.service;
+package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.boot.conditionals.Cluster;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
+import no.nav.sikkerhetstjenesten.loggkamel.service.GCPProject;
+import no.nav.sikkerhetstjenesten.loggkamel.service.NaisTeamEnvironments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,7 @@ public class NaisServiceGCP implements NaisService {
     static final String TEAM = "team";
 
     @Autowired
-    HttpSyncGraphQlClient naisGraphqlClient;
+    private HttpSyncGraphQlClient naisGraphqlClient;
 
     @Override
     @Cacheable(cacheNames = CacheConfig.NAIS_GCP_PROJECT_BY_TEAM, key = "#naisTeam", sync = true)

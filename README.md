@@ -40,6 +40,8 @@ PROD: https://loggkamel.intern.nav.no/swagger-ui/index.html#/
 
 ## Program design and intent
 
+TODO: update schemas with pull behavior creating packets instead of streams
+
 ![Nav audit project diagram](src/main/resources/tegning/Nav_audit_project.png)
 
 ![Loggkamel Routes](src/main/resources/tegning/Loggkamel%20Routes.png)

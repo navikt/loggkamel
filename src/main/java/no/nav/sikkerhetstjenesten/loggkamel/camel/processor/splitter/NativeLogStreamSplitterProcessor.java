@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
@@ -26,8 +27,6 @@ public class NativeLogStreamSplitterProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(NativeLogStreamSplitterProcessor.class);
     static final int LOG_PACKET_MAX_SIZE = 1000;
-
-    static final String LOG_PACKET_EXTENSION = ".packet";
 
     public void prepareLogPacketHeaders(Exchange exchange) {
         String logStreamFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);

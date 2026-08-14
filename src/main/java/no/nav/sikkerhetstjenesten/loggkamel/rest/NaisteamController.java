@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +21,11 @@ public class NaisteamController {
 
     private static final Logger log = LoggerFactory.getLogger(NaisteamController.class);
 
-    private final OversiktService oversiktService;
+    private final AuditloggTaskService auditloggTaskService;
 
     @Autowired
-    public NaisteamController(OversiktService oversiktService) {
-        this.oversiktService = oversiktService;
+    public NaisteamController(AuditloggTaskService auditloggTaskService) {
+        this.auditloggTaskService = auditloggTaskService;
     }
 
     @GetMapping("auditlogg/{naisTeam}")
@@ -33,14 +33,14 @@ public class NaisteamController {
     @Operation(summary = "Finner alle overførings-tasks for et gitt naisteam")
     public List<AuditloggTaskDTO> getAuditloggTasksByNaisTeam(@PathVariable("naisTeam") String naisTeam) {
         log.info("Getting auditlogg tasks by nais team: {}", naisTeam);
-        return oversiktService.getAuditloggTaskByNaisteam(naisTeam);
+        return auditloggTaskService.getAuditloggTaskByNaisteam(naisTeam);
     }
 
     @GetMapping("auditlogg/by-team")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle overførings-tasks, samlet på naisteam")
     public List<NaisTeamDTO> getAuditloggTasksGroupedByNaisTeam() {
-        return oversiktService.getAllTasksGroupedByNaisteam();
+        return auditloggTaskService.getAllTasksGroupedByNaisteam();
     }
 
     @GetMapping("active/{naisTeam}")
@@ -48,7 +48,7 @@ public class NaisteamController {
     @Operation(summary = "Sjekker om naisteamet har noen aktive overførings-tasks")
     public Boolean naisteamHasActiveAuditloggTasks(@PathVariable("naisTeam") String naisTeam) {
         log.info("Confirming active auditlogg tasks for naisteam: {}", naisTeam);
-        return oversiktService.naisteamHasActiveAuditloggTasks(naisTeam);
+        return auditloggTaskService.naisteamHasActiveAuditloggTasks(naisTeam);
     }
 
     @GetMapping("active")
@@ -56,6 +56,6 @@ public class NaisteamController {
     @Operation(summary = "Finner alle unike naisteam med aktive overførings-tasks")
     public List<String> findAllActiveNaisteam() {
         log.info("Finding all naisteams with active auditlogg tasks");
-        return oversiktService.findAllNaisteamWithActiveAuditloggTasks();
+        return auditloggTaskService.findAllNaisteamWithActiveAuditloggTasks();
     }
 }

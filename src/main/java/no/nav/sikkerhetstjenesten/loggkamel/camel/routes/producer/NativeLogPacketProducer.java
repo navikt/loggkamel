@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class NativeLogPacketProducer extends LogStreamErrorHandler {
 
+    public static final String LOG_PACKET_EXTENSION = ".packet";
+
     @Value("${routing.packet.bucket}")
     String logPacketBucket;
 

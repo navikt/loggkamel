@@ -6,7 +6,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.auth.EntraProxyAuthInterceptor;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapterImpl;
 import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyClient;
-import no.nav.sikkerhetstjenesten.loggkamel.client.MockEntraProxyAdapter;
+import no.nav.sikkerhetstjenesten.loggkamel.client.EntraProxyAdapterMock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +46,6 @@ public class EntraProxyConfig {
     @Bean
     @ConditionalOnLocalOrTest
     public EntraProxyAdapter mockEntraProxyAdapter() {
-        return new MockEntraProxyAdapter();
+        return new EntraProxyAdapterMock();
     }
 }

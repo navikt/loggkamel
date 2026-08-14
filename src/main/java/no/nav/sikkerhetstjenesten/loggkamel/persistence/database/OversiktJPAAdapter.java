@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.persistence;
+package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;

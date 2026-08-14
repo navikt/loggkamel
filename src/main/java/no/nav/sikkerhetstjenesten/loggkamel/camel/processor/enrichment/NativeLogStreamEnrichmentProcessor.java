@@ -2,17 +2,17 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DatabaseDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 @Service
@@ -21,12 +21,12 @@ public class NativeLogStreamEnrichmentProcessor {
     private static final Logger log = LoggerFactory.getLogger(NativeLogStreamEnrichmentProcessor.class);
 
     private final NaisService naisService;
-    private final OversiktService oversiktService;
+    private final AuditloggTaskService auditloggTaskService;
 
     @Autowired
-    public NativeLogStreamEnrichmentProcessor(NaisService naisService, OversiktService oversiktService) {
+    public NativeLogStreamEnrichmentProcessor(NaisService naisService, AuditloggTaskService auditloggTaskService) {
         this.naisService = naisService;
-        this.oversiktService = oversiktService;
+        this.auditloggTaskService = auditloggTaskService;
     }
 
     public void enrich(Exchange exchange) {
@@ -73,7 +73,7 @@ public class NativeLogStreamEnrichmentProcessor {
 
     private AuditloggTaskDTO getAuditloggTask(String dbname, TeknologiEnum teknologi) {
         try {
-            return oversiktService.getAuditloggTaskByDbnameAndTeknologi(dbname, teknologi);
+            return auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(dbname, teknologi);
         } catch (RuntimeException e) {
             log.warn("Error while fetching auditlogg task for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while fetching auditlogg task for database " + dbname + " and teknologi " + teknologi.name(), e);
@@ -82,7 +82,7 @@ public class NativeLogStreamEnrichmentProcessor {
 
     private void registerLogsReceivedForAuditloggTask(String dbname, TeknologiEnum teknologi) {
         try {
-            oversiktService.registerLogsReceivedForAuditloggTask(dbname, teknologi);
+            auditloggTaskService.registerLogsReceivedForAuditloggTask(dbname, teknologi);
         } catch (RuntimeException e) {
             log.warn("Error while registering logs received for database {} and teknologi {}. Error message: {}", dbname, teknologi.name(), e.getMessage());
             throw new DatabaseDependencyException("Error while registering logs received for database " + dbname + " and teknologi " + teknologi.name(), e);

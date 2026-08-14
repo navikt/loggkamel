@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.persistence;
+package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -17,6 +17,7 @@ public abstract class AuditloggTaskMapper {
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "updated", ignore = true)
     @Mapping(target = "funnetLogger", constant = "false")
+    @Mapping(target = "discardLogs", constant = "false")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "fiksa", source = "teknologi", qualifiedByName = "setFiksaByTeknologi")
     public abstract AuditloggTaskEntity auditloggTaskRequestDTOToEntity(AuditloggTaskRequestDTO dto);

@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.OversiktService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +32,11 @@ public class AuditloggTaskController {
 
     private static final Logger log = LoggerFactory.getLogger(AuditloggTaskController.class);
 
-    private final OversiktService oversiktService;
+    private final AuditloggTaskService auditloggTaskService;
 
     @Autowired
-    public AuditloggTaskController(OversiktService oversiktService) {
-        this.oversiktService = oversiktService;
+    public AuditloggTaskController(AuditloggTaskService auditloggTaskService) {
+        this.auditloggTaskService = auditloggTaskService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -44,7 +44,7 @@ public class AuditloggTaskController {
     @Operation(summary = "Registrer en ny overførings-task")
     public AuditloggTaskDTO createAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
         log.debug("Creating auditlogg task: {}", auditloggTaskRequestDTO);
-        return oversiktService.createAuditloggTask(auditloggTaskRequestDTO);
+        return auditloggTaskService.createAuditloggTask(auditloggTaskRequestDTO);
     }
 
     @PutMapping()
@@ -52,6 +52,6 @@ public class AuditloggTaskController {
     @Operation(summary = "Oppdater en overførings-task")
     public AuditloggTaskDTO updateAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
         log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);
-        return oversiktService.updateAuditloggTask(auditloggTaskRequestDTO);
+        return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO);
     }
 }

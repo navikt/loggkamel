@@ -2,12 +2,12 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.PostgresLogLineEnricher.POSTGRES_LOG_LINE_ENRICHER_ROUTE;
 
 @Component

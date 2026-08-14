@@ -4,7 +4,7 @@ import com.google.cloud.logging.Logging;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.observability.Metrics;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
 import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
@@ -50,7 +50,7 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                     })
                     .setHeader(OBJECT_NAME, header(FILE_NAME))
                     .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
-                    .setBody(constant(null))
+                    .setBody(constant((Object) null))
                     .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
                     .to(logPacketConsumerUri);
         }

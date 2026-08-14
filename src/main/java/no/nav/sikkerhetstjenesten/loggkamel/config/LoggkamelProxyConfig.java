@@ -1,8 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.config;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
+import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import no.nav.sikkerhetstjenesten.loggkamel.auth.LoggkamelProxyAuthInterceptor;
-import no.nav.sikkerhetstjenesten.loggkamel.client.LoggkamelProxyClient;
+import no.nav.sikkerhetstjenesten.loggkamel.client.*;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -20,13 +21,13 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-@ConditionalOnGCP
 public class LoggkamelProxyConfig {
 
-    @Value("${LOGGKAMEL_PROXY_BASE_URL}")
+    @Value("${LOGGKAMEL_PROXY_BASE_URL:#{''}}")
     private String loggkamelProxyBaseUrl;
 
     @Bean
+    @ConditionalOnGCP
     public LoggkamelProxyClient loggkamelProxyClient(LoggkamelProxyAuthInterceptor loggkamelProxyAuthInterceptor) {
 
         ConnectionConfig connectionConfig = ConnectionConfig.custom()
@@ -57,5 +58,17 @@ public class LoggkamelProxyConfig {
                 .build();
 
         return proxyFactory.createClient(LoggkamelProxyClient.class);
+    }
+
+    @Bean
+    @ConditionalOnGCP
+    public LoggkamelProxyAdapter loggkamelProxyAdapter(LoggkamelProxyClient loggkamelProxyClient) {
+        return new LoggkamelProxyAdapterImpl(loggkamelProxyClient);
+    }
+
+    @Bean
+    @ConditionalOnLocalOrTest
+    public LoggkamelProxyAdapter mockLoggkamelProxyAdapter() {
+        return new LoggkamelProxyAdapterMock();
     }
 }
