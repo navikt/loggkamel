@@ -30,11 +30,6 @@ class GCPPacketPersistenceServiceTest {
     private static final String FILENAME = "I am a name for a file";
     private static final String AUDITLOGG_LINES_AS_JSON = "I am totally a json blob";
 
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(packetPersistenceService, "nativePacketBucketName", PACKET_BUCKET_NAME);
-    }
-
     @Mock
     Bucket bucket;
 
@@ -49,6 +44,11 @@ class GCPPacketPersistenceServiceTest {
 
     @InjectMocks
     GCPPacketPersistenceService packetPersistenceService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(packetPersistenceService, "nativePacketBucketName", PACKET_BUCKET_NAME);
+    }
 
     @Test
     void saveAuditloggLineMessagesWithFilename_nullOrEmptyList() {
