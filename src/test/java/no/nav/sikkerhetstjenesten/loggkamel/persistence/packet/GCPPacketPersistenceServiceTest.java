@@ -66,6 +66,14 @@ class GCPPacketPersistenceServiceTest {
     }
 
     @Test
+    void saveAuditloggLineMessagesWithFilename_missingBucketCausesInvalidLogException() throws JsonProcessingException {
+        when(objectMapper.writeValueAsString(auditloggLineMessages)).thenReturn(AUDITLOGG_LINES_AS_JSON);
+        when(loggkamelProjectStorage.get(anyString())).thenReturn(null);
+
+        assertThrows(InvalidLogStreamException.class, () -> packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages));
+    }
+
+    @Test
     void saveAuditloggLineMessagesWithFilename_happyPath() throws JsonProcessingException {
         when(objectMapper.writeValueAsString(auditloggLineMessages)).thenReturn(AUDITLOGG_LINES_AS_JSON);
         when(loggkamelProjectStorage.get(anyString())).thenReturn(bucket);

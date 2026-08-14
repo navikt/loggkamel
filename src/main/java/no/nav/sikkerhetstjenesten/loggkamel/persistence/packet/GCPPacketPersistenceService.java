@@ -53,6 +53,9 @@ public class GCPPacketPersistenceService implements PacketPersistenceService {
         byte[] auditloggLineMessagesAsBytes = auditloggLineMessagesAsString.getBytes(UTF_8);
 
         Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketName);
+        if (bucketForNativePackets == null) {
+            throw new InvalidLogStreamException("GCP bucket not found: " + nativePacketBucketName);
+        }
         bucketForNativePackets.create(filename, auditloggLineMessagesAsBytes, APPLICATION_JSON_VALUE);
 
         log.info("Successfully uploaded DB2 packet with filename {}",  filename);
