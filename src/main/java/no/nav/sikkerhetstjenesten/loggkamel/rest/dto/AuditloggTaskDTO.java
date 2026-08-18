@@ -1,10 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 
@@ -14,6 +11,7 @@ import java.time.Instant;
 @Builder
 @Jacksonized
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 @Schema(requiredProperties = {"naisteam", "teknologi", "dbname", "okonomi", "loggingLeseoperasjoner", "endringerUtenKrav", "fiksa", "created", "updated", "loggingEndringer", "funnetLogger", "discardLogs"}, example = """
         {
              "naisteam": "sikkerhetstjenesten",

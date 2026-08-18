@@ -1,9 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -12,6 +9,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 @Builder
 @Jacksonized
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuditloggLineMessageHeader {
 
     public static final String TEKNOLOGI = "Teknologi";
