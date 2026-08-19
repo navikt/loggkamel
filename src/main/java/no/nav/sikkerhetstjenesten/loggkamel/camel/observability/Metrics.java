@@ -12,6 +12,7 @@ public class Metrics {
     private static final String BACKOUT_QUEUE_METRIC = LOGGKAMEL_APP_PREFIX + "backout";
     private static final String UNIQUE_DATABASE_ACTION_METRIC = LOGGKAMEL_APP_PREFIX + "unik";
     private static final String UNKNOWN_NAV_IDENT_METRIC = LOGGKAMEL_APP_PREFIX + "unknown";
+    private static final String MISC_DB2_STATEMENT_TYPE_METRIC = LOGGKAMEL_APP_PREFIX + "misc-db2";
 
     private static final String MULTIPLICITY_LABEL = "multiplicity";
     private static final String TEKNOLOGI_LABEL = "teknologi";
@@ -39,6 +40,7 @@ public class Metrics {
         }
 
         meterRegistry.counter(UNKNOWN_NAV_IDENT_METRIC);
+        meterRegistry.counter(MISC_DB2_STATEMENT_TYPE_METRIC);
     }
 
     public void incrementHappyPath(Multiplicity multiplicity, TeknologiEnum teknologi, Action action) {
@@ -55,6 +57,11 @@ public class Metrics {
 
     public void incrementUnknownNavIdent() {
         meterRegistry.counter(UNKNOWN_NAV_IDENT_METRIC).increment();
+    }
+
+    //TODO: add dashboard tracking this metric
+    public void incrementMiscDB2StatementType() {
+        meterRegistry.counter(MISC_DB2_STATEMENT_TYPE_METRIC).increment();
     }
 
 }

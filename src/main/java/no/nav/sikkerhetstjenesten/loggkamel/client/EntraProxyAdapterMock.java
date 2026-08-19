@@ -8,7 +8,7 @@ public class EntraProxyAdapterMock implements EntraProxyAdapter {
     public static final String MOCK_ANSATT_VISNING_NAVN = "MOCK_NAVN";
     public static final String MOCK_ANSATT_FORNAVN = "MOCK_FORNAVN";
     public static final String MOCK_ANSATT_ETTERNAVN = "MOCK_ETTERNAVN";
-    public static final String MOCK_ANSATT_EPOST = "MOCK_EPOST";
+    public static final String MOCK_ANSATT_EPOST = "MOCK@EPOST.NET";
     public static final String MOCK_ENHET_NUMMER = "MOCK_ENHET_NUMMER";
     public static final String MOCK_ENHET_NAVN = "MOCK_ENHET_NAVN";
 
