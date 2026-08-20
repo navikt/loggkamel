@@ -42,15 +42,15 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
     }
 
     public void enrich(Exchange exchange) {
-        String bodyAsString = exchange.getMessage().getBody(AuditloggLineMessage.class).getBody();
+        AuditloggLineMessage auditloggLineMessage = exchange.getMessage().getBody(AuditloggLineMessage.class);
 
-        if (bodyAsString == null || bodyAsString.isBlank()) {
+        if (auditloggLineMessage == null || auditloggLineMessage.getBody().isBlank()) {
             throw new InvalidDB2LogLineException("Audit log message is blank");
         }
 
         DB2AuditloggLineDTO bodyAsDTO;
         try {
-            bodyAsDTO = objectMapper.readValue(bodyAsString, DB2AuditloggLineDTO.class);
+            bodyAsDTO = objectMapper.readValue(auditloggLineMessage.getBody(), DB2AuditloggLineDTO.class);
         } catch (JsonProcessingException e) {
             throw new InvalidDB2LogLineException("Failure assigning serialized DB2AuditloggLineDTO to appropriate class", e);
         }
@@ -86,7 +86,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
         }
 
         EnrichedAuditlogg enrichedAuditlogg = EnrichedAuditlogg.builder()
-                .originalMessage(bodyAsString)
+                .originalMessage(auditloggLineMessage.getBody())
                 .sqlStatement(bodyAsDTO.getSqlQuery())
                 .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault())) //TODO: test that this is being set to CET/CEST
                 .navIdent(bodyAsDTO.getAuthId())
