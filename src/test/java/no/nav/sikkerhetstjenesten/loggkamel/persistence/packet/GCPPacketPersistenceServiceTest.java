@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
+import com.google.json.JsonSanitizer;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +81,7 @@ class GCPPacketPersistenceServiceTest {
 
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages);
 
-        verify(bucket).create(FILENAME, AUDITLOGG_LINES_AS_JSON.getBytes(StandardCharsets.UTF_8), APPLICATION_JSON_VALUE);
+        verify(bucket).create(FILENAME, JsonSanitizer.sanitize(AUDITLOGG_LINES_AS_JSON).getBytes(StandardCharsets.UTF_8), APPLICATION_JSON_VALUE);
     }
 
 }

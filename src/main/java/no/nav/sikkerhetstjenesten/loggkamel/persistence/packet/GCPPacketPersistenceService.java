@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
+import com.google.json.JsonSanitizer;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
@@ -50,6 +51,7 @@ public class GCPPacketPersistenceService implements PacketPersistenceService {
         } catch (JsonProcessingException e) {
             throw new InvalidLogStreamException("Failure when converting DB2 auditloggLineMessages to JSON", e);
         }
+        auditloggLineMessagesAsString = JsonSanitizer.sanitize(auditloggLineMessagesAsString);
         byte[] auditloggLineMessagesAsBytes = auditloggLineMessagesAsString.getBytes(UTF_8);
 
         Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketName);
