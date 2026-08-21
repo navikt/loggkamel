@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Validator;
 import net.sf.jsqlparser.JSQLParserException;
@@ -30,6 +29,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 
+import static org.apache.camel.Exchange.FILE_NAME;
+
 @Service
 public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProcessor {
 
@@ -55,34 +56,40 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
             throw new InvalidDB2LogLineException("Failure assigning serialized DB2AuditloggLineDTO to appropriate class", e);
         }
 
-        Statement statement;
-        try {
-            statement = CCJSqlParserUtil.parse(bodyAsDTO.getSqlQuery());
-        } catch (JSQLParserException e) {
-            throw new InvalidDB2LogLineException("Failure when parsing DB2 log line as SQL statement", e);
-        }
-
         String pgCommand;
         EnrichedAuditlogg.AuditClass pgAuditClass;
 
-        switch (statement) {
-            case Select s      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.READ;  pgCommand = "SELECT"; }
-            case Insert i      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "INSERT"; }
-            case Update u      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "UPDATE"; }
-            case Delete d      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "DELETE"; }
-            case Merge m       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "MERGE"; }
-            case Execute e     -> { pgAuditClass = EnrichedAuditlogg.AuditClass.FUNCTION; pgCommand = "EXECUTE"; }
-            case Grant g       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.ROLE; pgCommand = "GRANT"; }
-            case CreateTable c -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "CREATE TABLE"; }
-            case Alter a       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "ALTER TABLE"; }
-            case Drop d        -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "DROP " + d.getType(); }
-            case SetStatement s-> { pgAuditClass = EnrichedAuditlogg.AuditClass.MISC_SET; pgCommand = "SET"; }
-            default            -> {
-                pgAuditClass = EnrichedAuditlogg.AuditClass.MISC;
-                pgCommand = statement.getClass().getSimpleName().toUpperCase();
-                log.info("DB2 statement parsing of uncategorized statement type {}", pgCommand);
-                metrics.incrementMiscDB2StatementType();
+        Statement statement;
+        try {
+            statement = CCJSqlParserUtil.parse(bodyAsDTO.getSqlQuery());
+
+            switch (statement) {
+                case Select s      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.READ;  pgCommand = "SELECT"; }
+                case Insert i      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "INSERT"; }
+                case Update u      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "UPDATE"; }
+                case Delete d      -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "DELETE"; }
+                case Merge m       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE; pgCommand = "MERGE"; }
+                case Execute e     -> { pgAuditClass = EnrichedAuditlogg.AuditClass.FUNCTION; pgCommand = "EXECUTE"; }
+                case Grant g       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.ROLE; pgCommand = "GRANT"; }
+                case CreateTable c -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "CREATE TABLE"; }
+                case Alter a       -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "ALTER TABLE"; }
+                case Drop d        -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "DROP " + d.getType(); }
+                case SetStatement s-> { pgAuditClass = EnrichedAuditlogg.AuditClass.MISC_SET; pgCommand = "SET"; }
+                default            -> {
+                    pgAuditClass = EnrichedAuditlogg.AuditClass.MISC;
+                    pgCommand = statement.getClass().getSimpleName().toUpperCase();
+                    log.info("DB2 statement parsing of uncategorized statement type {}", pgCommand);
+                    metrics.incrementDB2Issue(Metrics.DB2IssueType.unexpectedStatementType);
+                }
             }
+        } catch (JSQLParserException e) {
+            log.warn("Failed to parse SQL statement for DB2 Log Packet {}, placeInPacket {}. Likely due to DB2-idiosyncratic syntax.",
+                    exchange.getMessage().getHeader(FILE_NAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket());
+            metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
+
+            // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
+            pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
+            pgCommand = "UNKNOWN";
         }
 
         EnrichedAuditlogg enrichedAuditlogg = EnrichedAuditlogg.builder()

@@ -9,6 +9,7 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2LogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
@@ -47,6 +48,9 @@ class DB2LogLineEnrichmentProcessorTest {
 
     @Mock
     AuditloggLineMessage auditloggLineMessage;
+
+    @Mock
+    AuditloggLineMessageHeader auditloggLineMessageHeader;
 
     @Mock
     DB2AuditloggLineDTO db2AuditloggLineDTO;
@@ -96,13 +100,28 @@ class DB2LogLineEnrichmentProcessorTest {
     @Test
     void enrich_exceptionParsingQueryAsSQLStatement() throws JsonProcessingException {
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
+        when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
+        when(auditloggLineMessageHeader.getPlaceInPacket()).thenReturn(1);
         when(objectMapper.readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class)).thenReturn(db2AuditloggLineDTO);
         when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
+
+        when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
+        when(db2AuditloggLineDTO.getAuthId()).thenReturn(NAV_IDENT);
+        when(db2AuditloggLineDTO.getDatabaseName()).thenReturn(DB_NAME);
+        when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
         try (MockedStatic<CCJSqlParserUtil> ccjSqlParserUtil = Mockito.mockStatic(CCJSqlParserUtil.class)) {
             ccjSqlParserUtil.when(() -> CCJSqlParserUtil.parse(SQL_QUERY)).thenThrow(new JSQLParserException("blah"));
 
-            assertThrows(InvalidDB2LogLineException.class, () -> processor.enrich(exchange));
+            processor.enrich(exchange);
+
+            verify(message).setBody(enrichedAuditloggCaptor.capture());
+
+            EnrichedAuditlogg capturedEnrichedAuditlogg = enrichedAuditloggCaptor.getValue();
+            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.WRITE, "UNKNOWN");
+
+            assertEquals(expectedEnrichedAuditlogg, capturedEnrichedAuditlogg);
         }
     }
 
@@ -127,22 +146,22 @@ class DB2LogLineEnrichmentProcessorTest {
             verify(message).setBody(enrichedAuditloggCaptor.capture());
 
             EnrichedAuditlogg capturedEnrichedAuditlogg = enrichedAuditloggCaptor.getValue();
-            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg();
+            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.MISC, "COMMENT");
 
             assertEquals(expectedEnrichedAuditlogg, capturedEnrichedAuditlogg);
         }
     }
 
-    private EnrichedAuditlogg buildExpectedEnrichedAuditlogg() {
+    private EnrichedAuditlogg buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass auditClass, String pgCommand) {
         return EnrichedAuditlogg.builder()
                 .originalMessage(DB2_AUDITLOGG_AS_STRING)
                 .sqlStatement(SQL_QUERY)
                 .logTime(LOG_DATE_TIME.atZone(ZoneId.systemDefault()))
                 .navIdent(NAV_IDENT)
                 .dbName(DB_NAME)
-                .pgAuditClass(EnrichedAuditlogg.AuditClass.MISC)
+                .pgAuditClass(auditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION)
-                .pgCommand("COMMENT")
+                .pgCommand(pgCommand)
                 .epost(EPOST)
                 .build();
     }
