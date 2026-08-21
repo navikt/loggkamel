@@ -78,7 +78,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                 default            -> {
                     pgAuditClass = EnrichedAuditlogg.AuditClass.MISC;
                     pgCommand = statement.getClass().getSimpleName().toUpperCase();
-                    log.info("DB2 statement parsing of uncategorized statement type {}", pgCommand);
+                    log.warn("DB2 statement parsing of uncategorized statement type {}", pgCommand);
                     metrics.incrementDB2Issue(Metrics.DB2IssueType.unexpectedStatementType);
                 }
             }
