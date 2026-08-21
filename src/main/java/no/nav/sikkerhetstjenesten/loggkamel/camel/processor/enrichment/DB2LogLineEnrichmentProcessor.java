@@ -84,7 +84,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
             }
         } catch (JSQLParserException e) {
             log.warn("Failed to parse SQL statement for DB2 Log Packet {}, placeInPacket {}. Likely due to DB2-idiosyncratic syntax.",
-                    exchange.getMessage().getHeader(FILE_NAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket());
+                    exchange.getMessage().getHeader(FILE_NAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
             metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
 
             // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
@@ -104,6 +104,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                 .build();
 
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
+        validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
     }
 }
