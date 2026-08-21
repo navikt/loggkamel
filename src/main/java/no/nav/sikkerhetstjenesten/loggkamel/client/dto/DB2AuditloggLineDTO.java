@@ -1,9 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.client.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.LocalDateTime;
@@ -12,6 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 public class DB2AuditloggLineDTO {
 
     @NonNull

@@ -1,5 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOperationsEnricher;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.LogLineOperationTypes;
 import org.apache.camel.Exchange;
@@ -30,7 +32,13 @@ class StandardizedLogLineFilterProcessorTest {
     AuditloggTaskDTO auditloggTaskDTO;
 
     @Mock
+    EnrichedAuditlogg enrichedAuditlogg;
+
+    @Mock
     LogLineOperationTypes logLineOperationTypes;
+
+    @Mock
+    LogLineOperationsEnricher logLineOperationsEnricher;
 
     @InjectMocks
     StandardizedLogLineFilterProcessor standardizedLogLineFilterProcessor;
@@ -40,7 +48,9 @@ class StandardizedLogLineFilterProcessorTest {
         when(message.getHeader(FILE_NAME)).thenReturn("blah");
         when(exchange.getVariable(PLACE_IN_PACKET)).thenReturn(1);
         when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(auditloggTaskDTO);
-        when(exchange.getVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, LogLineOperationTypes.class)).thenReturn(logLineOperationTypes);
+        when(message.getBody(EnrichedAuditlogg.class)).thenReturn(enrichedAuditlogg);
+        when(enrichedAuditlogg.getPgAuditClass()).thenReturn(EnrichedAuditlogg.AuditClass.WRITE);
+        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(EnrichedAuditlogg.AuditClass.WRITE)).thenReturn(logLineOperationTypes);
     }
 
     @Test

@@ -4,7 +4,6 @@ import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.LogLineOperationTypes;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -27,7 +26,6 @@ import java.util.stream.Stream;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.PostgresLogLineEnrichmentProcessor.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,16 +57,10 @@ class PostgresLogLineEnrichmentProcessorTest {
     AuditloggLineMessage auditloggLineMessage;
 
     @Mock
-    LogLineOperationTypes logLineOperationTypes;
-
-    @Mock
     EntraProxyAnsatt entraProxyAnsatt;
 
     @Mock
     EntraProxyService entraProxyService;
-
-    @Mock
-    LogLineOperationsEnricher logLineOperationsEnricher;
 
     @Mock
     Metrics metrics;
@@ -150,8 +142,6 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         when(entraProxyService.getAnsattFraNavIdent("SAMPLENAVIDENT")).thenReturn(null);
 
-        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(PG_AUDIT_CLASS)).thenReturn(logLineOperationTypes);
-
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<EnrichedAuditlogg> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedAuditlogg.class);
@@ -169,13 +159,10 @@ class PostgresLogLineEnrichmentProcessorTest {
         when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(ANSATT_EPOST);
 
-        when(logLineOperationsEnricher.constructOperationTypesFromAuditClass(PG_AUDIT_CLASS)).thenReturn(logLineOperationTypes);
-
         postgresLogLineEnrichmentProcessor.enrich(exchange);
 
         ArgumentCaptor<EnrichedAuditlogg> logEnrichmentCaptor = ArgumentCaptor.forClass(EnrichedAuditlogg.class);
         verify(message).setBody(logEnrichmentCaptor.capture());
-        verify(exchange).setVariable(eq(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES), eq(logLineOperationTypes));
 
         EnrichedAuditlogg capturedLogEnrichment = logEnrichmentCaptor.getValue();
         assertEquals(expectedLogEnrichment(logMessageBody), capturedLogEnrichment);

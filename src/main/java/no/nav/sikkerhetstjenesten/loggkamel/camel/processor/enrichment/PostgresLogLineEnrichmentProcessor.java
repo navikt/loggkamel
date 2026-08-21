@@ -1,12 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.LogLineOperationTypes;
-import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
@@ -20,38 +16,26 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
 
 @Service
-public class PostgresLogLineEnrichmentProcessor {
+public class PostgresLogLineEnrichmentProcessor extends NativeLogLineEnrichmentProcessor {
     private static final Logger log = LoggerFactory.getLogger(PostgresLogLineEnrichmentProcessor.class);
 
     static final List<String> PG_AUDIT_MESSAGE_LEVELS = List.of("DEBUG5", "DEBUG4", "DEBUG3", "DEBUG2", "DEBUG1", "INFO", "NOTICE", "WARNING", "ERROR", "LOG", "FATAL", "PANIC");
     static final List<String> PG_AUDIT_CONTEXT_LABELS = List.of("HINT", "STATEMENT", "DETAIL", "CONTEXT");
 
     static final String UNEXPECTED_LOG_PATTERN_MESSAGE = "Log failed to match expected pattern, cannot extract enrichment attributes";
-    static final String ENTRA_PROXY_ERROR_MESSAGE = "Error when fetching ansatt information from entra-proxy";
     static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS zzz", Locale.ENGLISH);
-
-    private final EntraProxyService entraProxyService;
-    private final LogLineOperationsEnricher logLineOperationsEnricher;
-    private final Metrics metrics;
-    private final Validator validator;
 
     @Autowired
     public PostgresLogLineEnrichmentProcessor(EntraProxyService entraProxyService,
-                                              LogLineOperationsEnricher logLineOperationsEnricher,
                                               Metrics metrics,
                                               Validator validator) {
-        this.logLineOperationsEnricher = logLineOperationsEnricher;
-        this.entraProxyService = entraProxyService;
-        this.metrics = metrics;
-        this.validator = validator;
+        super(metrics, entraProxyService, validator);
     }
 
     public void enrich(Exchange exchange) {
@@ -70,19 +54,13 @@ public class PostgresLogLineEnrichmentProcessor {
         EnrichedAuditlogg enrichedAuditlogg;
         try {
             enrichedAuditlogg = extractEnrichmentFromLog(body);
-            validateEnrichedAuditlogg(enrichedAuditlogg);
-        } catch (InvalidPostgresLogLineException e) {
-            throw e;
         } catch (RuntimeException e) {
             throw new InvalidPostgresLogLineException("Failure converting values extracted from log line into EnrichedAuditlogg", e);
         }
         enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
-        exchange.getMessage().setBody(enrichedAuditlogg);
 
-        //TODO: once you have other teknologies and can see if this step is standardizable, pull this into the filtration step instead of
-        // performing the operation preemptively here
-        LogLineOperationTypes logLineOperationTypes = logLineOperationsEnricher.constructOperationTypesFromAuditClass(enrichedAuditlogg.getPgAuditClass());
-        exchange.setVariable(LogLineOperationTypes.LOG_LINE_OPERATION_TYPES, logLineOperationTypes);
+        validateEnrichedAuditlogg(enrichedAuditlogg);
+        exchange.getMessage().setBody(enrichedAuditlogg);
     }
 
     private boolean messageContainsPostgresNonLogStatement(String body) {
@@ -138,31 +116,4 @@ public class PostgresLogLineEnrichmentProcessor {
                 .build();
     }
 
-    private String getAnsattEpost(String navIdent) {
-        EntraProxyAnsatt entraProxyAnsatt;
-        try {
-            entraProxyAnsatt = entraProxyService.getAnsattFraNavIdent(navIdent);
-        } catch (Exception e) {
-            log.warn(ENTRA_PROXY_ERROR_MESSAGE, e);
-            throw new EntraProxyDependencyException(ENTRA_PROXY_ERROR_MESSAGE, e);
-        }
-
-        if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
-            log.info("Entra-proxy returned empty response for navIdent {}, not enriching with employee email", navIdent);
-            metrics.incrementUnknownNavIdent();
-            return null;
-        }
-
-        return entraProxyAnsatt.getEpost();
-    }
-
-    private void validateEnrichedAuditlogg(EnrichedAuditlogg enrichedAuditlogg) {
-        Set<ConstraintViolation<EnrichedAuditlogg>> violations = validator.validate(enrichedAuditlogg);
-        if (!violations.isEmpty()) {
-            throw new InvalidPostgresLogLineException("Validation failed: " +
-                    violations.stream()
-                            .map(v -> v.getPropertyPath() + " " + v.getMessage())
-                            .collect(Collectors.joining(", ")));
-        }
-    }
 }
