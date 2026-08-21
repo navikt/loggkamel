@@ -95,7 +95,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
         EnrichedAuditlogg enrichedAuditlogg = EnrichedAuditlogg.builder()
                 .originalMessage(auditloggLineMessage.getBody())
                 .sqlStatement(bodyAsDTO.getSqlQuery())
-                .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault())) //TODO: test that this is being set to CET/CEST
+                .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault()))
                 .navIdent(bodyAsDTO.getAuthId())
                 .dbName(bodyAsDTO.getDatabaseName())
                 .pgAuditClass(pgAuditClass)
