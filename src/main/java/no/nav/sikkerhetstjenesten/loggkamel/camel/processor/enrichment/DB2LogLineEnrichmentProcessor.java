@@ -76,7 +76,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                 case Drop d        -> { pgAuditClass = EnrichedAuditlogg.AuditClass.DDL; pgCommand = "DROP " + d.getType(); }
                 case SetStatement s-> { pgAuditClass = EnrichedAuditlogg.AuditClass.MISC_SET; pgCommand = "SET"; }
                 default            -> {
-                    pgAuditClass = EnrichedAuditlogg.AuditClass.MISC;
+                    pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
                     pgCommand = statement.getClass().getSimpleName().toUpperCase();
                     log.warn("DB2 statement parsing of uncategorized statement type {}", pgCommand);
                     metrics.incrementDB2Issue(Metrics.DB2IssueType.unexpectedStatementType);
@@ -103,7 +103,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                 .pgCommand(pgCommand)
                 .build();
 
-        enrichedAuditlogg.setEpost(getAnsattEpost(enrichedAuditlogg.getNavIdent()));
+        enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(enrichedAuditlogg.getNavIdent()));
         validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
     }

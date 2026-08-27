@@ -30,7 +30,7 @@ public abstract class NativeLogLineEnrichmentProcessor {
         this.validator = validator;
     }
 
-    String getAnsattEpost(String navIdent) {
+    String getAnsattEpostFromNavIdent(String navIdent) {
         EntraProxyAnsatt entraProxyAnsatt;
         try {
             entraProxyAnsatt = entraProxyService.getAnsattFraNavIdent(navIdent);
@@ -41,6 +41,24 @@ public abstract class NativeLogLineEnrichmentProcessor {
 
         if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
             log.info("Entra-proxy returned empty response for navIdent {}, not enriching with employee email", navIdent);
+            metrics.incrementUnknownNavIdent();
+            return null;
+        }
+
+        return entraProxyAnsatt.getEpost();
+    }
+
+    String getAnsattEpostFromTIdent(String tIdent) {
+        EntraProxyAnsatt entraProxyAnsatt;
+        try {
+            entraProxyAnsatt = entraProxyService.getAnsattFraTIdent(tIdent);
+        } catch (Exception e) {
+            log.warn(ENTRA_PROXY_ERROR_MESSAGE, e);
+            throw new EntraProxyDependencyException(ENTRA_PROXY_ERROR_MESSAGE, e);
+        }
+
+        if (entraProxyAnsatt == null || entraProxyAnsatt.getEpost() == null || entraProxyAnsatt.getEpost().isBlank()) {
+            log.info("Entra-proxy returned empty response for tIdent {}, not enriching with employee email", tIdent);
             metrics.incrementUnknownNavIdent();
             return null;
         }

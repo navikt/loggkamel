@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 class NativeLogLineEnrichmentProcessorTest {
 
     private static final String NAV_IDENT = "navIdent";
+    private static final String T_IDENT = "tIdent";
     private static final String EPOST = "epost@blah.bleh";
 
     @Mock
@@ -56,28 +57,53 @@ class NativeLogLineEnrichmentProcessorTest {
     }
 
     @Test
-    void getAnsattEpost_convertsEntraProxyException() {
+    void getAnsattEpostFromNavIdent_convertsEntraProxyException() {
         when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenThrow(new RuntimeException());
 
-        assertThrows(EntraProxyDependencyException.class, () -> nativeLogLineEnrichmentProcessor.getAnsattEpost(NAV_IDENT));
+        assertThrows(EntraProxyDependencyException.class, () -> nativeLogLineEnrichmentProcessor.getAnsattEpostFromNavIdent(NAV_IDENT));
     }
 
     @Test
-    void getAnsattEpost_emptyEmployeeIncrementsMetricsAndReturnsNull() {
+    void getAnsattEpostFromNavIdent_emptyEmployeeIncrementsMetricsAndReturnsNull() {
         when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn("");
 
-        assertNull(nativeLogLineEnrichmentProcessor.getAnsattEpost(NAV_IDENT));
+        assertNull(nativeLogLineEnrichmentProcessor.getAnsattEpostFromNavIdent(NAV_IDENT));
 
         verify(metrics).incrementUnknownNavIdent();
     }
 
     @Test
-    void getAnsattEpost_happyPath() {
+    void getAnsattEpostFromNavIdent_happyPath() {
         when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
-        assertEquals(EPOST, nativeLogLineEnrichmentProcessor.getAnsattEpost(NAV_IDENT));
+        assertEquals(EPOST, nativeLogLineEnrichmentProcessor.getAnsattEpostFromNavIdent(NAV_IDENT));
+    }
+
+    @Test
+    void getAnsattEpostFromTIdent_convertsEntraProxyException() {
+        when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenThrow(new RuntimeException());
+
+        assertThrows(EntraProxyDependencyException.class, () -> nativeLogLineEnrichmentProcessor.getAnsattEpostFromTIdent(T_IDENT));
+    }
+
+    @Test
+    void getAnsattEpostFromTIdent_emptyEmployeeIncrementsMetricsAndReturnsNull() {
+        when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyAnsatt.getEpost()).thenReturn("");
+
+        assertNull(nativeLogLineEnrichmentProcessor.getAnsattEpostFromTIdent(T_IDENT));
+
+        verify(metrics).incrementUnknownNavIdent();
+    }
+
+    @Test
+    void getAnsattEpostFromTIdent_happyPath() {
+        when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
+
+        assertEquals(EPOST, nativeLogLineEnrichmentProcessor.getAnsattEpostFromTIdent(T_IDENT));
     }
 
     @Test

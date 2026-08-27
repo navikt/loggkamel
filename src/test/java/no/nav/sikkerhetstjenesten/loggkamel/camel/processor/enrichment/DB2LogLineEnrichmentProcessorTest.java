@@ -36,7 +36,7 @@ class DB2LogLineEnrichmentProcessorTest {
     private static final String SQL_QUERY = "sql query goes here";
 
     private static final LocalDateTime LOG_DATE_TIME = LocalDateTime.of(2001, 1, 1, 2, 3, 4);
-    private static final String NAV_IDENT = "navIdent";
+    private static final String T_IDENT = "tIdent";
     private static final String DB_NAME = "dbName";
     private static final String EPOST = "epost";
 
@@ -106,9 +106,9 @@ class DB2LogLineEnrichmentProcessorTest {
         when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
-        when(db2AuditloggLineDTO.getAuthId()).thenReturn(NAV_IDENT);
+        when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
         when(db2AuditloggLineDTO.getDatabaseName()).thenReturn(DB_NAME);
-        when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
         try (MockedStatic<CCJSqlParserUtil> ccjSqlParserUtil = Mockito.mockStatic(CCJSqlParserUtil.class)) {
@@ -132,9 +132,9 @@ class DB2LogLineEnrichmentProcessorTest {
         when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
-        when(db2AuditloggLineDTO.getAuthId()).thenReturn(NAV_IDENT);
+        when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
         when(db2AuditloggLineDTO.getDatabaseName()).thenReturn(DB_NAME);
-        when(entraProxyService.getAnsattFraNavIdent(NAV_IDENT)).thenReturn(entraProxyAnsatt);
+        when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
         try (MockedStatic<CCJSqlParserUtil> ccjSqlParserUtil = Mockito.mockStatic(CCJSqlParserUtil.class)) {
@@ -146,7 +146,7 @@ class DB2LogLineEnrichmentProcessorTest {
             verify(message).setBody(enrichedAuditloggCaptor.capture());
 
             EnrichedAuditlogg capturedEnrichedAuditlogg = enrichedAuditloggCaptor.getValue();
-            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.MISC, "COMMENT");
+            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.WRITE, "COMMENT");
 
             assertEquals(expectedEnrichedAuditlogg, capturedEnrichedAuditlogg);
         }
@@ -157,7 +157,7 @@ class DB2LogLineEnrichmentProcessorTest {
                 .originalMessage(DB2_AUDITLOGG_AS_STRING)
                 .sqlStatement(SQL_QUERY)
                 .logTime(LOG_DATE_TIME.atZone(ZoneId.systemDefault()))
-                .navIdent(NAV_IDENT)
+                .navIdent(T_IDENT)
                 .dbName(DB_NAME)
                 .pgAuditClass(auditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION)
