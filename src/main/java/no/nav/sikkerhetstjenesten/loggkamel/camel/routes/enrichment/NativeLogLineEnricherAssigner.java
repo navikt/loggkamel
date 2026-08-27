@@ -8,6 +8,7 @@ import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.DB2LogLineEnricher.DB2_LOG_LINE_ENRICHER_ROUTE;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.PostgresLogLineEnricher.POSTGRES_LOG_LINE_ENRICHER_ROUTE;
 
 @Component
@@ -27,6 +28,9 @@ public class NativeLogLineEnricherAssigner extends LogPacketErrorHandler {
                     .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.POSTGRESQL))
                         .log(LoggingLevel.DEBUG, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to Postgres enricher")
                         .to(POSTGRES_LOG_LINE_ENRICHER_ROUTE)
+                    .when(variable(TEKNOLOGI).isEqualTo(TeknologiEnum.DB2))
+                        .log(LoggingLevel.DEBUG, "Routing log message ${header.CamelFileName} with teknologi ${variable.Teknologi} to DB2 enricher")
+                        .to(DB2_LOG_LINE_ENRICHER_ROUTE)
                     .otherwise()
                         .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${variable.Teknologi} in file ${header.CamelFileName} line ${variable.PlaceInPacket}, sending to invalid message queue")
                         .throwException(new InvalidLogLineException("Could not determine which enricher to use for log message ${header.CamelFileName} line ${variable.PlaceInPacket} with teknologi ${variable.Teknologi}"));

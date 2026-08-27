@@ -16,11 +16,24 @@ public class LoggkamelProxyAdapterImpl implements LoggkamelProxyAdapter {
 
     @Override
     public List<DB2AuditloggLineDTO> getDB2AuditloggLinesForDatabaseInDateRange(String databaseName, LocalDateTime startDateTime, LocalDateTime endDateTime, int packetSize) {
-        return proxyClient.getDB2AuditloggLinesForDatabaseInDateRange(AuditloggRequest.builder()
-                        .databaseName(databaseName)
-                        .logStartTime(startDateTime)
-                        .logEndTime(endDateTime)
-                        .packetSize(packetSize)
+        List<DB2AuditloggLineDTO> responseWithWhitespaces = proxyClient.getDB2AuditloggLinesForDatabaseInDateRange(AuditloggRequest.builder()
+                .databaseName(databaseName)
+                .logStartTime(startDateTime)
+                .logEndTime(endDateTime)
+                .packetSize(packetSize)
                 .build());
+
+        // We trim fields that are char fields in db2, and which therefore might have trailing whitespace
+        return responseWithWhitespaces.stream().map(db2AuditloggLineDTO -> {
+                    String sqlWithoutUnicodeControlCharacters = db2AuditloggLineDTO.getSqlQuery().replaceAll("\\p{C}", " ");
+                    return DB2AuditloggLineDTO.builder()
+                            .metricsTimestamp(db2AuditloggLineDTO.getMetricsTimestamp())
+                            .databaseName(db2AuditloggLineDTO.getDatabaseName().trim())
+                            .tableName(db2AuditloggLineDTO.getTableName().trim())
+                            .authId(db2AuditloggLineDTO.getAuthId().trim())
+                            .sqlQuery(sqlWithoutUnicodeControlCharacters)
+                            .build();
+                }
+        ).toList();
     }
 }
