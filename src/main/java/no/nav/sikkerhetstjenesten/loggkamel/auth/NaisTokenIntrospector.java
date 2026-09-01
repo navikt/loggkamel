@@ -37,7 +37,7 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    @Value("${NAIS_TOKEN_INTROSPECTION_ENDPOINT}")
+    @Value("${NAIS_TOKEN_INTROSPECTION_ENDPOINT:#{''}}")
     private String tokenIntrospectionEndpoint;
 
     @Autowired
