@@ -71,8 +71,8 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
         }
 
         if (!authenticationResponse.active) {
-            log.debug("Invalid token received, cause for invalid token is ${authenticationResponse.error}");
-            throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is ${authenticationResponse.error}");
+            log.debug("Invalid token received, cause for invalid token is {}", authenticationResponse.error);
+            throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.error);
         }
 
         Map<String, Object> authenticationResponseAsMap = objectMapper.convertValue(authenticationResponse, new TypeReference<>() {});
