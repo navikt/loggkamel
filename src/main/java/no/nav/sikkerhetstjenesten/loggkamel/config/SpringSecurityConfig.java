@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +33,11 @@ public class SpringSecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public RestClient restClient() {
+        return RestClient.create();
     }
 
 }
