@@ -34,6 +34,11 @@
       "name": "azure-token-generator",
       "namespace": "nais",
       "cluster": "prod-gcp"
+    },
+    {
+      "name": "loggkamel-frontend",
+      "namespace": "sikkerhetstjenesten",
+      "cluster": "prod-gcp"
     }
   ],
   "outbound": [

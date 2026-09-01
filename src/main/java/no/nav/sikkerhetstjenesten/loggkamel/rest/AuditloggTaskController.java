@@ -12,18 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
 // TODO: look into input sanitization to avoid sql, log injection
-// TODO: declare controller using Spring annotations
-// TODO: require authentication for controller, validate token. Likely switch from previous machine-machine to employee auth
-//@ProtectedRestController(value = "/api/v1/task", issuer = "azuread", claimMap = {})
+@RequestMapping("/api/v1/task")
 @ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
@@ -54,4 +49,6 @@ public class AuditloggTaskController {
         log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);
         return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO);
     }
+
+    //TODO: endpoint which uses your auth token to determine user identity, based on that get the list of naisteams that the user is a part of, and based on that all tasks associated with this user
 }
