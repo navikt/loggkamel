@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 public class SpringSecurityConfig {
 
     @Bean
-    public SecurityFilterChain springSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exceptionHandlingConfigurer ->
@@ -27,8 +27,9 @@ public class SpringSecurityConfig {
                         -> httpSecurityOAuth2ResourceServerConfigurer.opaqueToken(Customizer.withDefaults()))
                 .authorizeHttpRequests(authorize -> {
                             authorize.requestMatchers("/monitoring/**").permitAll();
-                            authorize.requestMatchers("/api/vi/dev/**").permitAll();
-                            authorize.requestMatchers("/api/vi/naisteam/**").permitAll();
+                            authorize.requestMatchers("/api/v1/dev/**").permitAll();
+                            authorize.requestMatchers("/api/v1/naisteam/futureNaisteamListEndpoint").authenticated();
+                            authorize.requestMatchers("/api/v1/naisteam/**").permitAll();
                             authorize.anyRequest().authenticated();
                         }
                 );
@@ -36,8 +37,4 @@ public class SpringSecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public OpaqueTokenIntrospector  opaqueTokenIntrospector(ObjectMapper objectMapper) {
-        return new NaisTokenIntrospector(objectMapper);
-    }
 }
