@@ -58,4 +58,6 @@ public class NaisteamController {
         log.info("Finding all naisteams with active auditlogg tasks");
         return auditloggTaskService.findAllNaisteamWithActiveAuditloggTasks();
     }
+
+    //TODO: endpoint which takes your auth token to determine user identity, returns a list of naisteams that the person is in
 }
