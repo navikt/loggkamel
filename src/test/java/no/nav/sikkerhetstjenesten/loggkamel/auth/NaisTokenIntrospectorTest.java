@@ -1,7 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.EntraAuthenticationResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,19 +14,22 @@ import org.springframework.security.oauth2.server.resource.introspection.OAuth2I
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.grantedAuthorities;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NaisTokenIntrospectorTest {
 
+    private static final String ENDPOINT_FIELD = "tokenIntrospectionEndpoint";
     private static final String TOKEN = "user provided token";
     private static final String TOKEN_INTROSPECTION_ENDPOINT_VALUE = "some value for introspection endpoint";
+    private static final Map<String, String> EXPECTED_REQUEST_BODY =
+            Map.of("identity_provider", "entra_id", "token", TOKEN);
 
     @Mock
     private RestClient restClient;
@@ -38,65 +40,62 @@ class NaisTokenIntrospectorTest {
     @Mock
     private RestClient.ResponseSpec responseSpec;
 
-    @Mock
-    ObjectMapper objectMapper;
-
     @InjectMocks
     NaisTokenIntrospector naisTokenIntrospector;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(naisTokenIntrospector, "tokenIntrospectionEndpoint", TOKEN_INTROSPECTION_ENDPOINT_VALUE);
+        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, TOKEN_INTROSPECTION_ENDPOINT_VALUE);
     }
 
     @Test
     void missingIntrospectionEndpoint() {
-        ReflectionTestUtils.setField(naisTokenIntrospector, "tokenIntrospectionEndpoint", null);
+        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, null);
         assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
 
-        ReflectionTestUtils.setField(naisTokenIntrospector, "tokenIntrospectionEndpoint", "");
+        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, "");
         assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
     }
 
     @Test
     void authenticationResponseNull() {
-        mockRequestToResponseSpec();
-        when(responseSpec.body(NaisTokenIntrospector.EntraAuthenticationResponse.class)).thenReturn(null);
+        mockIntrospectionResponse(null);
 
         assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
     }
 
-    private void mockRequestToResponseSpec() {
-        when(restClient.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(TOKEN_INTROSPECTION_ENDPOINT_VALUE)).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.accept(MediaType.APPLICATION_JSON)).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.body(anyMap())).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.retrieve()).thenReturn(responseSpec);
-    }
-
     @Test
     void tokenNotValid() {
-        mockRequestToResponseSpec();
-        NaisTokenIntrospector.EntraAuthenticationResponse entraAuthenticationResponse = new NaisTokenIntrospector.EntraAuthenticationResponse(false, "some explanation", null);
-        when(responseSpec.body(NaisTokenIntrospector.EntraAuthenticationResponse.class)).thenReturn(entraAuthenticationResponse);
+        mockIntrospectionResponse(new EntraAuthenticationResponse(false, "some explanation", null));
 
         assertThrows(BadOpaqueTokenException.class, () -> naisTokenIntrospector.introspect(TOKEN));
     }
 
     @Test
     void tokenIsValid() {
-        mockRequestToResponseSpec();
-        NaisTokenIntrospector.EntraAuthenticationResponse entraAuthenticationResponse = new NaisTokenIntrospector.EntraAuthenticationResponse(true, null, List.of("some", "roles"));
-        when(responseSpec.body(NaisTokenIntrospector.EntraAuthenticationResponse.class)).thenReturn(entraAuthenticationResponse);
+        Map<String, Object> claims = Map.of("azp_name", "some consumer", "roles", "access_as_application");
+        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, claims));
 
-        Map<String, Object> mapFromResponse = Map.of("key1", "value1", "key2", "value2");
-        when(objectMapper.convertValue(eq(entraAuthenticationResponse), any(TypeReference.class))).thenReturn(mapFromResponse);
+        OAuth2AuthenticatedPrincipal principal = naisTokenIntrospector.introspect(TOKEN);
 
-        OAuth2AuthenticatedPrincipal tokenInspectionResponse = naisTokenIntrospector.introspect(TOKEN);
-
-        assertEquals(mapFromResponse, tokenInspectionResponse.getAttributes());
-        assertIterableEquals(grantedAuthorities, tokenInspectionResponse.getAuthorities());
+        assertEquals(claims, principal.getAttributes());
+        assertIterableEquals(grantedAuthorities, principal.getAuthorities());
     }
 
+    @Test
+    void validTokenWithoutClaims() {
+        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, Map.of()));
+
+        assertThrows(IllegalArgumentException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+    }
+
+    private void mockIntrospectionResponse(EntraAuthenticationResponse response) {
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(TOKEN_INTROSPECTION_ENDPOINT_VALUE)).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.accept(MediaType.APPLICATION_JSON)).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.body(EXPECTED_REQUEST_BODY)).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(EntraAuthenticationResponse.class)).thenReturn(response);
+    }
 }

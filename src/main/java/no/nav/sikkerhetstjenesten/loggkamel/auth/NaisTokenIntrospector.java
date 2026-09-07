@@ -1,7 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +25,13 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
     public record EntraAuthenticationResponse(
             boolean active,
             String error,
-            List<String> roles
+            Map<String, Object> claims
     ) {}
 
     private static final Logger log = LoggerFactory.getLogger(NaisTokenIntrospector.class);
 
     static final List<GrantedAuthority> grantedAuthorities = List.of(new SimpleGrantedAuthority("AUTHENTICATED_NAIS_SERVICE"));
 
-    private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
     @Value("${NAIS_TOKEN_INTROSPECTION_ENDPOINT:#{''}}")
@@ -42,11 +39,9 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
 
     @Autowired
     public NaisTokenIntrospector(
-            ObjectMapper objectMapper,
             RestClient restClient
     ) {
         this.restClient = restClient;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -75,7 +70,6 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
             throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.error);
         }
 
-        Map<String, Object> authenticationResponseAsMap = objectMapper.convertValue(authenticationResponse, new TypeReference<>() {});
-        return new DefaultOAuth2AuthenticatedPrincipal(authenticationResponseAsMap, grantedAuthorities);
+        return new DefaultOAuth2AuthenticatedPrincipal(authenticationResponse.claims(), grantedAuthorities);
     }
 }
