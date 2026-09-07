@@ -43,3 +43,6 @@ replay_pid*
 
 src/main/resources/files/*
 src/main/resources/scratch/*
+
+### Copilot / nav-pilot ###
+.github/.nav-pilot-state.json

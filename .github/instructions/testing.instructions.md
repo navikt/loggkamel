@@ -1,12 +1,12 @@
 ---
 name: Testing Standards
-description: "Felles testprinsipper for Nav. Språkspesifikke eksempler finnes i egne instruksjoner for Kotlin og TypeScript."
-applyTo: "**/*.test.{ts,tsx,kt,kts}"
+description: "Felles testprinsipper for Nav."
+applyTo: "**/*Test.java"
 ---
 
 # Testing Standards
 
-Common testing principles for Nav. Language-specific examples can be found in separate instructions for [Kotlin](testing-kotlin.instructions.md) and [TypeScript](testing-typescript.instructions.md).
+Common testing principles for Nav.
 
 ## Test Coverage
 
@@ -20,16 +20,16 @@ Common testing principles for Nav. Language-specific examples can be found in se
 
 ## Test Naming
 
-```kotlin
+```java
 // ✅ Good - describes behavior
-`should create user when valid data provided`
-`should throw exception when email is invalid`
-`should publish event after successful processing`
+void shouldCreateUserWhenValidDataProvided()
+void shouldThrowExceptionWhenEmailIsInvalid()
+void shouldPublishEventAfterSuccessfulProcessing()
 
 // ❌ Bad - not descriptive
-`test1`
-`createUserTest`
-`testValidation`
+void test1()
+void createUserTest()
+void testValidation()
 ```
 
 ## Test Strategy
@@ -38,8 +38,8 @@ Choose test type based on what you're verifying:
 
 | What to test | Test type | Tools |
 |---|---|---|
-| Pure functions, utils | Unit test | Kotest / Vitest |
-| Controller + validation | Slice test | `@WebMvcTest` + MockkBean |
+| Pure functions, utils | Unit test | JUnit 5 + AssertJ |
+| Controller + validation | Slice test | `@WebMvcTest` + `@MockitoBean` |
 | Repository + SQL | Slice test | `@DataJpaTest` + Testcontainers |
 | Full API flow | Integration test | `@SpringBootTest` + Testcontainers |
 | User workflows | E2E test | Playwright |
