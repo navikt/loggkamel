@@ -5,8 +5,6 @@ import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
-import no.nav.sikkerhetstjenesten.loggkamel.service.GCPProject;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisTeamEnvironments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +23,12 @@ public class NaisServiceGCP implements NaisService {
 
     static final String TEAM_NAME = "teamName";
     static final String TEAM = "team";
+
+    public record GCPProject(String name, String gcpProjectID) {
+    }
+
+    public record NaisTeamEnvironments(List<GCPProject> environments) {
+    }
 
     @Autowired
     private HttpSyncGraphQlClient naisGraphqlClient;
@@ -59,12 +64,12 @@ public class NaisServiceGCP implements NaisService {
         }
 
         String currentCluster = Cluster.currentCluster().clusterName();
-        Optional<GCPProject> currentEnvGCPProject = naisTeamEnvironments.getEnvironments().stream().filter(env -> env.getName().equals(currentCluster)).findFirst();
+        Optional<GCPProject> currentEnvGCPProject = naisTeamEnvironments.environments().stream().filter(env -> env.name().equals(currentCluster)).findFirst();
 
         if (currentEnvGCPProject.isEmpty()) {
             throw new InvalidLogStreamException("Fant ingen GCP Projecter for team " + naisTeam + " i miljø " + currentCluster);
         }
 
-        return currentEnvGCPProject.get().getGcpProjectID();
+        return currentEnvGCPProject.get().gcpProjectID();
     }
 }

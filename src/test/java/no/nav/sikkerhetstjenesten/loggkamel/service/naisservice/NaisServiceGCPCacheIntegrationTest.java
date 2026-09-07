@@ -3,8 +3,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 import no.nav.boot.conditionals.Cluster;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
-import no.nav.sikkerhetstjenesten.loggkamel.service.GCPProject;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisTeamEnvironments;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,6 +22,8 @@ import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.GCPProject;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamEnvironments;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;

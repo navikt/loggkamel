@@ -2,8 +2,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
-import no.nav.sikkerhetstjenesten.loggkamel.service.GCPProject;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisTeamEnvironments;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +13,8 @@ import reactor.core.publisher.Mono;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.GCPProject;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamEnvironments;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -75,7 +75,7 @@ class NaisServiceGCPTest {
         when(requestSpec.retrieve(TEAM)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenReturn(naisTeamEnvironments);
-        when(naisTeamEnvironments.getEnvironments()).thenReturn(java.util.List.of());
+        when(naisTeamEnvironments.environments()).thenReturn(java.util.List.of());
 
         assertThrows(InvalidLogStreamException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
@@ -87,9 +87,9 @@ class NaisServiceGCPTest {
         when(requestSpec.retrieve(TEAM)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenReturn(naisTeamEnvironments);
-        when(naisTeamEnvironments.getEnvironments()).thenReturn(java.util.List.of(gcpProject));
-        when(gcpProject.getName()).thenReturn("local");
-        when(gcpProject.getGcpProjectID()).thenReturn(GCP_PROJECT_ID);
+        when(naisTeamEnvironments.environments()).thenReturn(java.util.List.of(gcpProject));
+        when(gcpProject.name()).thenReturn("local");
+        when(gcpProject.gcpProjectID()).thenReturn(GCP_PROJECT_ID);
 
         assertEquals(GCP_PROJECT_ID, naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
