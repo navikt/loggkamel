@@ -111,7 +111,7 @@ public class NaisServiceGCP implements NaisService {
         }
 
         if (memberships == null || memberships.teams() == null || memberships.teams().nodes() == null) {
-            throw new RuntimeException("Mangler teammedlemskap i nais api response for e-post");
+            throw new MissingNaisTeamException("Mangler teammedlemskap i nais api response for e-post");
         }
 
         return memberships.teams().nodes().stream()

@@ -121,14 +121,14 @@ class NaisServiceGCPTest {
     }
 
     @Test
-    void getAllNaisteamsForEmail_missingTeamMembershipsThrowsRuntimeException() {
+    void getAllNaisteamsForEmail_missingTeamMembershipsThrowsMissingNaisTeamException() {
         when(naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)).thenReturn(requestSpec);
         when(requestSpec.variable(EMAIL, USER_EMAIL)).thenReturn(requestSpec);
         when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
         when(naisUserTeamMembershipsMono.block()).thenReturn(null);
 
-        assertThrows(RuntimeException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+        assertThrows(MissingNaisTeamException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
     }
 
 }
