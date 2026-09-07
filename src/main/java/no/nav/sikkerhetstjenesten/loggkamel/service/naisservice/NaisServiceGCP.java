@@ -50,23 +50,17 @@ public class NaisServiceGCP implements NaisService {
             }
             """;
 
-    public record GCPProject(String name, String gcpProjectID) {
-    }
+    public record GCPProject(String name, String gcpProjectID) {}
 
-    public record NaisTeamEnvironments(List<GCPProject> environments) {
-    }
+    public record NaisTeamEnvironments(List<GCPProject> environments) {}
 
-    public record NaisUserTeamMemberships(NaisTeamConnection teams) {
-    }
+    public record NaisUserTeamMemberships(NaisTeamConnection teams) {}
 
-    public record NaisTeamConnection(List<NaisTeamNode> nodes) {
-    }
+    public record NaisTeamConnection(List<NaisTeamNode> nodes) {}
 
-    public record NaisTeamNode(NaisTeam team) {
-    }
+    public record NaisTeamNode(NaisTeam team) {}
 
-    public record NaisTeam(String slug) {
-    }
+    public record NaisTeam(String slug) {}
 
     @Autowired
     private HttpSyncGraphQlClient naisGraphqlClient;

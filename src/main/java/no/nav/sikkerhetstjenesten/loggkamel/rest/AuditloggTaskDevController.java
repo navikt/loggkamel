@@ -50,6 +50,7 @@ public class AuditloggTaskDevController {
         return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO);
     }
 
+    //TODO: remove once have extraction of email from token claims in place
     @GetMapping("naisteams")
     @Operation(summary = "Finner naisteamene til en e-postadresse")
     public List<String> getNaisteamsForEmail(@RequestParam String email) {
