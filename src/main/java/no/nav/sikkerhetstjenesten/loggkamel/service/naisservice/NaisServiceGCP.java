@@ -13,6 +13,7 @@ import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -23,11 +24,48 @@ public class NaisServiceGCP implements NaisService {
 
     static final String TEAM_NAME = "teamName";
     static final String TEAM = "team";
+    static final String USER = "user";
+    static final String EMAIL = "email";
+    static final String TEAM_ENVIRONMENTS_QUERY = """
+            query Team($teamName: Slug!) {
+                 team(slug: $teamName) {
+                     environments {
+                         gcpProjectID
+                         name
+                     }
+                 }
+             }
+            """;
+    static final String TEAM_MEMBERSHIPS_FOR_USER_QUERY = """
+            query TeamMembershipsForUser($email: String!) {
+              user(email: $email) {
+                teams {
+                  nodes {
+                    team {
+                      slug
+                    }
+                  }
+                }
+              }
+            }
+            """;
 
     public record GCPProject(String name, String gcpProjectID) {
     }
 
     public record NaisTeamEnvironments(List<GCPProject> environments) {
+    }
+
+    public record NaisUserTeamMemberships(NaisTeamConnection teams) {
+    }
+
+    public record NaisTeamConnection(List<NaisTeamNode> nodes) {
+    }
+
+    public record NaisTeamNode(NaisTeam team) {
+    }
+
+    public record NaisTeam(String slug) {
     }
 
     @Autowired
@@ -36,20 +74,9 @@ public class NaisServiceGCP implements NaisService {
     @Override
     @Cacheable(cacheNames = CacheConfig.NAIS_GCP_PROJECT_BY_TEAM, key = "#naisTeam", sync = true)
     public String getCurrentEnvGCPIDForTeam(String naisTeam) {
-        String query = """
-                query Team($teamName: Slug!) {
-                     team(slug: $teamName) {
-                         environments {
-                             gcpProjectID
-                             name
-                         }
-                     }
-                 }
-                """;
-
         NaisTeamEnvironments naisTeamEnvironments;
         try {
-            naisTeamEnvironments = naisGraphqlClient.document(query)
+            naisTeamEnvironments = naisGraphqlClient.document(TEAM_ENVIRONMENTS_QUERY)
                     .variable(TEAM_NAME, naisTeam)
                     .retrieve(TEAM)
                     .toEntity(NaisTeamEnvironments.class)
@@ -71,5 +98,32 @@ public class NaisServiceGCP implements NaisService {
         }
 
         return currentEnvGCPProject.get().gcpProjectID();
+    }
+
+    @Override
+    public List<String> getAllNaisteamsForEmail(String email) {
+        Objects.requireNonNull(email, "E-post kan ikke være null");
+
+        NaisUserTeamMemberships memberships;
+        try {
+            memberships = naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)
+                    .variable(EMAIL, email)
+                    .retrieve(USER)
+                    .toEntity(NaisUserTeamMemberships.class)
+                    .block();
+        } catch (Exception e) {
+            log.warn("Feil ved kall mot nais graphql api for e-post, message: {}", e.getMessage());
+            throw new NaisDependencyException("Feil ved kall mot nais graphql api for e-post", e);
+        }
+
+        if (memberships == null || memberships.teams() == null || memberships.teams().nodes() == null) {
+            throw new RuntimeException("Mangler teammedlemskap i nais api response for e-post");
+        }
+
+        return memberships.teams().nodes().stream()
+                .map(node -> Objects.requireNonNull(node, "Teammedlemskap kan ikke være null").team())
+                .map(team -> Objects.requireNonNull(team, "Naisteam kan ikke være null").slug())
+                .map(slug -> Objects.requireNonNull(slug, "Naisteam-slug kan ikke være null"))
+                .toList();
     }
 }
