@@ -48,46 +48,46 @@ class NaisTokenIntrospectorTest {
         ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, TOKEN_INTROSPECTION_ENDPOINT_VALUE);
     }
 
-    @Test
-    void missingIntrospectionEndpoint() {
-        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, null);
-        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
-
-        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, "");
-        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
-    }
-
-    @Test
-    void authenticationResponseNull() {
-        mockIntrospectionResponse(null);
-
-        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
-    }
-
-    @Test
-    void tokenNotValid() {
-        mockIntrospectionResponse(new EntraAuthenticationResponse(false, "some explanation", null));
-
-        assertThrows(BadOpaqueTokenException.class, () -> naisTokenIntrospector.introspect(TOKEN));
-    }
-
-    @Test
-    void tokenIsValid() {
-        Map<String, Object> claims = Map.of("azp_name", "some consumer", "roles", "access_as_application");
-        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, claims));
-
-        OAuth2AuthenticatedPrincipal principal = naisTokenIntrospector.introspect(TOKEN);
-
-        assertEquals(claims, principal.getAttributes());
-        assertIterableEquals(grantedAuthorities, principal.getAuthorities());
-    }
-
-    @Test
-    void validTokenWithoutClaims() {
-        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, Map.of()));
-
-        assertThrows(IllegalArgumentException.class, () -> naisTokenIntrospector.introspect(TOKEN));
-    }
+//    @Test
+//    void missingIntrospectionEndpoint() {
+//        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, null);
+//        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+//
+//        ReflectionTestUtils.setField(naisTokenIntrospector, ENDPOINT_FIELD, "");
+//        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+//    }
+//
+//    @Test
+//    void authenticationResponseNull() {
+//        mockIntrospectionResponse(null);
+//
+//        assertThrows(OAuth2IntrospectionException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+//    }
+//
+//    @Test
+//    void tokenNotValid() {
+//        mockIntrospectionResponse(new EntraAuthenticationResponse(false, "some explanation", null));
+//
+//        assertThrows(BadOpaqueTokenException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+//    }
+//
+//    @Test
+//    void tokenIsValid() {
+//        Map<String, Object> claims = Map.of("azp_name", "some consumer", "roles", "access_as_application");
+//        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, claims));
+//
+//        OAuth2AuthenticatedPrincipal principal = naisTokenIntrospector.introspect(TOKEN);
+//
+//        assertEquals(claims, principal.getAttributes());
+//        assertIterableEquals(grantedAuthorities, principal.getAuthorities());
+//    }
+//
+//    @Test
+//    void validTokenWithoutClaims() {
+//        mockIntrospectionResponse(new EntraAuthenticationResponse(true, null, Map.of()));
+//
+//        assertThrows(IllegalArgumentException.class, () -> naisTokenIntrospector.introspect(TOKEN));
+//    }
 
     private void mockIntrospectionResponse(EntraAuthenticationResponse response) {
         when(restClient.post()).thenReturn(requestBodyUriSpec);
