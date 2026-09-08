@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,11 @@ public class RestExceptionInterceptor {
     @ExceptionHandler(UpdatingNonexistentTaskException.class)
     public ResponseEntity<ErrorResponse> handleUpdatingNonexistentTaskException(UpdatingNonexistentTaskException exception, HttpServletRequest request) {
         return mapToInternalServerError(HttpStatus.CONFLICT, exception, request);
+    }
+
+    @ExceptionHandler(MissingNaisTeamException.class)
+    public ResponseEntity<ErrorResponse> handleMissingNaisTeamException(MissingNaisTeamException exception, HttpServletRequest request) {
+        return mapToInternalServerError(HttpStatus.NOT_FOUND, exception, request);
     }
 
     private ResponseEntity<ErrorResponse> mapToInternalServerError(HttpStatus httpStatus, Exception exception, HttpServletRequest request) {

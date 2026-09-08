@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +27,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServi
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamNode;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisUserTeamMemberships;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -129,6 +131,20 @@ class NaisServiceGCPTest {
         when(naisUserTeamMembershipsMono.block()).thenReturn(null);
 
         assertThrows(MissingNaisTeamException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+    }
+
+    @Test
+    void getAllNaisteamsForEmail_missingEmailThrowsForbiddenOperationException() {
+        assertThrows(ForbiddenOperationException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(null));
+
+        verifyNoInteractions(naisGraphqlClient);
+    }
+
+    @Test
+    void getAllNaisteamsForEmail_blankEmailThrowsForbiddenOperationException() {
+        assertThrows(ForbiddenOperationException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(" "));
+
+        verifyNoInteractions(naisGraphqlClient);
     }
 
 }

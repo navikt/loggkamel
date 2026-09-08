@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -62,5 +63,18 @@ class RestExceptionInterceptorTest {
         assertEquals(ERROR_MESSAGE, response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
-}
 
+    @Test
+    void shouldMapMissingNaisTeamExceptionToNotFound() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI(REQUEST_URI);
+
+        var response = restExceptionInterceptor.handleMissingNaisTeamException(new MissingNaisTeamException(ERROR_MESSAGE), request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getBody().errorCode());
+        assertEquals(ERROR_MESSAGE, response.getBody().message());
+        assertEquals(REQUEST_URI, response.getBody().path());
+    }
+}

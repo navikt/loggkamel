@@ -5,9 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,10 +25,12 @@ public class NaisteamController {
     private static final Logger log = LoggerFactory.getLogger(NaisteamController.class);
 
     private final AuditloggTaskService auditloggTaskService;
+    private final NaisService naisService;
 
     @Autowired
-    public NaisteamController(AuditloggTaskService auditloggTaskService) {
+    public NaisteamController(AuditloggTaskService auditloggTaskService, NaisService naisService) {
         this.auditloggTaskService = auditloggTaskService;
+        this.naisService = naisService;
     }
 
     @GetMapping("auditlogg/{naisTeam}")
@@ -59,5 +64,14 @@ public class NaisteamController {
         return auditloggTaskService.findAllNaisteamWithActiveAuditloggTasks();
     }
 
-    //TODO: endpoint which takes your auth token to determine user identity, returns a list of naisteams that the person is in
+    @GetMapping("mine")
+    @ResponseStatus(OK)
+    @Operation(summary = "Finner alle naisteam den innloggede brukeren er medlem av")
+    public List<String> findNaisteamsForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+        log.info("Finding all naisteams for user whose token was passed in");
+        String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);
+        List<String> naisteams = naisService.getAllNaisteamsForEmail(email);
+        log.info("Fant {} naisteam for innlogget bruker", naisteams.size());
+        return naisteams;
+    }
 }
