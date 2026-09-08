@@ -52,24 +52,35 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
         }
 
         Map<String, String> requestBody = Map.of("identity_provider", "entra_id", "token",  token);
-        EntraAuthenticationResponse authenticationResponse = restClient.post()
+//        EntraAuthenticationResponse authenticationResponse = restClient.post()
+//                .uri(tokenIntrospectionEndpoint)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .accept(MediaType.APPLICATION_JSON)
+//                .body(requestBody)
+//                .retrieve()
+//                .body(EntraAuthenticationResponse.class);
+
+        Map authenticationResponse = restClient.post()
                 .uri(tokenIntrospectionEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(requestBody)
                 .retrieve()
-                .body(EntraAuthenticationResponse.class);
+                .body(Map.class);
 
         if (authenticationResponse == null) {
             log.warn("Token introspection endpoint returned an empty body");
             throw new OAuth2IntrospectionException("Token introspection endpoint returned an empty body");
         }
 
-        if (!authenticationResponse.active) {
-            log.debug("Invalid token received, cause for invalid token is {}", authenticationResponse.error);
-            throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.error);
+        //DEBUG
+        log.info("Token introspection endpoint returned {}", authenticationResponse);
+
+        if (!(boolean) authenticationResponse.get("active")) {
+            log.debug("Invalid token received, cause for invalid token is {}", authenticationResponse.get("error"));
+            throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.get("error"));
         }
 
-        return new DefaultOAuth2AuthenticatedPrincipal(authenticationResponse.claims(), grantedAuthorities);
+        return new DefaultOAuth2AuthenticatedPrincipal((Map) authenticationResponse.get("claims"), grantedAuthorities);
     }
 }
