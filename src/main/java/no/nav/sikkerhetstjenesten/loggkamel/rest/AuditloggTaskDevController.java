@@ -6,11 +6,14 @@ import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -23,10 +26,12 @@ public class AuditloggTaskDevController {
     private static final Logger log = LoggerFactory.getLogger(AuditloggTaskDevController.class);
 
     private final AuditloggTaskService auditloggTaskService;
+    private final NaisService naisService;
 
     @Autowired
-    public AuditloggTaskDevController(AuditloggTaskService auditloggTaskService) {
+    public AuditloggTaskDevController(AuditloggTaskService auditloggTaskService, NaisService naisService) {
         this.auditloggTaskService = auditloggTaskService;
+        this.naisService = naisService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -44,5 +49,11 @@ public class AuditloggTaskDevController {
         log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);
         return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO);
     }
-}
 
+    //TODO: remove once have extraction of email from token claims in place
+    @GetMapping("naisteams")
+    @Operation(summary = "Finner naisteamene til en e-postadresse")
+    public List<String> getNaisteamsForEmail(@RequestParam String email) {
+        return naisService.getAllNaisteamsForEmail(email);
+    }
+}

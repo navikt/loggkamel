@@ -3,8 +3,6 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 import no.nav.boot.conditionals.Cluster;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
-import no.nav.sikkerhetstjenesten.loggkamel.service.GCPProject;
-import no.nav.sikkerhetstjenesten.loggkamel.service.NaisTeamEnvironments;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,8 +22,10 @@ import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_ENVIRONMENTS_QUERY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.GCPProject;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamEnvironments;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(
@@ -67,7 +67,7 @@ class NaisServiceGCPCacheIntegrationTest {
 
         assertEquals(GCP_PROJECT_ID, first);
         assertEquals(GCP_PROJECT_ID, second);
-        verify(naisGraphqlClient, times(1)).document(anyString());
+        verify(naisGraphqlClient, times(1)).document(TEAM_ENVIRONMENTS_QUERY);
     }
 
     @Test
@@ -77,7 +77,7 @@ class NaisServiceGCPCacheIntegrationTest {
         @SuppressWarnings("unchecked")
         Mono<NaisTeamEnvironments> mono = mock(Mono.class);
 
-        when(naisGraphqlClient.document(anyString())).thenReturn(requestSpec);
+        when(naisGraphqlClient.document(TEAM_ENVIRONMENTS_QUERY)).thenReturn(requestSpec);
         when(requestSpec.variable(TEAM_NAME, NAIS_TEAM)).thenReturn(requestSpec);
         when(requestSpec.retrieve(TEAM)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(mono);
@@ -86,7 +86,7 @@ class NaisServiceGCPCacheIntegrationTest {
         assertThrows(NaisDependencyException.class, () -> service.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
         assertThrows(NaisDependencyException.class, () -> service.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
 
-        verify(naisGraphqlClient, times(2)).document(anyString());
+        verify(naisGraphqlClient, times(2)).document(TEAM_ENVIRONMENTS_QUERY);
     }
 
     @SuppressWarnings("unchecked")
@@ -95,7 +95,7 @@ class NaisServiceGCPCacheIntegrationTest {
         GraphQlClient.RetrieveSpec retrieveSpec = mock(GraphQlClient.RetrieveSpec.class);
         Mono<NaisTeamEnvironments> mono = mock(Mono.class);
 
-        when(naisGraphqlClient.document(anyString())).thenReturn(requestSpec);
+        when(naisGraphqlClient.document(TEAM_ENVIRONMENTS_QUERY)).thenReturn(requestSpec);
         when(requestSpec.variable(TEAM_NAME, NAIS_TEAM)).thenReturn(requestSpec);
         when(requestSpec.retrieve(TEAM)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(mono);
