@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -74,6 +75,20 @@ class RestExceptionInterceptorTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(HttpStatus.NOT_FOUND.value(), response.getBody().errorCode());
+        assertEquals(ERROR_MESSAGE, response.getBody().message());
+        assertEquals(REQUEST_URI, response.getBody().path());
+    }
+
+    @Test
+    void shouldMapDependencyExceptionToBadGateway() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI(REQUEST_URI);
+
+        var response = restExceptionInterceptor.handleDependencyException(new NaisDependencyException(ERROR_MESSAGE), request);
+
+        assertEquals(HttpStatus.BAD_GATEWAY, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.BAD_GATEWAY.value(), response.getBody().errorCode());
         assertEquals(ERROR_MESSAGE, response.getBody().message());
         assertEquals(REQUEST_URI, response.getBody().path());
     }
