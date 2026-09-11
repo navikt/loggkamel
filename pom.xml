@@ -245,18 +245,6 @@
       <artifactId>camel-file-starter</artifactId>
     </dependency>
 
-    <!-- Versjon på transitive avhengigheter -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>[7.0.0,)</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat.embed</groupId>
-      <artifactId>tomcat-embed-core</artifactId>
-      <version>[11.0.22,)</version>
-    </dependency>
-
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
