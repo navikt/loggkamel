@@ -4,6 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,12 +20,26 @@ public class AuditloggTaskService {
         this.adapter = adapter;
     }
 
-    public AuditloggTaskDTO createAuditloggTask(AuditloggTaskRequestDTO request) {
-        return adapter.createAuditloggTask(request);
+    public AuditloggTaskDTO createAuditloggTask(AuditloggTaskRequestDTO auditloggTaskToCreate, List<String> naisteamsForUser) {
+        requireMembership(auditloggTaskToCreate.getNaisteam(), naisteamsForUser);
+        return adapter.createAuditloggTask(auditloggTaskToCreate);
     }
 
-    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO request) {
-        return adapter.updateAuditloggTask(request);
+    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO targetStateForAuditloggTaskToUpdate, List<String> naisteamsForUser) {
+        requireMembership(targetStateForAuditloggTaskToUpdate.getNaisteam(), naisteamsForUser);
+
+        AuditloggTaskDTO existingTaskToBeUpdated = adapter.findByDbnameAndTeknologi(targetStateForAuditloggTaskToUpdate.getDbname(), targetStateForAuditloggTaskToUpdate.getTeknologi());
+        if (existingTaskToBeUpdated != null) {
+            requireMembership(existingTaskToBeUpdated.getNaisteam(), naisteamsForUser);
+        }
+
+        return adapter.updateAuditloggTask(targetStateForAuditloggTaskToUpdate);
+    }
+
+    private static void requireMembership(String naisteam, List<String> naisteamsForUser) {
+        if (naisteamsForUser == null || !naisteamsForUser.contains(naisteam)) {
+            throw new ForbiddenOperationException("Brukeren er ikke medlem av naisteam " + naisteam);
+        }
     }
 
     public AuditloggTaskDTO getAuditloggTaskByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi) {
@@ -46,6 +61,16 @@ public class AuditloggTaskService {
                                 .naisteam(naisteam)
                                 .tasksForTeam(adapter.getTasksRegisteredToNaisteam(naisteam))
                                 .build()).toList();
+    }
+
+    public List<NaisTeamDTO> getTasksGroupedByNaisteam(List<String> naisteams) {
+        return naisteams.stream()
+                .map(naisteam ->
+                        NaisTeamDTO.builder()
+                                .naisteam(naisteam)
+                                .tasksForTeam(adapter.getTasksRegisteredToNaisteam(naisteam))
+                                .build())
+                .toList();
     }
 
     public boolean naisteamHasActiveAuditloggTasks(String naisteam) {
