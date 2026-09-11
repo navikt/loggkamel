@@ -26,7 +26,6 @@ import static org.springframework.http.HttpStatus.OK;
 // TODO: look into input sanitization to avoid sql, log injection
 @RestController
 @RequestMapping("/api/v1/task")
-@ConditionalOnGCP
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "AuditloggTaskController", description = "Denne brukes til å kontrollere hvilke databaser det skal overføres auditlogger for (tasks)")

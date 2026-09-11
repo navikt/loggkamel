@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@ConditionalOnGCP
 public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
 
     private static final Logger log = LoggerFactory.getLogger(NaisTokenIntrospector.class);
@@ -109,9 +111,6 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
             log.debug("Invalid token received, cause for invalid token is {}", authenticationResponse.get(ERROR_FIELD));
             throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.get(ERROR_FIELD));
         }
-
-        //DEBUG, REMOVE BEFORE MERGE
-        log.info("Validated principal claims are: {}", authenticationResponse);
 
         Map<String, Object> claims = CLAIM_TYPE_CONVERTER.convert(new HashMap<>(authenticationResponse));
 
