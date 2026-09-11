@@ -6,17 +6,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
+import org.springframework.security.oauth2.core.converter.ClaimConversionService;
+import org.springframework.security.oauth2.core.converter.ClaimTypeConverter;
 import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException;
 import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionException;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +39,32 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
     static final String ERROR_FIELD = "error";
 
     static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE = new ParameterizedTypeReference<>() {};
+
+    private static final TypeDescriptor OBJECT_TYPE = TypeDescriptor.valueOf(Object.class);
+    private static final TypeDescriptor INSTANT_TYPE = TypeDescriptor.valueOf(Instant.class);
+    private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
+    private static final TypeDescriptor STRING_LIST_TYPE = TypeDescriptor.collection(List.class, STRING_TYPE);
+
+    private static final Converter<Object, ?> INSTANT_CONVERTER = claim -> convertClaim(claim, INSTANT_TYPE);
+    private static final Converter<Object, ?> STRING_CONVERTER = claim -> convertClaim(claim, STRING_TYPE);
+    private static final Converter<Object, ?> STRING_LIST_CONVERTER = claim -> convertClaim(claim, STRING_LIST_TYPE);
+    private static final Converter<Object, ?> SCOPE_CONVERTER = claim -> claim instanceof String scope
+            ? Arrays.asList(scope.split(" "))
+            : convertClaim(claim, STRING_LIST_TYPE);
+
+    static final ClaimTypeConverter CLAIM_TYPE_CONVERTER = new ClaimTypeConverter(Map.of(
+            OAuth2TokenIntrospectionClaimNames.AUD, STRING_LIST_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.CLIENT_ID, STRING_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.EXP, INSTANT_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.IAT, INSTANT_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.ISS, STRING_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.NBF, INSTANT_CONVERTER,
+            OAuth2TokenIntrospectionClaimNames.SCOPE, SCOPE_CONVERTER
+    ));
+
+    private static Object convertClaim(Object claim, TypeDescriptor targetType) {
+        return ClaimConversionService.getSharedInstance().convert(claim, OBJECT_TYPE, targetType);
+    }
 
     private final RestClient restClient;
 
@@ -76,6 +110,11 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
             throw new BadOpaqueTokenException("Invalid token received, cause for invalid token is " + authenticationResponse.get(ERROR_FIELD));
         }
 
-        return new DefaultOAuth2AuthenticatedPrincipal(authenticationResponse, grantedAuthorities);
+        //DEBUG, REMOVE BEFORE MERGE
+        log.info("Validated principal claims are: {}", authenticationResponse);
+
+        Map<String, Object> claims = CLAIM_TYPE_CONVERTER.convert(new HashMap<>(authenticationResponse));
+
+        return new DefaultOAuth2AuthenticatedPrincipal(claims, grantedAuthorities);
     }
 }

@@ -13,7 +13,9 @@ import org.springframework.security.oauth2.server.resource.introspection.OAuth2I
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.RESPONSE_TYPE;
@@ -31,6 +33,10 @@ class NaisTokenIntrospectorTest {
     private static final String TOKEN_INTROSPECTION_ENDPOINT_VALUE = "some value for introspection endpoint";
     private static final Map<String, String> EXPECTED_REQUEST_BODY =
             Map.of("identity_provider", "entra_id", "token", TOKEN);
+    private static final long ISSUED_AT_EPOCH_SECONDS = 1757570000L;
+    private static final long EXPIRES_AT_EPOCH_SECONDS = 1757573600L;
+    private static final String AUDIENCE = "some audience";
+    private static final List<String> SCOPES = List.of("read", "write");
 
     @Mock
     private RestClient restClient;
@@ -88,8 +94,28 @@ class NaisTokenIntrospectorTest {
     }
 
     @Test
-    void validTokenWithoutClaims() {
-        Map<String, Object> response = Map.of("active", true);
+    void numericTimeClaimsAreConvertedToInstant() {
+        Map<String, Object> response = Map.of(
+                "active", true,
+                "iat", Math.toIntExact(ISSUED_AT_EPOCH_SECONDS),
+                "exp", EXPIRES_AT_EPOCH_SECONDS,
+                "nbf", Math.toIntExact(ISSUED_AT_EPOCH_SECONDS),
+                "aud", AUDIENCE,
+                "scope", String.join(" ", SCOPES)
+        );
+        mockIntrospectionResponse(response);
+
+        OAuth2AuthenticatedPrincipal principal = naisTokenIntrospector.introspect(TOKEN);
+
+        assertEquals(Instant.ofEpochSecond(ISSUED_AT_EPOCH_SECONDS), principal.getAttribute("iat"));
+        assertEquals(Instant.ofEpochSecond(EXPIRES_AT_EPOCH_SECONDS), principal.getAttribute("exp"));
+        assertEquals(Instant.ofEpochSecond(ISSUED_AT_EPOCH_SECONDS), principal.getAttribute("nbf"));
+        assertIterableEquals(List.of(AUDIENCE), principal.getAttribute("aud"));
+        assertIterableEquals(SCOPES, principal.getAttribute("scope"));
+    }
+
+    @Test
+    void validTokenWithoutClaims() {        Map<String, Object> response = Map.of("active", true);
         mockIntrospectionResponse(response);
 
         OAuth2AuthenticatedPrincipal principal = naisTokenIntrospector.introspect(TOKEN);
