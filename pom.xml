@@ -60,6 +60,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- Review this pin once spring-boot-starter-web includes Tomcat 11.0.25 or newer. -->
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>[11.0.25,11.1.0)</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
