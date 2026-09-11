@@ -101,7 +101,8 @@ public class NaisServiceGCP implements NaisService {
         NaisUserTeamMemberships memberships;
         try {
             memberships = naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)
-                    .variable(EMAIL, email)
+                    .variable(EMAIL, "carlos.sierra@nav.no") //TESTING: remove before merging
+//                    .variable(EMAIL, email)
                     .retrieve(USER)
                     .toEntity(NaisUserTeamMemberships.class)
                     .block();
