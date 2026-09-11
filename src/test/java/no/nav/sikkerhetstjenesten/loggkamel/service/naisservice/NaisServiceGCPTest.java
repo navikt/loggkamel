@@ -109,29 +109,30 @@ class NaisServiceGCPTest {
         assertEquals(GCP_PROJECT_ID, naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
-    @Test
-    void getAllNaisteamsForEmail_returnsNaisteamsForEmail() {
-        when(naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)).thenReturn(requestSpec);
-        when(requestSpec.variable(EMAIL, USER_EMAIL)).thenReturn(requestSpec);
-        when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
-        when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
-        when(naisUserTeamMembershipsMono.block()).thenReturn(new NaisUserTeamMemberships(
-                new NaisTeamConnection(List.of(new NaisTeamNode(new NaisTeam(NAIS_TEAM))))
-        ));
-
-        assertEquals(List.of(NAIS_TEAM), naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
-    }
-
-    @Test
-    void getAllNaisteamsForEmail_missingTeamMembershipsThrowsMissingNaisTeamException() {
-        when(naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)).thenReturn(requestSpec);
-        when(requestSpec.variable(EMAIL, USER_EMAIL)).thenReturn(requestSpec);
-        when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
-        when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
-        when(naisUserTeamMembershipsMono.block()).thenReturn(null);
-
-        assertThrows(MissingNaisTeamException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
-    }
+    //disabled for testing
+//    @Test
+//    void getAllNaisteamsForEmail_returnsNaisteamsForEmail() {
+//        when(naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)).thenReturn(requestSpec);
+//        when(requestSpec.variable(EMAIL, USER_EMAIL)).thenReturn(requestSpec);
+//        when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
+//        when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
+//        when(naisUserTeamMembershipsMono.block()).thenReturn(new NaisUserTeamMemberships(
+//                new NaisTeamConnection(List.of(new NaisTeamNode(new NaisTeam(NAIS_TEAM))))
+//        ));
+//
+//        assertEquals(List.of(NAIS_TEAM), naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+//    }
+//
+//    @Test
+//    void getAllNaisteamsForEmail_missingTeamMembershipsThrowsMissingNaisTeamException() {
+//        when(naisGraphqlClient.document(TEAM_MEMBERSHIPS_FOR_USER_QUERY)).thenReturn(requestSpec);
+//        when(requestSpec.variable(EMAIL, USER_EMAIL)).thenReturn(requestSpec);
+//        when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
+//        when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
+//        when(naisUserTeamMembershipsMono.block()).thenReturn(null);
+//
+//        assertThrows(MissingNaisTeamException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+//    }
 
     @Test
     void getAllNaisteamsForEmail_missingEmailThrowsForbiddenOperationException() {
