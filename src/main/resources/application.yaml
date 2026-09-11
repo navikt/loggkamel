@@ -18,6 +18,6 @@ NAIS_CONSOLE_BASE_URL: https://console.nav.cloud.nais.io/graphql
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
     enabled: true
