@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -67,6 +69,7 @@ public class NaisteamController {
     @GetMapping("mine")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle naisteam den innloggede brukeren er medlem av")
+    @SecurityRequirement(name = "bearerAuth")
     public List<String> findNaisteamsForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         log.info("Finding all naisteams for user whose token was passed in");
         String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);

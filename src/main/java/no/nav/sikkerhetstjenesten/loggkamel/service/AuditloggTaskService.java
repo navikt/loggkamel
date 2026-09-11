@@ -25,15 +25,15 @@ public class AuditloggTaskService {
         return adapter.createAuditloggTask(auditloggTaskToCreate);
     }
 
-    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO auditloggTaskToCreate, List<String> naisteamsForUser) {
-        requireMembership(auditloggTaskToCreate.getNaisteam(), naisteamsForUser);
+    public AuditloggTaskDTO updateAuditloggTask(AuditloggTaskRequestDTO targetStateForAuditloggTaskToUpdate, List<String> naisteamsForUser) {
+        requireMembership(targetStateForAuditloggTaskToUpdate.getNaisteam(), naisteamsForUser);
 
-        AuditloggTaskDTO existingTask = adapter.findByDbnameAndTeknologi(auditloggTaskToCreate.getDbname(), auditloggTaskToCreate.getTeknologi());
-        if (existingTask != null) {
-            requireMembership(existingTask.getNaisteam(), naisteamsForUser);
+        AuditloggTaskDTO existingTaskToBeUpdated = adapter.findByDbnameAndTeknologi(targetStateForAuditloggTaskToUpdate.getDbname(), targetStateForAuditloggTaskToUpdate.getTeknologi());
+        if (existingTaskToBeUpdated != null) {
+            requireMembership(existingTaskToBeUpdated.getNaisteam(), naisteamsForUser);
         }
 
-        return adapter.updateAuditloggTask(auditloggTaskToCreate);
+        return adapter.updateAuditloggTask(targetStateForAuditloggTaskToUpdate);
     }
 
     private static void requireMembership(String naisteam, List<String> naisteamsForUser) {
