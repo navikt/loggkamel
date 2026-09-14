@@ -8,7 +8,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -46,7 +45,6 @@ public class DB2PacketService {
         this.db2DTOMapper = db2DTOMapper;
     }
 
-    @Async
     public void fetchLogsWithinDateRangeAndPersistAsPackets(AuditloggTaskDTO auditloggTaskDTO, LocalDate logPullStartDate, LocalDate logPullEndDate) {
         log.info("Starting persisting log packet files for DB2 database {}, startDate {}, endDate {}", auditloggTaskDTO.getDbname(), logPullStartDate, logPullEndDate);
         StopWatch stopWatch = new StopWatch("Fetching, bundling, persisting logs");

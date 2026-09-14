@@ -72,6 +72,15 @@ to be of the form:
 
 `<database_name>.<publish_date>.auditlog[.gz]`
 
+#### DB2
+
+Pull-based. A scheduled task runs once a day and pulls logs for the two preceding days via loggkamel-proxy, writing them
+directly as log packets to the log packet bucket. Logs are pulled for every Arkiv task where `teknologi` is DB2, `fiksa`
+is true, `discard_logs` is false, and at least one archiving requirement flag is set.
+
+The schedule fires on every instance, but only the instance that takes the PostgreSQL advisory lock performs the pull.
+Controlled by the `pull-db2-logs` feature flag in [Unleash](https://sikkerhetstjenesten-unleash-web.iap.nav.cloud.nais.io).
+
 ### LogStream Enrichment
 
 Database name is extracted from the filename, and it along with the producing technology is used to find the relevant 

@@ -16,10 +16,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.OK;
 
-//TODO: remove after done testing loggkamelProxy, when it is integrated into DB2 log pull behavior
+//TODO: remove after done testing loggkamelProxy, now that it is integrated into the scheduled DB2 log pull.
 @ConditionalOnDevOrLocal
 @RestController
 @RequestMapping("/api/v1/proxy")
@@ -49,7 +48,7 @@ public class LoggkamelProxyTestController {
     }
 
     @GetMapping("auditlogg-packet")
-    @ResponseStatus(ACCEPTED)
+    @ResponseStatus(OK)
     public void getHardcodedAuditloggPacket() {
         log.info("Getting hardcoded list of AuditloggLines, testing how those are represented as json");
         String databaseName = "AT408T";

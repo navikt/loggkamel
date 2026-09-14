@@ -198,4 +198,41 @@ class AuditloggTaskServiceTest {
 
         assertThrows(RuntimeException.class, () -> service.findAllNaisteamWithActiveAuditloggTasks());
     }
+
+    @Test
+    void findActiveTasksByTeknologi_keepsTasksForwardingEitherLogCategory() {
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO2.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO2.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO2.getLoggingEndringer()).thenReturn(true);
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+
+        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.findActiveTasksByTeknologi(TEKNOLOGI));
+    }
+
+    @Test
+    void findActiveTasksByTeknologi_filtersOutTasksDiscardingLogs() {
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(true);
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(Collections.emptyList(), service.findActiveTasksByTeknologi(TEKNOLOGI));
+    }
+
+    @Test
+    void findActiveTasksByTeknologi_filtersOutTasksForwardingNoLogCategories() {
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(false);
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(Collections.emptyList(), service.findActiveTasksByTeknologi(TEKNOLOGI));
+    }
+
+    @Test
+    void findActiveTasksByTeknologi_exceptionPassesThrough() {
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.findActiveTasksByTeknologi(TEKNOLOGI));
+    }
 }

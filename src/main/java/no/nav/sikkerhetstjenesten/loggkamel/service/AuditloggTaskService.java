@@ -53,6 +53,16 @@ public class AuditloggTaskService {
                 .anyMatch(task -> task.getFiksa() && (task.getLoggingLeseoperasjoner() || task.getLoggingEndringer()));
     }
 
+    public List<AuditloggTaskDTO> findActiveTasksByTeknologi(TeknologiEnum teknologi) {
+        return adapter.findConfiguredTasksByTeknologi(teknologi).stream()
+                .filter(this::taskHasAnActiveForwardingCategory)
+                .toList();
+    }
+
+    private boolean taskHasAnActiveForwardingCategory(AuditloggTaskDTO task) {
+        return !task.getDiscardLogs() && (task.getLoggingLeseoperasjoner() || task.getLoggingEndringer());
+    }
+
     public List<String> findAllNaisteamWithActiveAuditloggTasks() {
         return adapter.findAllDistinctNaisteam().stream()
                 .filter(this::naisteamHasActiveAuditloggTasks)
