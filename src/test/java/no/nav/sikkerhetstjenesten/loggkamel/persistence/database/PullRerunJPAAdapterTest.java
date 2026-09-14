@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -18,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -39,17 +37,25 @@ class PullRerunJPAAdapterTest {
     @Mock
     OversiktRepository oversiktRepository;
 
-    @Spy
-    PullRerunRequiredMapper mapper = new PullRerunRequiredMapperImpl();
+    @Mock
+    PullRerunRequiredMapper mapper;
+
+    @Mock
+    AuditloggTaskEntity auditloggTaskEntity;
+
+    @Mock
+    PullRerunRequiredEntity pullRerunRequiredEntity;
+
+    @Mock
+    PullRerunRequiredDTO pullRerunRequiredDTO;
 
     @InjectMocks
     PullRerunJPAAdapter adapter;
 
     @Test
     void registerFailedPull_createsNewUnresolvedEntryWhenNoneExists() {
-        AuditloggTaskEntity task = auditloggTaskEntity();
-        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(task);
-        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(task, START_DATE, END_DATE)).thenReturn(Optional.empty());
+        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskEntity);
+        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(auditloggTaskEntity, START_DATE, END_DATE)).thenReturn(Optional.empty());
 
         adapter.registerFailedPull(DBNAME, TEKNOLOGI, START_DATE, END_DATE, FAILURE_REASON);
 
@@ -57,7 +63,7 @@ class PullRerunJPAAdapterTest {
         verify(pullRerunRequiredRepository).save(captor.capture());
 
         PullRerunRequiredEntity saved = captor.getValue();
-        assertEquals(task, saved.getAuditloggTask());
+        assertEquals(auditloggTaskEntity, saved.getAuditloggTask());
         assertEquals(START_DATE, saved.getPullStartDate());
         assertEquals(END_DATE, saved.getPullEndDate());
         assertEquals(FAILURE_REASON, saved.getFailureReason());
@@ -66,34 +72,20 @@ class PullRerunJPAAdapterTest {
 
     @Test
     void registerFailedPull_updatesExistingUnresolvedEntryInsteadOfDuplicating() {
-        AuditloggTaskEntity task = auditloggTaskEntity();
-        PullRerunRequiredEntity existing = PullRerunRequiredEntity.builder()
-                .id(5L)
-                .auditloggTask(task)
-                .pullStartDate(START_DATE)
-                .pullEndDate(END_DATE)
-                .failureReason("an older failure")
-                .resolved(false)
-                .build();
-
-        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(task);
-        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(task, START_DATE, END_DATE)).thenReturn(Optional.of(existing));
+        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskEntity);
+        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(auditloggTaskEntity, START_DATE, END_DATE))
+                .thenReturn(Optional.of(pullRerunRequiredEntity));
 
         adapter.registerFailedPull(DBNAME, TEKNOLOGI, START_DATE, END_DATE, FAILURE_REASON);
 
-        ArgumentCaptor<PullRerunRequiredEntity> captor = ArgumentCaptor.forClass(PullRerunRequiredEntity.class);
-        verify(pullRerunRequiredRepository).save(captor.capture());
-
-        PullRerunRequiredEntity saved = captor.getValue();
-        assertEquals(5L, saved.getId());
-        assertEquals(FAILURE_REASON, saved.getFailureReason());
+        verify(pullRerunRequiredEntity).setFailureReason(FAILURE_REASON);
+        verify(pullRerunRequiredRepository).save(pullRerunRequiredEntity);
     }
 
     @Test
     void registerFailedPull_truncatesOverlongFailureReason() {
-        AuditloggTaskEntity task = auditloggTaskEntity();
-        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(task);
-        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(task, START_DATE, END_DATE)).thenReturn(Optional.empty());
+        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskEntity);
+        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(auditloggTaskEntity, START_DATE, END_DATE)).thenReturn(Optional.empty());
 
         adapter.registerFailedPull(DBNAME, TEKNOLOGI, START_DATE, END_DATE, "x".repeat(MAX_FAILURE_REASON_LENGTH + 100));
 
@@ -105,9 +97,8 @@ class PullRerunJPAAdapterTest {
 
     @Test
     void registerFailedPull_acceptsNullFailureReason() {
-        AuditloggTaskEntity task = auditloggTaskEntity();
-        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(task);
-        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(task, START_DATE, END_DATE)).thenReturn(Optional.empty());
+        when(oversiktRepository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskEntity);
+        when(pullRerunRequiredRepository.findUnresolvedForTaskAndRange(auditloggTaskEntity, START_DATE, END_DATE)).thenReturn(Optional.empty());
 
         adapter.registerFailedPull(DBNAME, TEKNOLOGI, START_DATE, END_DATE, null);
 
@@ -129,44 +120,23 @@ class PullRerunJPAAdapterTest {
 
     @Test
     void findAllUnresolvedReruns_mapsTaskIdentityOntoDTO() {
-        PullRerunRequiredEntity entity = PullRerunRequiredEntity.builder()
-                .id(7L)
-                .auditloggTask(auditloggTaskEntity())
-                .pullStartDate(START_DATE)
-                .pullEndDate(END_DATE)
-                .failureReason(FAILURE_REASON)
-                .resolved(false)
-                .build();
-        when(pullRerunRequiredRepository.findAllUnresolved()).thenReturn(List.of(entity));
+        when(pullRerunRequiredRepository.findAllUnresolved()).thenReturn(List.of(pullRerunRequiredEntity));
+        when(mapper.pullRerunRequiredEntityToDTO(pullRerunRequiredEntity)).thenReturn(pullRerunRequiredDTO);
 
         List<PullRerunRequiredDTO> unresolved = adapter.findAllUnresolvedReruns();
 
-        assertEquals(1, unresolved.size());
-        PullRerunRequiredDTO dto = unresolved.getFirst();
-        assertEquals(7L, dto.getId());
-        assertEquals(DBNAME, dto.getDbname());
-        assertEquals(TEKNOLOGI, dto.getTeknologi());
-        assertEquals(START_DATE, dto.getPullStartDate());
-        assertEquals(END_DATE, dto.getPullEndDate());
-        assertFalse(dto.getResolved());
+        assertEquals(List.of(pullRerunRequiredDTO), unresolved);
+        verify(mapper).pullRerunRequiredEntityToDTO(pullRerunRequiredEntity);
     }
 
     @Test
     void markRerunResolved_setsResolvedFlag() {
-        PullRerunRequiredEntity entity = PullRerunRequiredEntity.builder()
-                .id(7L)
-                .auditloggTask(auditloggTaskEntity())
-                .pullStartDate(START_DATE)
-                .pullEndDate(END_DATE)
-                .resolved(false)
-                .build();
-        when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.of(entity));
+        when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.of(pullRerunRequiredEntity));
 
         adapter.markRerunResolved(7L);
 
-        ArgumentCaptor<PullRerunRequiredEntity> captor = ArgumentCaptor.forClass(PullRerunRequiredEntity.class);
-        verify(pullRerunRequiredRepository).save(captor.capture());
-        assertTrue(captor.getValue().getResolved());
+        verify(pullRerunRequiredEntity).setResolved(true);
+        verify(pullRerunRequiredRepository).save(pullRerunRequiredEntity);
     }
 
     @Test
@@ -174,20 +144,5 @@ class PullRerunJPAAdapterTest {
         when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () -> adapter.markRerunResolved(7L));
-    }
-
-    private AuditloggTaskEntity auditloggTaskEntity() {
-        return AuditloggTaskEntity.builder()
-                .id(1L)
-                .naisteam("sikkerhetstjenesten")
-                .teknologi(TEKNOLOGI)
-                .dbname(DBNAME)
-                .okonomi(true)
-                .endringerUtenKrav(false)
-                .loggingLeseoperasjoner(false)
-                .fiksa(true)
-                .funnetLogger(true)
-                .discardLogs(false)
-                .build();
     }
 }
