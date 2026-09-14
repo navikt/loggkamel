@@ -30,6 +30,7 @@ public class CacheConfig {
                 NAIS_GCP_PROJECT_BY_TEAM));
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(15))
+                .recordStats()
                 .maximumSize(200)
         );
         return cacheManager;

@@ -96,7 +96,7 @@ public class NaisServiceGCP implements NaisService {
 
     @Override
     public List<String> getAllNaisteamsForEmail(String email) {
-        Objects.requireNonNull(email, "E-post kan ikke være null");
+        NaisService.requireEmail(email);
 
         NaisUserTeamMemberships memberships;
         try {

@@ -3,6 +3,8 @@ logging:
     root: info
 
 spring:
+  jpa:
+    open-in-view: false
   main:
     keep-alive: true
   task:
@@ -18,3 +20,9 @@ scheduled:
   db2:
     pull:
       cron: "0 0 8 * * *"
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
