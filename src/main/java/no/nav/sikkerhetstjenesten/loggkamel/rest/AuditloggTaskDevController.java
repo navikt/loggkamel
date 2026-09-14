@@ -6,7 +6,6 @@ import no.nav.boot.conditionals.ConditionalOnDevOrLocal;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +25,10 @@ public class AuditloggTaskDevController {
     private static final Logger log = LoggerFactory.getLogger(AuditloggTaskDevController.class);
 
     private final AuditloggTaskService auditloggTaskService;
-    private final NaisService naisService;
 
     @Autowired
-    public AuditloggTaskDevController(AuditloggTaskService auditloggTaskService, NaisService naisService) {
+    public AuditloggTaskDevController(AuditloggTaskService auditloggTaskService) {
         this.auditloggTaskService = auditloggTaskService;
-        this.naisService = naisService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -39,7 +36,7 @@ public class AuditloggTaskDevController {
     @Operation(summary = "Registrer en ny overførings-task")
     public AuditloggTaskDTO createAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
         log.debug("Creating auditlogg task: {}", auditloggTaskRequestDTO);
-        return auditloggTaskService.createAuditloggTask(auditloggTaskRequestDTO);
+        return auditloggTaskService.createAuditloggTask(auditloggTaskRequestDTO, List.of(auditloggTaskRequestDTO.getNaisteam()));
     }
 
     @PutMapping()
@@ -47,13 +44,19 @@ public class AuditloggTaskDevController {
     @Operation(summary = "Oppdater en overførings-task")
     public AuditloggTaskDTO updateAuditloggTask(@RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO) {
         log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);
-        return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO);
+        return auditloggTaskService.updateAuditloggTask(auditloggTaskRequestDTO, naisteamsBypassingMembershipCheck(auditloggTaskRequestDTO));
     }
 
-    //TODO: remove once have extraction of email from token claims in place
-    @GetMapping("naisteams")
-    @Operation(summary = "Finner naisteamene til en e-postadresse")
-    public List<String> getNaisteamsForEmail(@RequestParam String email) {
-        return naisService.getAllNaisteamsForEmail(email);
+    // Dev- og lokal-endepunktene har ingen innlogget bruker å slå opp teammedlemskap for.
+    // Vi later derfor som om kalleren er medlem av både teamet i forespørselen og teamet
+    // som eier en eventuell eksisterende task, slik at tilgangssjekken i servicen ikke slår inn her.
+    private List<String> naisteamsBypassingMembershipCheck(AuditloggTaskRequestDTO request) {
+        AuditloggTaskDTO existingTask = auditloggTaskService
+                .getAuditloggTaskByDbnameAndTeknologi(request.getDbname(), request.getTeknologi());
+
+        return existingTask == null
+                ? List.of(request.getNaisteam())
+                : List.of(request.getNaisteam(), existingTask.getNaisteam());
     }
+
 }

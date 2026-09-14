@@ -15,6 +15,7 @@ public class NaisServiceMock implements NaisService {
 
     @Override
     public List<String> getAllNaisteamsForEmail(String email) {
+        NaisService.requireEmail(email);
         return List.of("team-a", "team-b", "sikkerhetstjenesten");
     }
 }

@@ -26,7 +26,7 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests(authorize -> {
                             authorize.requestMatchers("/monitoring/**").permitAll();
                             authorize.requestMatchers("/api/v1/dev/**").permitAll();
-                            authorize.requestMatchers("/api/v1/naisteam/futureNaisteamListEndpoint").authenticated();
+                            authorize.requestMatchers("/api/v1/naisteam/mine").authenticated();
                             authorize.requestMatchers("/api/v1/naisteam/**").permitAll();
                             authorize.anyRequest().authenticated();
                         }
