@@ -7,9 +7,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.PullRerunService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.rest.PullRerunController.SIKKERHETSTJENESTEN_NAISTEAM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +30,7 @@ import static org.mockito.Mockito.when;
 class PullRerunControllerTest {
 
     private static final String EMAIL = "user@nav.no";
+    private static final String SIKKERHETSTJENESTEN_NAISTEAM = "sikkerhetstjenesten";
     private static final Long RERUN_ID = 7L;
     private static final String DBNAME = "dbName";
     private static final LocalDate START_DATE = LocalDate.of(2026, 9, 12);
@@ -57,22 +57,26 @@ class PullRerunControllerTest {
     @Mock
     AuditloggTaskDTO auditloggTask;
 
-    @InjectMocks
     PullRerunController controller;
 
-    private void memberOfSikkerhetstjenesten() {
+    @BeforeEach
+    void setUp() {
+        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisService, List.of(SIKKERHETSTJENESTEN_NAISTEAM));
+    }
+
+    private void memberOfAdminTeam() {
         when(principal.getAttribute(NaisService.EMAIL_CLAIM)).thenReturn(EMAIL);
         when(naisService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of(SIKKERHETSTJENESTEN_NAISTEAM));
     }
 
-    private void notMemberOfSikkerhetstjenesten() {
+    private void notMemberOfAdminTeam() {
         when(principal.getAttribute(NaisService.EMAIL_CLAIM)).thenReturn(EMAIL);
         when(naisService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of("team-a"));
     }
 
     @Test
-    void getUnresolvedReruns_returnsRerunsWhenCallerIsInSikkerhetstjenesten() {
-        memberOfSikkerhetstjenesten();
+    void getUnresolvedReruns_returnsRerunsWhenCallerIsInAdminTeam() {
+        memberOfAdminTeam();
         when(pullRerunService.findAllUnresolvedReruns()).thenReturn(List.of(rerun));
 
         List<PullRerunRequiredDTO> result = controller.getUnresolvedReruns(principal);
@@ -81,8 +85,8 @@ class PullRerunControllerTest {
     }
 
     @Test
-    void getUnresolvedReruns_throwsForbiddenWhenCallerIsNotInSikkerhetstjenesten() {
-        notMemberOfSikkerhetstjenesten();
+    void getUnresolvedReruns_throwsForbiddenWhenCallerIsNotInAdminTeam() {
+        notMemberOfAdminTeam();
 
         assertThrows(ForbiddenOperationException.class, () -> controller.getUnresolvedReruns(principal));
 
@@ -91,7 +95,7 @@ class PullRerunControllerTest {
 
     @Test
     void resolveFailedPull_marksTheEntryResolvedWithoutRerunningThePull() {
-        memberOfSikkerhetstjenesten();
+        memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
 
         controller.resolveFailedPull(RERUN_ID, principal);
@@ -102,7 +106,7 @@ class PullRerunControllerTest {
 
     @Test
     void resolveFailedPull_propagatesEntryNotFoundException() {
-        memberOfSikkerhetstjenesten();
+        memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenThrow(new PullRerunEntryNotFoundException("not found"));
 
         assertThrows(PullRerunEntryNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
@@ -111,8 +115,8 @@ class PullRerunControllerTest {
     }
 
     @Test
-    void resolveFailedPull_throwsForbiddenWhenCallerIsNotInSikkerhetstjenesten() {
-        notMemberOfSikkerhetstjenesten();
+    void resolveFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
+        notMemberOfAdminTeam();
 
         assertThrows(ForbiddenOperationException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
 
@@ -121,7 +125,7 @@ class PullRerunControllerTest {
 
     @Test
     void rerunFailedPull_reRunsThePullAndMarksTheEntryResolvedOnSuccess() {
-        memberOfSikkerhetstjenesten();
+        memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
         when(rerun.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(rerun.getDbname()).thenReturn(DBNAME);
@@ -138,7 +142,7 @@ class PullRerunControllerTest {
 
     @Test
     void rerunFailedPull_registersTheFailureAgainAndRethrowsWhenTheRerunAlsoFails() {
-        memberOfSikkerhetstjenesten();
+        memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
         when(rerun.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(rerun.getDbname()).thenReturn(DBNAME);
@@ -158,7 +162,7 @@ class PullRerunControllerTest {
 
     @Test
     void rerunFailedPull_rejectsUnsupportedTeknologiWithoutAttemptingAPull() {
-        memberOfSikkerhetstjenesten();
+        memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
         when(rerun.getTeknologi()).thenReturn(TeknologiEnum.ORACLE);
 
@@ -169,8 +173,8 @@ class PullRerunControllerTest {
     }
 
     @Test
-    void rerunFailedPull_throwsForbiddenWhenCallerIsNotInSikkerhetstjenesten() {
-        notMemberOfSikkerhetstjenesten();
+    void rerunFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
+        notMemberOfAdminTeam();
 
         assertThrows(ForbiddenOperationException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
 

@@ -13,6 +13,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,26 +36,27 @@ public class PullRerunController {
 
     private static final Logger log = LoggerFactory.getLogger(PullRerunController.class);
 
-    static final String SIKKERHETSTJENESTEN_NAISTEAM = "sikkerhetstjenesten";
-
     private final PullRerunService pullRerunService;
     private final AuditloggTaskService auditloggTaskService;
     private final DB2PacketService db2PacketService;
     private final NaisService naisService;
+    private final List<String> adminNaisteams;
 
     @Autowired
-    public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService) {
+    public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService,
+                                @Value("${pull-rerun.admin-teams}") List<String> adminNaisteams) {
         this.pullRerunService = pullRerunService;
         this.auditloggTaskService = auditloggTaskService;
         this.db2PacketService = db2PacketService;
         this.naisService = naisService;
+        this.adminNaisteams = adminNaisteams;
     }
 
     @GetMapping("rerun-required")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle loggpuller som har feilet og krever manuell rekjøring")
     public List<PullRerunRequiredDTO> getUnresolvedReruns(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        requireSikkerhetstjenestenMembership(principal);
+        requireAdminTeamMembership(principal);
         return pullRerunService.findAllUnresolvedReruns();
     }
 
@@ -62,9 +64,8 @@ public class PullRerunController {
     @ResponseStatus(NO_CONTENT)
     @Operation(summary = "Markerer en feilet loggpull som løst manuelt, uten å kjøre den på nytt")
     public void resolveFailedPull(@PathVariable Long id, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        requireSikkerhetstjenestenMembership(principal);
+        requireAdminTeamMembership(principal);
 
-        // Validerer at oppføringen finnes og ikke allerede er løst, samme regler som ved rekjøring.
         pullRerunService.findUnresolvedRerunById(id);
         pullRerunService.markRerunResolved(id);
     }
@@ -73,7 +74,7 @@ public class PullRerunController {
     @ResponseStatus(NO_CONTENT)
     @Operation(summary = "Kjører på nytt en feilet loggpull, og markerer den som løst hvis rekjøringen lykkes")
     public void rerunFailedPull(@PathVariable Long id, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        requireSikkerhetstjenestenMembership(principal);
+        requireAdminTeamMembership(principal);
 
         PullRerunRequiredDTO rerun = pullRerunService.findUnresolvedRerunById(id);
         requireSupportedTeknologi(rerun.getTeknologi());
@@ -96,12 +97,12 @@ public class PullRerunController {
         }
     }
 
-    private void requireSikkerhetstjenestenMembership(OAuth2AuthenticatedPrincipal principal) {
+    private void requireAdminTeamMembership(OAuth2AuthenticatedPrincipal principal) {
         String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);
         List<String> naisteams = naisService.getAllNaisteamsForEmail(email);
-        if (!naisteams.contains(SIKKERHETSTJENESTEN_NAISTEAM)) {
-            log.warn("Bruker uten medlemskap i naisteam {} forsøkte å administrere loggpuller", SIKKERHETSTJENESTEN_NAISTEAM);
-            throw new ForbiddenOperationException("Denne operasjonen krever medlemskap i naisteam " + SIKKERHETSTJENESTEN_NAISTEAM);
+        if (naisteams.stream().noneMatch(adminNaisteams::contains)) {
+            log.warn("Bruker uten medlemskap i et av naisteamene {} forsøkte å administrere loggpuller", adminNaisteams);
+            throw new ForbiddenOperationException("Denne operasjonen krever medlemskap i et av naisteamene " + adminNaisteams);
         }
     }
 }

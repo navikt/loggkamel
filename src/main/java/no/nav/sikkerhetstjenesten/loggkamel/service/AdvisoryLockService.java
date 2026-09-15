@@ -16,7 +16,7 @@ public class AdvisoryLockService {
 
     private static final Logger log = LoggerFactory.getLogger(AdvisoryLockService.class);
 
-    // Use session-scoped lock to avoid possibility of leaking locks
+    // Use session-scoped lock to avoid possibility of leaking locks on premature session end
     private static final String TRY_ADVISORY_XACT_LOCK_SQL = "SELECT pg_try_advisory_xact_lock(?)";
 
     private final DataSource dataSource;
@@ -32,9 +32,7 @@ public class AdvisoryLockService {
 
     /**
      * Runs the given action while holding the transaction scoped advisory lock for the given key, and returns whether
-     * the action was run. The lock is held for the entire duration of the action and is not released until the
-     * surrounding transaction ends, so the action must be synchronous. Dispatching asynchronous work from within the
-     * action would release the lock before that work completes and void the guarantee.
+     * the action was run.
      * <p>
      * A dedicated connection is taken from the pool for the lock, separate from any connection JPA uses. Work performed
      * inside the action therefore commits independently of this transaction, which is what allows failures to be

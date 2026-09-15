@@ -39,3 +39,12 @@ routing:
 
 debug: false
 
+pull-rerun:
+  admin-teams:
+    - sikkerhetstjenesten
+
+scheduled:
+  db2:
+    pull:
+      cron: "0 */15 * * * *"
+

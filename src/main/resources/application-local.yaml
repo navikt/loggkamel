@@ -61,3 +61,7 @@ scheduled:
       # Use the endpoints in LoggkamelProxyTestController to trigger a pull manually instead.
       cron: "-"
 
+pull-rerun:
+  admin-teams:
+    - sikkerhetstjenesten
+
