@@ -61,7 +61,7 @@ class PullRerunControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisService, List.of(SIKKERHETSTJENESTEN_NAISTEAM));
+        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisService, new PullRerunAdminProperties(List.of(SIKKERHETSTJENESTEN_NAISTEAM)));
     }
 
     private void memberOfAdminTeam() {

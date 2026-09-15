@@ -13,7 +13,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +32,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/api/v1/pull")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "PullRerunController", description = "Denne brukes til å administrere og manuelt kjøre på nytt feilede loggpuller")
+@EnableConfigurationProperties(PullRerunAdminProperties.class)
 public class PullRerunController {
 
     private static final Logger log = LoggerFactory.getLogger(PullRerunController.class);
@@ -44,12 +45,12 @@ public class PullRerunController {
 
     @Autowired
     public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService,
-                                @Value("${pull-rerun.admin-teams}") List<String> adminNaisteams) {
+                                PullRerunAdminProperties adminProperties) {
         this.pullRerunService = pullRerunService;
         this.auditloggTaskService = auditloggTaskService;
         this.db2PacketService = db2PacketService;
         this.naisService = naisService;
-        this.adminNaisteams = adminNaisteams;
+        this.adminNaisteams = adminProperties.adminTeams();
     }
 
     @GetMapping("rerun-required")
