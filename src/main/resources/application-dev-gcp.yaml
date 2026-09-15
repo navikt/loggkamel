@@ -46,5 +46,5 @@ pull-rerun:
 scheduled:
   db2:
     pull:
-      cron: "0 */5 * * * *"
+      cron: "0 0 8 * * *"
 
