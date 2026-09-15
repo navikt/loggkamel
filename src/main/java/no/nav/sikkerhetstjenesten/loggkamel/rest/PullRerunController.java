@@ -30,10 +30,10 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/api/v1/pull")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "RerunPullController", description = "Denne brukes til å administrere og manuelt kjøre på nytt feilede loggpuller")
-public class RerunPullController {
+@Tag(name = "PullRerunController", description = "Denne brukes til å administrere og manuelt kjøre på nytt feilede loggpuller")
+public class PullRerunController {
 
-    private static final Logger log = LoggerFactory.getLogger(RerunPullController.class);
+    private static final Logger log = LoggerFactory.getLogger(PullRerunController.class);
 
     static final String SIKKERHETSTJENESTEN_NAISTEAM = "sikkerhetstjenesten";
 
@@ -43,7 +43,7 @@ public class RerunPullController {
     private final NaisService naisService;
 
     @Autowired
-    public RerunPullController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService) {
+    public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService) {
         this.pullRerunService = pullRerunService;
         this.auditloggTaskService = auditloggTaskService;
         this.db2PacketService = db2PacketService;
