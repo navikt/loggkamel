@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
-//TODO: expose secured controller making use of PullRerunService and DB2PacketService to manually re-run failed pulls
 @Component
 public class PullRerunService {
 
@@ -26,6 +25,10 @@ public class PullRerunService {
 
     public List<PullRerunRequiredDTO> findAllUnresolvedReruns() {
         return adapter.findAllUnresolvedReruns();
+    }
+
+    public PullRerunRequiredDTO findUnresolvedRerunById(Long rerunId) {
+        return adapter.findUnresolvedRerunById(rerunId);
     }
 
     public void markRerunResolved(Long rerunId) {

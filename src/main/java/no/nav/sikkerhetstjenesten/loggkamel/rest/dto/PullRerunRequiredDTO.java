@@ -13,7 +13,18 @@ import java.time.LocalDate;
 @Value
 @Builder
 @Jacksonized
-@Schema(description = "En feilet loggpull som må kjøres på nytt manuelt")
+@Schema(requiredProperties = {"id", "dbname", "teknologi", "pullStartDate", "pullEndDate", "resolved"}, example = """
+        {
+            "id": 42,
+            "dbname": "not-a-real-db",
+            "teknologi": "DB2",
+            "pullStartDate": "2026-09-12",
+            "pullEndDate": "2026-09-13",
+            "failureReason": "no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException: proxy unavailable",
+            "resolved": false,
+            "created": "2026-09-13T06:00:04.750377Z",
+            "updated": "2026-09-13T06:00:04.750377Z"
+        }""", description = "En feilet loggpull som må kjøres på nytt manuelt")
 public class PullRerunRequiredDTO {
 
     @NonNull

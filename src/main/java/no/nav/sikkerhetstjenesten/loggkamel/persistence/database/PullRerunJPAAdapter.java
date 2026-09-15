@@ -1,5 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
+import no.nav.sikkerhetstjenesten.loggkamel.rest.PullRerunAlreadyResolvedException;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.PullRerunEntryNotFoundException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.PullRerunRequiredDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,6 +54,16 @@ public class PullRerunJPAAdapter {
         return pullRerunRequiredRepository.findAllUnresolved().stream()
                 .map(mapper::pullRerunRequiredEntityToDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PullRerunRequiredDTO findUnresolvedRerunById(Long rerunId) {
+        PullRerunRequiredEntity entity = pullRerunRequiredRepository.findById(rerunId)
+                .orElseThrow(() -> new PullRerunEntryNotFoundException("Fant ingen pull rerun med id " + rerunId));
+        if (Boolean.TRUE.equals(entity.getResolved())) {
+            throw new PullRerunAlreadyResolvedException("Pull rerun med id " + rerunId + " er allerede løst");
+        }
+        return mapper.pullRerunRequiredEntityToDTO(entity);
     }
 
     @Transactional

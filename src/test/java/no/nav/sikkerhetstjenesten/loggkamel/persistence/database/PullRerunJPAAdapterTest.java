@@ -1,5 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
+import no.nav.sikkerhetstjenesten.loggkamel.rest.PullRerunAlreadyResolvedException;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.PullRerunEntryNotFoundException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.PullRerunRequiredDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -144,5 +146,31 @@ class PullRerunJPAAdapterTest {
         when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () -> adapter.markRerunResolved(7L));
+    }
+
+    @Test
+    void findUnresolvedRerunById_returnsMappedDTOWhenUnresolved() {
+        when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.of(pullRerunRequiredEntity));
+        when(pullRerunRequiredEntity.getResolved()).thenReturn(false);
+        when(mapper.pullRerunRequiredEntityToDTO(pullRerunRequiredEntity)).thenReturn(pullRerunRequiredDTO);
+
+        PullRerunRequiredDTO result = adapter.findUnresolvedRerunById(7L);
+
+        assertEquals(pullRerunRequiredDTO, result);
+    }
+
+    @Test
+    void findUnresolvedRerunById_throwsWhenEntryDoesNotExist() {
+        when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.empty());
+
+        assertThrows(PullRerunEntryNotFoundException.class, () -> adapter.findUnresolvedRerunById(7L));
+    }
+
+    @Test
+    void findUnresolvedRerunById_throwsWhenEntryAlreadyResolved() {
+        when(pullRerunRequiredRepository.findById(7L)).thenReturn(Optional.of(pullRerunRequiredEntity));
+        when(pullRerunRequiredEntity.getResolved()).thenReturn(true);
+
+        assertThrows(PullRerunAlreadyResolvedException.class, () -> adapter.findUnresolvedRerunById(7L));
     }
 }
