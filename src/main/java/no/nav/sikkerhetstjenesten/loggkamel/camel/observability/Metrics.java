@@ -13,6 +13,7 @@ public class Metrics {
     private static final String UNIQUE_DATABASE_ACTION_METRIC = LOGGKAMEL_APP_PREFIX + "unik";
     private static final String UNKNOWN_NAV_IDENT_METRIC = LOGGKAMEL_APP_PREFIX + "unknown";
     private static final String DB2_STATEMENT_ISSUE_TYPE_METRIC = LOGGKAMEL_APP_PREFIX + "statement.issue";
+    private static final String PULL_FAILURE_METRIC = LOGGKAMEL_APP_PREFIX + "pull.failure";
 
     private static final String MULTIPLICITY_LABEL = "multiplicity";
     private static final String TEKNOLOGI_LABEL = "teknologi";
@@ -67,6 +68,10 @@ public class Metrics {
 
     public void incrementDB2Issue(DB2IssueType db2IssueType) {
         meterRegistry.counter(DB2_STATEMENT_ISSUE_TYPE_METRIC, DB2_ISSUE_TYPE_LABEL, db2IssueType.name()).increment();
+    }
+
+    public void incrementPullFailure(String databaseName, TeknologiEnum teknologi) {
+        meterRegistry.counter(PULL_FAILURE_METRIC, TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), DATABASE_LABEL, databaseName).increment();
     }
 
 }

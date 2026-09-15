@@ -17,3 +17,12 @@ routing:
     invalid-message: "loggkamel-prod-logglines-invalid-message"
     invalid-message-routing: ${routing.packet.bucket}
 
+pull-rerun:
+  admin-teams:
+    - sikkerhetstjenesten
+
+scheduled:
+  db2:
+    pull:
+      cron: "0 0 8 * * *"
+

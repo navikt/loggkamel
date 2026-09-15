@@ -12,4 +12,6 @@ interface OversiktRepository extends JpaRepository<AuditloggTaskEntity, Long> {
 
     @Query("SELECT DISTINCT e.naisteam FROM AuditloggTaskEntity e WHERE e.naisteam IS NOT NULL")
     List<String> findAllDistinctNaisteam();
+
+    List<AuditloggTaskEntity> findAllByTeknologiAndFiksaTrue(TeknologiEnum teknologi);
 }
