@@ -18,7 +18,6 @@ import java.util.List;
 
 import static org.springframework.http.HttpStatus.OK;
 
-//TODO: remove after done testing loggkamelProxy, now that it is integrated into the scheduled DB2 log pull.
 @ConditionalOnDevOrLocal
 @RestController
 @RequestMapping("/api/v1/proxy")

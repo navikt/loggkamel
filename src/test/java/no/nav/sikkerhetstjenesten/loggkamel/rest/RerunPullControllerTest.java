@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.rest.PullController.SIKKERHETSTJENESTEN_NAISTEAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.rest.RerunPullController.SIKKERHETSTJENESTEN_NAISTEAM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PullControllerTest {
+class RerunPullControllerTest {
 
     private static final String EMAIL = "user@nav.no";
     private static final Long RERUN_ID = 7L;
@@ -58,7 +58,7 @@ class PullControllerTest {
     AuditloggTaskDTO auditloggTask;
 
     @InjectMocks
-    PullController controller;
+    RerunPullController controller;
 
     private void memberOfSikkerhetstjenesten() {
         when(principal.getAttribute(NaisService.EMAIL_CLAIM)).thenReturn(EMAIL);

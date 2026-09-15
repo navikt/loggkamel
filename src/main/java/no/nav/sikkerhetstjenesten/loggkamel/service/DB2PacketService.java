@@ -37,12 +37,16 @@ public class DB2PacketService {
 
     private final DB2DTOMapper db2DTOMapper;
 
+    private final AuditloggTaskService auditloggTaskService;
+
     @Autowired
-    public DB2PacketService(PacketPersistenceService packetPersistenceService, LoggkamelProxyService loggkamelProxyService, NaisService naisService, DB2DTOMapper db2DTOMapper) {
+    public DB2PacketService(PacketPersistenceService packetPersistenceService, LoggkamelProxyService loggkamelProxyService, NaisService naisService,
+                            DB2DTOMapper db2DTOMapper, AuditloggTaskService auditloggTaskService) {
         this.packetPersistenceService = packetPersistenceService;
         this.loggkamelProxyService = loggkamelProxyService;
         this.naisService = naisService;
         this.db2DTOMapper = db2DTOMapper;
+        this.auditloggTaskService = auditloggTaskService;
     }
 
     public void fetchLogsWithinDateRangeAndPersistAsPackets(AuditloggTaskDTO auditloggTaskDTO, LocalDate logPullStartDate, LocalDate logPullEndDate) {
@@ -56,6 +60,7 @@ public class DB2PacketService {
 
         List<DB2AuditloggLineDTO> logsPulledForDateRange =
                 loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, logsStartDateTime, logsEndDateTime);
+        boolean logsFound = !logsPulledForDateRange.isEmpty();
         int pulledPacketSize = logsPulledForDateRange.size();
         persistAuditloggLinesAsPacketsSeparatedByDate(logsPulledForDateRange, auditloggTaskDTO);
 
@@ -75,6 +80,10 @@ public class DB2PacketService {
             logsPulledForDateRange = logsPulledForDateRange.stream().filter(db2AuditloggLineDTO -> !logsAlreadyPersisted.contains(db2AuditloggLineDTO)).toList();
 
             persistAuditloggLinesAsPacketsSeparatedByDate(logsPulledForDateRange, auditloggTaskDTO);
+        }
+
+        if (logsFound) {
+            auditloggTaskService.registerLogsReceivedForAuditloggTask(dbName, auditloggTaskDTO.getTeknologi());
         }
 
         stopWatch.stop();

@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.packet.PacketPersistenceService;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -60,6 +62,9 @@ class DB2PacketServiceTest {
 
     @Mock
     DB2DTOMapper db2DTOMapper;
+
+    @Mock
+    AuditloggTaskService auditloggTaskService;
 
     @InjectMocks
     DB2PacketService db2PacketService;
@@ -152,6 +157,46 @@ class DB2PacketServiceTest {
         verify(db2DTOMapper).convertDB2DTOsToAuditloggLineMessages(dtosWithSecondTimestampWithoutRepetitions, auditloggTaskDTO, GCP_ID);
         verify(db2DTOMapper).convertDB2DTOsToAuditloggLineMessages(dtosWithThirdTimestamp, auditloggTaskDTO, GCP_ID);
         verifyNoMoreInteractions(db2DTOMapper);
+    }
+
+    @Test
+    void fetchLogsWithinDateRangeAndPersistAsPackets_registersLogsAfterPersistingWhenLogsWereFound() {
+        LocalDate date = LocalDate.of(2025, Month.APRIL, 3);
+        LocalDateTime timestamp = date.atStartOfDay();
+        List<DB2AuditloggLineDTO> logs = List.of(db2AuditloggLineDTO1);
+
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
+        when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
+        when(auditloggTaskDTO.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(db2AuditloggLineDTO1.getMetricsTimestamp()).thenReturn(timestamp);
+        when(db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(logs, auditloggTaskDTO, GCP_ID))
+                .thenReturn(List.of(auditloggLineMessage));
+        when(loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(
+                DB_NAME, date.atStartOfDay(), date.atTime(LocalTime.MAX))).thenReturn(logs);
+
+        db2PacketService.fetchLogsWithinDateRangeAndPersistAsPackets(auditloggTaskDTO, date, date);
+
+        InOrder persistenceOrder = inOrder(packetPersistenceService, auditloggTaskService);
+        persistenceOrder.verify(packetPersistenceService)
+                .saveAuditloggLineMessagesWithFilename(anyString(), eq(List.of(auditloggLineMessage)));
+        persistenceOrder.verify(auditloggTaskService)
+                .registerLogsReceivedForAuditloggTask(DB_NAME, TeknologiEnum.DB2);
+    }
+
+    @Test
+    void fetchLogsWithinDateRangeAndPersistAsPackets_doesNotRegisterLogsWhenNoneWereFound() {
+        LocalDate date = LocalDate.of(2025, Month.APRIL, 3);
+
+        when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
+        when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
+        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(
+                DB_NAME, date.atStartOfDay(), date.atTime(LocalTime.MAX))).thenReturn(List.of());
+
+        db2PacketService.fetchLogsWithinDateRangeAndPersistAsPackets(auditloggTaskDTO, date, date);
+
+        verifyNoInteractions(auditloggTaskService);
     }
 
     private List<DB2AuditloggLineDTO> buildPacketWithFiveTrailingSharedTimestamps(LocalDateTime dateTime1, LocalDateTime dateTime2) {
