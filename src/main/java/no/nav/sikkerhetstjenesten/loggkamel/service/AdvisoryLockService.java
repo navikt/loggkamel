@@ -16,7 +16,7 @@ public class AdvisoryLockService {
 
     private static final Logger log = LoggerFactory.getLogger(AdvisoryLockService.class);
 
-    // Use session-scoped lock to avoid possibility of leaking locks on premature session end
+    // Use a transaction-scoped lock so it is released automatically when the transaction ends
     private static final String TRY_ADVISORY_XACT_LOCK_SQL = "SELECT pg_try_advisory_xact_lock(?)";
 
     private final DataSource dataSource;
