@@ -22,7 +22,10 @@ pull-rerun:
     - sikkerhetstjenesten
 
 scheduled:
+  idempotent-repository:
+    cleanup:
+      postgres-retention-minutes: 360
+      log-packet-retention-minutes: 10
   db2:
     pull:
       cron: "0 0 8 * * *"
-
