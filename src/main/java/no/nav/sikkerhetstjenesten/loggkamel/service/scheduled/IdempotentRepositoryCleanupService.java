@@ -49,12 +49,17 @@ public class IdempotentRepositoryCleanupService {
 
     private void deleteExpiredLocks() {
         Instant now = Instant.now();
+
+        //debug
+        log.info("Deleting postgres consumer locks older than {}", now.minus(postgresRetentionInMinutes));
+        log.info("Deleting log packet consumer locks older than {}", now.minus(logPacketRetentionInMinutes));
+
         int postgresEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
                 POSTGRES_CONSUMER, now.minus(postgresRetentionInMinutes));
         int logPacketEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
                 LOG_PACKET_CONSUMER, now.minus(logPacketRetentionInMinutes));
 
-        log.debug("Idempotent repository cleanup complete, postgres entries deleted {}, log packet entries deleted {}",
+        log.info("Idempotent repository cleanup complete, postgres entries deleted {}, log packet entries deleted {}",
                 postgresEntriesDeleted, logPacketEntriesDeleted);
     }
 }
