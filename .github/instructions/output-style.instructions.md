@@ -41,6 +41,10 @@ Keep exact: technical terms, code blocks, command output, error strings, file pa
 
 Resume the compact style once the warning or sequence is done.
 
+## Code comments
+
+Do not add class or method comments to generated code when clear names can explain their purpose. Add them only when the logic is sufficiently complex that a precise name cannot communicate the essential rationale or behavior.
+
 ## Anti-slop
 
 Language-neutral, applies to Norwegian and English alike. Norwegian spelling and compound-word minimums live in `norwegian-text.instructions.md`; the full Norwegian language wash (klarspråk, anglicisms, fagtermer, Norwegian AI words) lives in the `klarsprak` skill.

@@ -54,3 +54,14 @@ executor:
     queueSize: 500
     keepAliveSeconds: 30
 
+scheduled:
+  db2:
+    pull:
+      # Disabled locally, the local Unleash mock enables every feature flag and the pull would hit the dev proxy.
+      # Use the endpoints in LoggkamelProxyTestController to trigger a pull manually instead.
+      cron: "-"
+
+pull-rerun:
+  admin-teams:
+    - sikkerhetstjenesten
+

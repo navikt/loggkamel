@@ -42,6 +42,21 @@ public class RestExceptionInterceptor {
         return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
     }
 
+    @ExceptionHandler(PullRerunEntryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePullRerunEntryNotFoundException(PullRerunEntryNotFoundException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
+    }
+
+    @ExceptionHandler(PullRerunAlreadyResolvedException.class)
+    public ResponseEntity<ErrorResponse> handlePullRerunAlreadyResolvedException(PullRerunAlreadyResolvedException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
+    }
+
+    @ExceptionHandler(UnsupportedPullTeknologiException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedPullTeknologiException(UnsupportedPullTeknologiException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.NOT_IMPLEMENTED, exception, request);
+    }
+
     @ExceptionHandler(MissingNaisTeamException.class)
     public ResponseEntity<ErrorResponse> handleMissingNaisTeamException(MissingNaisTeamException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);

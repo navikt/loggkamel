@@ -67,4 +67,10 @@ public class OversiktJPAAdapter {
         return repository.findAllDistinctNaisteam();
     }
 
+    public List<AuditloggTaskDTO> findConfiguredTasksByTeknologi(TeknologiEnum teknologi) {
+        return repository.findAllByTeknologiAndFiksaTrue(teknologi).stream()
+                .map(mapper::auditloggTaskEntityToDTO)
+                .toList();
+    }
+
 }

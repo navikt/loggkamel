@@ -23,7 +23,6 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 import static org.springframework.http.HttpStatus.OK;
 
-// TODO: look into input sanitization to avoid sql, log injection
 @RestController
 @RequestMapping("/api/v1/task")
 @SecurityScheme(bearerFormat = "JWT", name = "bearerAuth", scheme = "bearer", type = HTTP)
