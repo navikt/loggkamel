@@ -25,8 +25,8 @@ import static org.mockito.Mockito.verify;
 class LazyCounterInitializerTest {
 
     private static final String METRIC_NAME = "test.counter";
-    private static final String LABEL_NAME = "database";
-    private static final String LABEL_VALUE = "database";
+    private static final String LABEL_NAME = "dbNameLabel";
+    private static final String LABEL_VALUE = "dbNameValue";
 
     @Spy
     SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
