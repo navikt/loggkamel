@@ -21,3 +21,8 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+scheduled:
+  route:
+    control:
+      cron: "0 * * * * *"
