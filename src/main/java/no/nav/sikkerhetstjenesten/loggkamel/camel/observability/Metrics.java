@@ -28,9 +28,11 @@ public class Metrics {
     public enum DB2IssueType {unparsable, unexpectedStatementType}
 
     private final MeterRegistry meterRegistry;
+    private final LazyCounterInitializer lazyCounterInitializer;
 
-    public Metrics(MeterRegistry meterRegistry) {
+    public Metrics(MeterRegistry meterRegistry, LazyCounterInitializer lazyCounterInitializer) {
         this.meterRegistry = meterRegistry;
+        this.lazyCounterInitializer = lazyCounterInitializer;
 
         //initialize counters with bounded possible values
         for (Multiplicity multiplicity : Multiplicity.values()) {
@@ -59,7 +61,12 @@ public class Metrics {
     }
 
     public void incrementDatabaseSpecificAction(String databaseName, TeknologiEnum teknologi, Action action) {
-        meterRegistry.counter(UNIQUE_DATABASE_ACTION_METRIC, TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), ACTION_LABEL, action.name(), DATABASE_LABEL, databaseName).increment();
+        lazyCounterInitializer.increment(
+                UNIQUE_DATABASE_ACTION_METRIC,
+                TEKNOLOGI_LABEL, teknologi.name().toLowerCase(),
+                ACTION_LABEL, action.name(),
+                DATABASE_LABEL, databaseName
+        );
     }
 
     public void incrementUnknownNavIdent() {
@@ -71,7 +78,11 @@ public class Metrics {
     }
 
     public void incrementPullFailure(String databaseName, TeknologiEnum teknologi) {
-        meterRegistry.counter(PULL_FAILURE_METRIC, TEKNOLOGI_LABEL, teknologi.name().toLowerCase(), DATABASE_LABEL, databaseName).increment();
+        lazyCounterInitializer.increment(
+                PULL_FAILURE_METRIC,
+                TEKNOLOGI_LABEL, teknologi.name().toLowerCase(),
+                DATABASE_LABEL, databaseName
+        );
     }
 
 }
