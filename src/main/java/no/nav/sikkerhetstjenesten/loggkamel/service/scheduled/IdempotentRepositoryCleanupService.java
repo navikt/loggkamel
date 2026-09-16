@@ -24,8 +24,8 @@ public class IdempotentRepositoryCleanupService {
 
     private final IdempotentMessageRepository idempotentMessageRepository;
     private final AdvisoryLockService advisoryLockService;
-    final Duration postgresRetention;
-    final Duration logPacketRetention;
+    final Duration postgresRetentionInMinutes;
+    final Duration logPacketRetentionInMinutes;
 
     @Autowired
     public IdempotentRepositoryCleanupService(IdempotentMessageRepository idempotentMessageRepository,
@@ -34,8 +34,8 @@ public class IdempotentRepositoryCleanupService {
                                               @Value("${scheduled.idempotent-repository.cleanup.log-packet-retention-minutes}") long logPacketRetentionMinutes) {
         this.idempotentMessageRepository = idempotentMessageRepository;
         this.advisoryLockService = advisoryLockService;
-        this.postgresRetention = Duration.ofMinutes(postgresRetentionMinutes);
-        this.logPacketRetention = Duration.ofMinutes(logPacketRetentionMinutes);
+        this.postgresRetentionInMinutes = Duration.ofMinutes(postgresRetentionMinutes);
+        this.logPacketRetentionInMinutes = Duration.ofMinutes(logPacketRetentionMinutes);
     }
 
     @Scheduled(cron = "${scheduled.idempotent-repository.cleanup.cron}", zone = "Europe/Oslo")
@@ -50,9 +50,9 @@ public class IdempotentRepositoryCleanupService {
     private void deleteExpiredLocks() {
         Instant now = Instant.now();
         int postgresEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
-                POSTGRES_CONSUMER, now.minus(postgresRetention));
+                POSTGRES_CONSUMER, now.minus(postgresRetentionInMinutes));
         int logPacketEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
-                LOG_PACKET_CONSUMER, now.minus(logPacketRetention));
+                LOG_PACKET_CONSUMER, now.minus(logPacketRetentionInMinutes));
 
         log.debug("Idempotent repository cleanup complete, postgres entries deleted {}, log packet entries deleted {}",
                 postgresEntriesDeleted, logPacketEntriesDeleted);

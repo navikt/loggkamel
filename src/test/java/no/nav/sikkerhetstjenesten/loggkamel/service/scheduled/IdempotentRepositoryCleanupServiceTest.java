@@ -59,8 +59,8 @@ class IdempotentRepositoryCleanupServiceTest {
         verify(idempotentMessageRepository)
                 .deleteMessagesOlderThan(eq(LOG_PACKET_CONSUMER), logPacketCutoff.capture());
 
-        assertCapturedCutoffWithinASecondOfConfiguredRetention(postgresCutoff.getValue(), cleanupCompleted, service.postgresRetention);
-        assertCapturedCutoffWithinASecondOfConfiguredRetention(logPacketCutoff.getValue(), cleanupCompleted, service.logPacketRetention);
+        assertCapturedCutoffWithinASecondOfConfiguredRetention(postgresCutoff.getValue(), cleanupCompleted, service.postgresRetentionInMinutes);
+        assertCapturedCutoffWithinASecondOfConfiguredRetention(logPacketCutoff.getValue(), cleanupCompleted, service.logPacketRetentionInMinutes);
     }
 
     @Test
