@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -37,4 +38,11 @@ public abstract class AuditloggTaskMapper {
         return false;
     }
 
+    protected String mapBackfillStatusToString(BackfillStatus status) {
+        return status == null ? null : status.getValue();
+    }
+
+    protected BackfillStatus mapStringToBackfillStatus(String status) {
+        return status == null ? null : BackfillStatus.fromValue(status);
+    }
 }

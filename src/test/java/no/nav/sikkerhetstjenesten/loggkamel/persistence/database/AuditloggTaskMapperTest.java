@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -19,6 +20,7 @@ class AuditloggTaskMapperTest {
     private static final Boolean FIKSA = true;
     private static final Boolean FUNNET_LOGGER = true;
     private static final Boolean DISCARD_LOGS = true;
+    private static final BackfillStatus BACKFILL = BackfillStatus.REQUESTED;
 
     AuditloggTaskMapper mapper = new AuditloggTaskMapperImpl();
 
@@ -43,6 +45,7 @@ class AuditloggTaskMapperTest {
         assertEquals(expectedEntity.getOkonomi(), mappedEntity.getOkonomi());
         assertEquals(expectedEntity.getEndringerUtenKrav(), mappedEntity.getEndringerUtenKrav());
         assertEquals(expectedEntity.getLoggingLeseoperasjoner(), mappedEntity.getLoggingLeseoperasjoner());
+        assertEquals(expectedEntity.getBackfill(), mappedEntity.getBackfill());
         assertEquals(false, mappedEntity.getFiksa());
     }
 
@@ -68,6 +71,7 @@ class AuditloggTaskMapperTest {
                 .fiksa(FIKSA)
                 .funnetLogger(FUNNET_LOGGER)
                 .discardLogs(DISCARD_LOGS)
+                .backfill(BACKFILL.getValue())
                 .build();
     }
 
@@ -85,6 +89,7 @@ class AuditloggTaskMapperTest {
                 .loggingEndringer(loggingEndringer)
                 .funnetLogger(FUNNET_LOGGER)
                 .discardLogs(DISCARD_LOGS)
+                .backfill(BACKFILL)
                 .build();
     }
 
@@ -96,6 +101,7 @@ class AuditloggTaskMapperTest {
                 .endringerUtenKrav(endringerUtenKrav)
                 .okonomi(okonomi)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
+                .backfill(BACKFILL)
                 .build();
     }
 

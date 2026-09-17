@@ -12,9 +12,28 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-@Schema(requiredProperties = {"naisteam", "teknologi", "dbname", "okonomi", "loggingLeseoperasjoner", "endringerUtenKrav", "fiksa"}, example = """
-  {"naisteam": "owning-team", "teknologi": "POSTGRESQL", "dbname": "db-to-arkiv", "okonomi": true, "endringerUtenKrav": false, "loggingLeseoperasjoner": false
-  }""")
+@Schema(
+        requiredProperties = {
+                "naisteam",
+                "teknologi",
+                "dbname",
+                "okonomi",
+                "loggingLeseoperasjoner",
+                "endringerUtenKrav",
+                "backfill"
+        },
+        example = """
+                {
+                    "naisteam": "owning-team",
+                    "teknologi": "POSTGRESQL",
+                    "dbname": "db-to-arkiv",
+                    "okonomi": true,
+                    "endringerUtenKrav": false,
+                    "loggingLeseoperasjoner": false,
+                    "backfill": "false"
+                }
+                """
+)
 public class AuditloggTaskRequestDTO {
     @NonNull
     String naisteam;
@@ -33,4 +52,7 @@ public class AuditloggTaskRequestDTO {
 
     @NonNull
     Boolean loggingLeseoperasjoner;
+
+    @NonNull
+    BackfillStatus backfill;
 }

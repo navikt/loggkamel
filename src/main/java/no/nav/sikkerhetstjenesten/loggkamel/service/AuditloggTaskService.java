@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
@@ -82,6 +83,18 @@ public class AuditloggTaskService {
         return adapter.findConfiguredTasksByTeknologi(teknologi).stream()
                 .filter(this::taskHasAnActiveForwardingCategory)
                 .toList();
+    }
+
+    public List<AuditloggTaskDTO> findActiveTasksByTeknologiAndBackfillStatus(
+            TeknologiEnum teknologi, BackfillStatus backfillStatus) {
+        return adapter.findConfiguredTasksByTeknologiAndBackfill(teknologi, backfillStatus).stream()
+                .filter(this::taskHasAnActiveForwardingCategory)
+                .toList();
+    }
+
+    public void setBackfillStatus(
+            String dbname, TeknologiEnum teknologi, BackfillStatus backfillStatus) {
+        adapter.setBackfillStatus(dbname, teknologi, backfillStatus);
     }
 
     private boolean taskHasAnActiveForwardingCategory(AuditloggTaskDTO task) {
