@@ -55,6 +55,10 @@ executor:
     keepAliveSeconds: 30
 
 scheduled:
+  idempotent-repository:
+    cleanup:
+      postgres-retention-minutes: 5
+      log-packet-retention-minutes: 5
   db2:
     backfill:
       cron: "-"

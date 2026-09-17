@@ -52,8 +52,7 @@ of Loggkamel are running in DEV or PROD. This behavior is implemented via a data
 and is cleaned regularly to avoid unbounded growth.
 
 Consumers are configured to use a feature flag, allowing for per-consumer control in DEV and PROD. Consumer routes start disabled
-but will be enabled within a minute of startup if their flags are set to true. Log publishing is also flagged, for ease
-of testing in DEV. This can be managed in [Unleash](https://sikkerhetstjenesten-unleash-web.iap.nav.cloud.nais.io).
+but will be enabled within a minute of startup if their flags are set to true. This can be managed in [Unleash](https://sikkerhetstjenesten-unleash-web.iap.nav.cloud.nais.io).
 
 #### Postgres
 
