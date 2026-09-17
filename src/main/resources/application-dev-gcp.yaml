@@ -46,7 +46,6 @@ pull-rerun:
 scheduled:
   idempotent-repository:
     cleanup:
-      cron: "0 */5 * * * *"
       postgres-retention-minutes: 5
       log-packet-retention-minutes: 5
   db2:

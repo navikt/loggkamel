@@ -24,18 +24,18 @@ public class IdempotentRepositoryCleanupService {
 
     private final IdempotentMessageRepository idempotentMessageRepository;
     private final AdvisoryLockService advisoryLockService;
-    final Duration postgresRetentionInMinutes;
-    final Duration logPacketRetentionInMinutes;
+    final Duration postgresLockRetention;
+    final Duration packetLockRetention;
 
     @Autowired
     public IdempotentRepositoryCleanupService(IdempotentMessageRepository idempotentMessageRepository,
                                               AdvisoryLockService advisoryLockService,
-                                              @Value("${scheduled.idempotent-repository.cleanup.postgres-retention-minutes}") long postgresRetentionMinutes,
-                                              @Value("${scheduled.idempotent-repository.cleanup.log-packet-retention-minutes}") long logPacketRetentionMinutes) {
+                                              @Value("${scheduled.idempotent-repository.cleanup.postgres-retention-minutes}") long postgresLockRetentionMinutes,
+                                              @Value("${scheduled.idempotent-repository.cleanup.log-packet-retention-minutes}") long packetLockRetentionMinutes) {
         this.idempotentMessageRepository = idempotentMessageRepository;
         this.advisoryLockService = advisoryLockService;
-        this.postgresRetentionInMinutes = Duration.ofMinutes(postgresRetentionMinutes);
-        this.logPacketRetentionInMinutes = Duration.ofMinutes(logPacketRetentionMinutes);
+        this.postgresLockRetention = Duration.ofMinutes(postgresLockRetentionMinutes);
+        this.packetLockRetention = Duration.ofMinutes(packetLockRetentionMinutes);
     }
 
     @Scheduled(cron = "${scheduled.idempotent-repository.cleanup.cron}", zone = "Europe/Oslo")
@@ -50,14 +50,10 @@ public class IdempotentRepositoryCleanupService {
     private void deleteExpiredLocks() {
         Instant now = Instant.now();
 
-        //debug
-        log.info("Deleting postgres consumer locks older than {}", now.minus(postgresRetentionInMinutes));
-        log.info("Deleting log packet consumer locks older than {}", now.minus(logPacketRetentionInMinutes));
-
         int postgresEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
-                POSTGRES_CONSUMER, now.minus(postgresRetentionInMinutes));
+                POSTGRES_CONSUMER, now.minus(postgresLockRetention));
         int logPacketEntriesDeleted = idempotentMessageRepository.deleteMessagesOlderThan(
-                LOG_PACKET_CONSUMER, now.minus(logPacketRetentionInMinutes));
+                LOG_PACKET_CONSUMER, now.minus(packetLockRetention));
 
         log.info("Idempotent repository cleanup complete, postgres entries deleted {}, log packet entries deleted {}",
                 postgresEntriesDeleted, logPacketEntriesDeleted);
