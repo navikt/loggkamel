@@ -41,7 +41,7 @@ public class FeatureFlagRouteService {
         this.unleash = unleash;
     }
 
-    @Scheduled(cron = "${scheduled.route.control.cron}", zone = "Europe/Oslo")
+    @Scheduled(cron = "${scheduled.route.control.cron}", zone = "${app.timezone}")
     public void updateAllRoutes() {
         for (RouteConfiguration routeConfig : RouteConfiguration.values()) {
             updateRouteStatus(routeConfig);

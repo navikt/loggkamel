@@ -38,7 +38,7 @@ public class IdempotentRepositoryCleanupService {
         this.packetLockRetention = Duration.ofMinutes(packetLockRetentionMinutes);
     }
 
-    @Scheduled(cron = "${scheduled.idempotent-repository.cleanup.cron}", zone = "Europe/Oslo")
+    @Scheduled(cron = "${scheduled.idempotent-repository.cleanup.cron}", zone = "${app.timezone}")
     public void cleanupExpiredLocks() {
         boolean lockAcquired = advisoryLockService.runIfLockAcquired(CLEANUP_LOCK_KEY, this::deleteExpiredLocks);
 
