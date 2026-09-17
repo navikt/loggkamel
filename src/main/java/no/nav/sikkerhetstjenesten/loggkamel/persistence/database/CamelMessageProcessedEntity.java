@@ -21,7 +21,7 @@ public class CamelMessageProcessedEntity {
     @EmbeddedId
     private MessageId id;
 
-    @Column(name = "createdat")
+    @Column(name = "createdat", columnDefinition = "timestamptz")
     private Instant createdAt;
 
     @Getter
