@@ -57,9 +57,9 @@ executor:
 scheduled:
   idempotent-repository:
     cleanup:
-      cron: "0 * * * * *"
-      postgres-retention-minutes: 1
-      log-packet-retention-minutes: 1
+      cron: "0 */5 * * * *"
+      postgres-retention-minutes: 5
+      log-packet-retention-minutes: 5
   db2:
     pull:
       # Disabled locally, the local Unleash mock enables every feature flag and the pull would hit the dev proxy.
