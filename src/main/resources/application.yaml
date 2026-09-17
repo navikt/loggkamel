@@ -21,3 +21,11 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+scheduled:
+  idempotent-repository:
+    cleanup:
+      cron: "0 */5 * * * *"
+  route:
+    control:
+      cron: "0 * * * * *"
