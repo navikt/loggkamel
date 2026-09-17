@@ -1,10 +1,13 @@
-package no.nav.sikkerhetstjenesten.loggkamel.service;
+package no.nav.sikkerhetstjenesten.loggkamel.service.scheduled;
 
 import io.getunleash.Unleash;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AdvisoryLockService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,8 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.DailyDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.DailyDB2LogPuller.DB2_PULL_LOCK_KEY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2LogPuller.DB2_PULL_LOCK_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;

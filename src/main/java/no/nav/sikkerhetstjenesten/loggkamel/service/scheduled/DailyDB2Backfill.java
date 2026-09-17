@@ -1,10 +1,13 @@
-package no.nav.sikkerhetstjenesten.loggkamel.service;
+package no.nav.sikkerhetstjenesten.loggkamel.service.scheduled;
 
 import io.getunleash.Unleash;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AdvisoryLockService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
