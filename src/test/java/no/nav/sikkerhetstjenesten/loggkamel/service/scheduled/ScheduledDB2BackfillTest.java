@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.ScheduledDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2LogPuller.DB2_PULL_LOCK_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,10 +28,15 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class DailyDB2BackfillTest {
+class ScheduledDB2BackfillTest {
 
     private static final String DBNAME_1 = "dbOne";
     private static final String DBNAME_2 = "dbTwo";
+    private static final LocalDate JANUARY_FIRST = LocalDate.of(2026, 1, 1);
+    private static final LocalDate JANUARY_SECOND = LocalDate.of(2026, 1, 2);
+    private static final LocalDate TODAY = LocalDate.of(2026, 9, 17);
+    private static final LocalDate START_OF_CURRENT_YEAR = JANUARY_FIRST;
+    private static final LocalDate YESTERDAY = TODAY.minusDays(1);
 
     @Mock
     AuditloggTaskService auditloggTaskService;
@@ -55,7 +60,7 @@ class DailyDB2BackfillTest {
     AuditloggTaskDTO task2;
 
     @InjectMocks
-    DailyDB2Backfill backfill;
+    ScheduledDB2Backfill backfill;
 
     @Test
     void scheduledBackfillDoesNothingWhenFeatureFlagIsDisabled() {
@@ -82,15 +87,14 @@ class DailyDB2BackfillTest {
 
     @Test
     void backfillPullsFromStartOfCurrentYearThroughYesterdayAndMarksTaskFinished() {
-        LocalDate today = LocalDate.of(2026, 9, 17);
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
                 TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
 
-        backfill.backfillLogsForAllRequestedTasks(today);
+        backfill.backfillLogsForAllRequestedTasks(TODAY);
 
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
-                task1, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 9, 16));
+                task1, START_OF_CURRENT_YEAR, YESTERDAY);
         verify(auditloggTaskService).setBackfillStatus(
                 DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
     }
@@ -101,7 +105,7 @@ class DailyDB2BackfillTest {
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
                 TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
 
-        backfill.backfillLogsForAllRequestedTasks(LocalDate.of(2026, 1, 1));
+        backfill.backfillLogsForAllRequestedTasks(JANUARY_FIRST);
 
         verifyNoInteractions(db2PacketService);
         verify(auditloggTaskService).setBackfillStatus(
@@ -109,8 +113,21 @@ class DailyDB2BackfillTest {
     }
 
     @Test
+    void backfillOnJanuarySecondPullsJanuaryFirst() {
+        when(task1.getDbname()).thenReturn(DBNAME_1);
+        when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
+                TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
+
+        backfill.backfillLogsForAllRequestedTasks(JANUARY_SECOND);
+
+        verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
+                task1, JANUARY_FIRST, JANUARY_FIRST);
+        verify(auditloggTaskService).setBackfillStatus(
+                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+    }
+
+    @Test
     void failedBackfillRemainsRequestedAndOtherTasksContinue() {
-        LocalDate today = LocalDate.of(2026, 9, 17);
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(task2.getDbname()).thenReturn(DBNAME_2);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
@@ -118,15 +135,15 @@ class DailyDB2BackfillTest {
         doThrow(new RuntimeException("proxy unavailable"))
                 .when(db2PacketService)
                 .fetchLogsWithinDateRangeAndPersistAsPackets(
-                        task1, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 9, 16));
+                        task1, START_OF_CURRENT_YEAR, YESTERDAY);
 
-        backfill.backfillLogsForAllRequestedTasks(today);
+        backfill.backfillLogsForAllRequestedTasks(TODAY);
 
         verify(auditloggTaskService, never()).setBackfillStatus(
                 DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
         verify(metrics).incrementPullFailure(DBNAME_1, TeknologiEnum.DB2);
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
-                task2, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 9, 16));
+                task2, START_OF_CURRENT_YEAR, YESTERDAY);
         verify(auditloggTaskService).setBackfillStatus(
                 DBNAME_2, TeknologiEnum.DB2, BackfillStatus.FINISHED);
     }

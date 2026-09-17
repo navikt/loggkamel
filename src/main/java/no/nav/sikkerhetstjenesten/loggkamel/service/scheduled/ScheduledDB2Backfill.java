@@ -19,9 +19,9 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
-public class DailyDB2Backfill {
+public class ScheduledDB2Backfill {
 
-    private static final Logger log = LoggerFactory.getLogger(DailyDB2Backfill.class);
+    private static final Logger log = LoggerFactory.getLogger(ScheduledDB2Backfill.class);
     private static final ZoneId SCHEDULER_ZONE = ZoneId.of("Europe/Oslo");
 
     static final String DB2_BACKFILL_FEATURE_FLAG = "backfill-db2-logs";
@@ -33,7 +33,7 @@ public class DailyDB2Backfill {
     private final Unleash unleash;
 
     @Autowired
-    public DailyDB2Backfill(
+    public ScheduledDB2Backfill(
             AuditloggTaskService auditloggTaskService,
             DB2PacketService db2PacketService,
             AdvisoryLockService advisoryLockService,
@@ -63,20 +63,20 @@ public class DailyDB2Backfill {
     }
 
     void backfillLogsForAllRequestedTasks(LocalDate today) {
-        LocalDate pullStartDate = today.withDayOfYear(1);
-        LocalDate pullEndDate = today.minusDays(1);
+        LocalDate startOfYear = today.withDayOfYear(1);
+        LocalDate yesterday = today.minusDays(1);
         List<AuditloggTaskDTO> requestedTasks =
                 auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
                         TeknologiEnum.DB2, BackfillStatus.REQUESTED);
 
         log.info("Starting scheduled DB2 backfill for {} requested tasks, startDate {}, endDate {}",
-                requestedTasks.size(), pullStartDate, pullEndDate);
+                requestedTasks.size(), startOfYear, yesterday);
 
         int succeeded = 0;
         int failed = 0;
 
         for (AuditloggTaskDTO requestedTask : requestedTasks) {
-            if (backfillSingleTask(requestedTask, pullStartDate, pullEndDate)) {
+            if (backfillSingleTask(requestedTask, startOfYear, yesterday)) {
                 succeeded++;
             } else {
                 failed++;
@@ -84,7 +84,7 @@ public class DailyDB2Backfill {
         }
 
         log.info("Finished scheduled DB2 backfill, startDate {}, endDate {}, tasks succeeded {}, tasks failed {}",
-                pullStartDate, pullEndDate, succeeded, failed);
+                startOfYear, yesterday, succeeded, failed);
     }
 
     private boolean backfillSingleTask(
