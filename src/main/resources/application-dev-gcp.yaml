@@ -50,6 +50,6 @@ scheduled:
       log-packet-retention-minutes: 5
   db2:
     backfill:
-      cron: "0 */5 * * * *"
+      cron: "0 0 3 * * *"
     pull:
       cron: "0 0 8 * * *"
