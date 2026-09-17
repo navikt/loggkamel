@@ -24,9 +24,7 @@ public class FeatureFlagRouteService {
     @Getter
     enum RouteConfiguration {
         POSTGRES_LOGS("consume-postgres-logs", POSTGRES_LOG_CONSUMER_ID, false),
-        LOG_PACKETS("consume-log-lines", NATIVE_LOG_PACKET_CONSUMER_ID, false),
-        //TODO: modify so log line publication can only be disabled in lower envs
-        LOG_LINES("publish-log-lines", STANDARDIZED_LOG_LINE_PRODUCER_ID, true);
+        LOG_PACKETS("consume-log-lines", NATIVE_LOG_PACKET_CONSUMER_ID, false);
 
         private final String featureFlag;
         private final String routeId;
