@@ -14,4 +14,6 @@ interface OversiktRepository extends JpaRepository<AuditloggTaskEntity, Long> {
     List<String> findAllDistinctNaisteam();
 
     List<AuditloggTaskEntity> findAllByTeknologiAndFiksaTrue(TeknologiEnum teknologi);
+
+    List<AuditloggTaskEntity> findAllByTeknologiAndFiksaTrueAndBackfill(TeknologiEnum teknologi, String backfill);
 }

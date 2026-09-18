@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
@@ -326,4 +327,18 @@ class AuditloggTaskServiceTest {
 
         assertThrows(RuntimeException.class, () -> service.findActiveTasksByTeknologi(TEKNOLOGI));
     }
+
+    @Test
+    void findActiveTasksByTeknologiAndBackfillStatus_filtersInactiveTasks() {
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO2.getDiscardLogs()).thenReturn(true);
+        when(adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+
+        assertEquals(
+                List.of(auditloggTaskDTO1),
+                service.findActiveTasksByTeknologiAndBackfillStatus(TEKNOLOGI, BackfillStatus.REQUESTED));
+    }
+
 }

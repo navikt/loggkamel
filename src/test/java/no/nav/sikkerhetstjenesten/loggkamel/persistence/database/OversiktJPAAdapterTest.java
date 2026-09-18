@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -171,4 +172,16 @@ class OversiktJPAAdapterTest {
 
         assertEquals(List.of(NAISTEAM, NAISTEAM2), adapter.findAllDistinctNaisteam());
     }
+
+    @Test
+    void findConfiguredTasksByTeknologiAndBackfill_mapsMatchingEntities() {
+        when(repository.findAllByTeknologiAndFiksaTrueAndBackfill(TEKNOLOGI, "requested"))
+                .thenReturn(List.of(toSaveAuditloggTaskEntity));
+        when(mapper.auditloggTaskEntityToDTO(toSaveAuditloggTaskEntity)).thenReturn(auditloggTaskDTO);
+
+        assertEquals(
+                List.of(auditloggTaskDTO),
+                adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.REQUESTED));
+    }
+
 }

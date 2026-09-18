@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,4 +74,16 @@ public class OversiktJPAAdapter {
                 .toList();
     }
 
+    public List<AuditloggTaskDTO> findConfiguredTasksByTeknologiAndBackfill(
+            TeknologiEnum teknologi, BackfillStatus backfillStatus) {
+        return repository.findAllByTeknologiAndFiksaTrueAndBackfill(teknologi, backfillStatus.getValue()).stream()
+                .map(mapper::auditloggTaskEntityToDTO)
+                .toList();
+    }
+
+    public void setBackfillStatus(String dbname, TeknologiEnum teknologi, BackfillStatus backfillStatus) {
+        AuditloggTaskEntity task = repository.findByDbnameAndTeknologi(dbname, teknologi);
+        task.setBackfill(backfillStatus.getValue());
+        saveAuditloggTaskEntity(task);
+    }
 }
