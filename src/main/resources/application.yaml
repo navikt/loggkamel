@@ -2,6 +2,9 @@ logging:
   level:
     root: info
 
+app:
+  timezone: ${TZ:Europe/Oslo}
+
 spring:
   jpa:
     open-in-view: false

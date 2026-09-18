@@ -52,7 +52,7 @@ public class DailyDB2LogPuller {
         this.unleash = unleash;
     }
 
-    @Scheduled(cron = "${scheduled.db2.pull.cron}", zone = "Europe/Oslo")
+    @Scheduled(cron = "${scheduled.db2.pull.cron}", zone = "${app.timezone}")
     public void pullDB2LogsForAllActiveTasks() {
         if (!unleash.isEnabled(DB2_PULL_FEATURE_FLAG, false)) {
             log.info("Feature flag '{}' is disabled, skipping scheduled DB2 log pull", DB2_PULL_FEATURE_FLAG);

@@ -22,7 +22,6 @@ import java.util.List;
 public class ScheduledDB2Backfill {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledDB2Backfill.class);
-    private static final ZoneId SCHEDULER_ZONE = ZoneId.of("Europe/Oslo");
 
     static final String DB2_BACKFILL_FEATURE_FLAG = "backfill-db2-logs";
 
@@ -31,6 +30,7 @@ public class ScheduledDB2Backfill {
     private final AdvisoryLockService advisoryLockService;
     private final Metrics metrics;
     private final Unleash unleash;
+    private final ZoneId appZoneId;
 
     @Autowired
     public ScheduledDB2Backfill(
@@ -38,15 +38,17 @@ public class ScheduledDB2Backfill {
             DB2PacketService db2PacketService,
             AdvisoryLockService advisoryLockService,
             Metrics metrics,
-            Unleash unleash) {
+            Unleash unleash,
+            ZoneId appZoneId) {
         this.auditloggTaskService = auditloggTaskService;
         this.db2PacketService = db2PacketService;
         this.advisoryLockService = advisoryLockService;
         this.metrics = metrics;
         this.unleash = unleash;
+        this.appZoneId = appZoneId;
     }
 
-    @Scheduled(cron = "${scheduled.db2.backfill.cron}", zone = "Europe/Oslo")
+    @Scheduled(cron = "${scheduled.db2.backfill.cron}", zone = "${app.timezone}")
     public void backfillDB2LogsForAllRequestedTasks() {
         if (!unleash.isEnabled(DB2_BACKFILL_FEATURE_FLAG, false)) {
             log.info("Feature flag '{}' is disabled, skipping scheduled DB2 backfill", DB2_BACKFILL_FEATURE_FLAG);
@@ -55,7 +57,7 @@ public class ScheduledDB2Backfill {
 
         boolean lockAcquired = advisoryLockService.runIfLockAcquired(
                 DailyDB2LogPuller.DB2_PULL_LOCK_KEY,
-                () -> backfillLogsForAllRequestedTasks(LocalDate.now(SCHEDULER_ZONE)));
+                () -> backfillLogsForAllRequestedTasks(LocalDate.now(appZoneId)));
 
         if (!lockAcquired) {
             log.info("Another instance holds the DB2 pull lock, skipping scheduled DB2 backfill");
