@@ -3,9 +3,6 @@ logging:
     root: info
 
 app:
-  # Single source of truth for the timezone used across scheduling, date
-  # calculations and (via the container's TZ env var) the JVM default.
-  # Falls back to Europe/Oslo when TZ isn't set (e.g. local dev outside Docker).
   timezone: ${TZ:Europe/Oslo}
 
 spring:
