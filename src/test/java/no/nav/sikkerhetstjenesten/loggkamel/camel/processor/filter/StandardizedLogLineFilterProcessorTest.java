@@ -12,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.PLACE_IN_PACKET;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.MESSAGE_SHOULD_BE_SKIPPED;
-import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -43,9 +43,9 @@ class StandardizedLogLineFilterProcessorTest {
     @InjectMocks
     StandardizedLogLineFilterProcessor standardizedLogLineFilterProcessor;
 
-    void setupDoesLineActionMatchRelevantAuditloggTask() {
+    void setupShouldLineActionTypeBeLoggedForThisTask() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME)).thenReturn("blah");
+        when(message.getHeader(LOG_FILENAME)).thenReturn("blah");
         when(exchange.getVariable(PLACE_IN_PACKET)).thenReturn(1);
         when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(auditloggTaskDTO);
         when(message.getBody(EnrichedAuditlogg.class)).thenReturn(enrichedAuditlogg);
@@ -66,28 +66,28 @@ class StandardizedLogLineFilterProcessorTest {
     }
 
     @Test
-    void doesLineActionMatchRelevantAuditloggTask_passesIfBothIsReadingAndForwardingReads() {
-        setupDoesLineActionMatchRelevantAuditloggTask();
+    void shouldLineActionTypeBeLoggedForThisTask_passesIfBothIsReadingAndForwardingReads() {
+        setupShouldLineActionTypeBeLoggedForThisTask();
 
         when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(true);
         when(logLineOperationTypes.isRead()).thenReturn(true);
 
-        assertTrue(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggTask(exchange));
+        assertTrue(standardizedLogLineFilterProcessor.shouldLineActionTypeBeLoggedForThisTask(exchange));
     }
 
     @Test
-    void doesLineActionMatchRelevantAuditloggTask_passesIfBothIsWriteAndForwardingWrites() {
-        setupDoesLineActionMatchRelevantAuditloggTask();
+    void shouldLineActionTypeBeLoggedForThisTask_passesIfBothIsWriteAndForwardingWrites() {
+        setupShouldLineActionTypeBeLoggedForThisTask();
 
         when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(true);
         when(logLineOperationTypes.isModification()).thenReturn(true);
 
-        assertTrue(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggTask(exchange));
+        assertTrue(standardizedLogLineFilterProcessor.shouldLineActionTypeBeLoggedForThisTask(exchange));
     }
 
     @Test
-    void doesLineActionMatchRelevantAuditloggTask_removedIfIsNeitherReadNorWrite() {
-        setupDoesLineActionMatchRelevantAuditloggTask();
+    void shouldLineActionTypeBeLoggedForThisTask_removedIfIsNeitherReadNorWrite() {
+        setupShouldLineActionTypeBeLoggedForThisTask();
 
         when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(true);
         when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(true);
@@ -95,18 +95,18 @@ class StandardizedLogLineFilterProcessorTest {
         when(logLineOperationTypes.isRead()).thenReturn(false);
         when(logLineOperationTypes.isModification()).thenReturn(false);
 
-        assertFalse(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggTask(exchange));
+        assertFalse(standardizedLogLineFilterProcessor.shouldLineActionTypeBeLoggedForThisTask(exchange));
     }
 
     @Test
-    void doesLineActionMatchRelevantAuditloggTask_removedIfNoOperationsAreForwarded() {
-        setupDoesLineActionMatchRelevantAuditloggTask();
+    void shouldLineActionTypeBeLoggedForThisTask_removedIfNoOperationsAreForwarded() {
+        setupShouldLineActionTypeBeLoggedForThisTask();
 
         when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(false);
         when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(false);
 
         // If no mocked attributes are set, they all default to false
-        assertFalse(standardizedLogLineFilterProcessor.doesLineActionMatchRelevantAuditloggTask(exchange));
+        assertFalse(standardizedLogLineFilterProcessor.shouldLineActionTypeBeLoggedForThisTask(exchange));
     }
 
 }

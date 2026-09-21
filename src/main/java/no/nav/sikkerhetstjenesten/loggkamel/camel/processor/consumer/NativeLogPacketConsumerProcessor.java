@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
@@ -32,10 +33,12 @@ public class NativeLogPacketConsumerProcessor {
         this.metrics = metrics;
     }
 
-    public void populateFilenameHeader(Exchange exchange) {
-        if (exchange.getMessage().getHeader(FILE_NAME, String.class) == null) {
-            exchange.getMessage().setHeader(FILE_NAME, exchange.getMessage().getHeader(OBJECT_NAME, String.class));
-        }
+    public void populateLocalFilenameHeader(Exchange exchange) {
+        exchange.getMessage().setHeader(LOG_FILENAME, exchange.getMessage().getHeader(FILE_NAME, String.class));
+    }
+
+    public void populateGCPFilenameHeader(Exchange exchange) {
+        exchange.getMessage().setHeader(LOG_FILENAME, exchange.getMessage().getHeader(OBJECT_NAME, String.class));
     }
 
     public void mapToLogLineList(Exchange exchange) throws Exception {

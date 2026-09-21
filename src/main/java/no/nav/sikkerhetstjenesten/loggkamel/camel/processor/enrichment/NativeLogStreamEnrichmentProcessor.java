@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
-import static org.apache.camel.Exchange.FILE_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
 @Service
 public class NativeLogStreamEnrichmentProcessor {
@@ -30,9 +30,9 @@ public class NativeLogStreamEnrichmentProcessor {
     }
 
     public void enrich(Exchange exchange) {
-        log.debug("NativeLogStreamEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(FILE_NAME, String.class));
+        log.debug("NativeLogStreamEnrichmentProcessor called for log: {}", exchange.getMessage().getHeader(LOG_FILENAME, String.class));
 
-        String filename = exchange.getMessage().getHeader(FILE_NAME, String.class);
+        String filename = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
 
         if (filename == null || !filename.contains(".")) {
             log.warn("Filename header is missing or does not contain expected format: {}", filename);
@@ -44,7 +44,7 @@ public class NativeLogStreamEnrichmentProcessor {
 
         TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
 
-        AuditloggTaskDTO auditloggTaskDTO = getAuditloggTask(dbname, teknologi);
+        AuditloggTaskDTO auditloggTaskDTO = getAuditloggTaskForDBNameAndTeknologi(dbname, teknologi);
 
         if (auditloggTaskDTO == null) {
             log.info("No auditlogg task found for database {} and teknologi {}, sending to backout queue", dbname, teknologi.name());
@@ -71,7 +71,7 @@ public class NativeLogStreamEnrichmentProcessor {
         exchange.setVariable(TEAM_GCP_PROJECT_ID, teamGcpProjectId);
     }
 
-    private AuditloggTaskDTO getAuditloggTask(String dbname, TeknologiEnum teknologi) {
+    private AuditloggTaskDTO getAuditloggTaskForDBNameAndTeknologi(String dbname, TeknologiEnum teknologi) {
         try {
             return auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(dbname, teknologi);
         } catch (RuntimeException e) {

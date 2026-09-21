@@ -27,10 +27,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.GCPStandardizedLogLineProducerProcessor.CLOUD_LOGGING_ENTRY_NAME;
-import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -90,7 +90,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(LOGGING_CLIENT, logging);
-        exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
+        exchange.getMessage().setHeader(LOG_FILENAME, PROVIDED_FILENAME);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder()
                 .dbName(DATABASE_NAME)
                 .logTime(NOW)
@@ -122,7 +122,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(LOGGING_CLIENT, logging);
         exchange.setVariable(PLACE_IN_PACKET, 1);
-        exchange.getMessage().setHeader(FILE_NAME, PROVIDED_FILENAME);
+        exchange.getMessage().setHeader(LOG_FILENAME, PROVIDED_FILENAME);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder()
                 .dbName(DATABASE_NAME)
                 .logTime(NOW)

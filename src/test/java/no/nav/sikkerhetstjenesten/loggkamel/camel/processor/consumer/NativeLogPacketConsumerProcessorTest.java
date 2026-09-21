@@ -19,10 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum.POSTGRESQL;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
@@ -39,6 +38,7 @@ class NativeLogPacketConsumerProcessorTest {
     private final static String NAME_FROM_BUCKET = "nameFromBucket";
     private static final String TEAM_PROJECT_ID = "projectId";
     private static final String DB_NAME = "dbName";
+    private static final Integer PLACE_IN_PACKET_INT = 2;
 
     @Mock
     private AuditloggLineMessage auditloggLineMessage;
@@ -59,28 +59,27 @@ class NativeLogPacketConsumerProcessorTest {
     private NativeLogPacketConsumerProcessor processor;
 
     @Test
-    void populateFilenameHeader_usesObjectNameWhenCamelFileNameIsMissing() {
+    void populateGCPFilenameHeader_usesObjectName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
-        processor.populateFilenameHeader(exchange);
+        processor.populateGCPFilenameHeader(exchange);
 
-        assertEquals(NAME_FROM_BUCKET, exchange.getMessage().getHeader(FILE_NAME, String.class));
+        assertEquals(NAME_FROM_BUCKET, exchange.getMessage().getHeader(LOG_FILENAME, String.class));
     }
 
     @Test
-    void populateFilenameHeader_keepsExistingCamelFileName() {
+    void populateLocalFilenameHeader_usesCamelFileName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setHeader(FILE_NAME, NAME_FROM_CAMEL);
-        exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
-        processor.populateFilenameHeader(exchange);
+        processor.populateLocalFilenameHeader(exchange);
 
-        assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(FILE_NAME, String.class));
+        assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(LOG_FILENAME, String.class));
     }
 
     @Test
-    void mapToLogLineList_setsBodyAndVariables() throws Exception {
+    void mapToLogLineList_setsBody() throws Exception {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setBody("blah");
         when(objectMapper.readValue(eq("blah"), any(TypeReference.class))).thenReturn(List.of(auditloggLineMessage));
@@ -98,11 +97,14 @@ class NativeLogPacketConsumerProcessorTest {
         exchange.getMessage().setBody(List.of(auditloggLineMessage));
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
         when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
+        when(auditloggLineMessageHeader.getTeknologi()).thenReturn(POSTGRESQL);
 
         processor.initializeExchangeVariablesForPacket(exchange);
 
         assertNotNull(exchange.getVariable(LOGGING_CLIENT, Logging.class));
+        assertNotNull(exchange.getVariable(LOGGING_CLIENT, Logging.class).getOptions());
         assertEquals(TEAM_PROJECT_ID, exchange.getVariable(LOGGING_CLIENT, Logging.class).getOptions().getProjectId());
+        assertEquals(POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
     }
 
     @Test
@@ -113,12 +115,14 @@ class NativeLogPacketConsumerProcessorTest {
         when(auditloggLineMessageHeader.getTeknologi()).thenReturn(POSTGRESQL);
         when(auditloggLineMessageHeader.getAuditloggTaskDTO()).thenReturn(auditloggTaskDTO);
         when(auditloggLineMessageHeader.getTeamGcpProjectId()).thenReturn(TEAM_PROJECT_ID);
+        when(auditloggLineMessageHeader.getPlaceInPacket()).thenReturn(PLACE_IN_PACKET_INT);
 
         processor.initializeExchangeVariablesForLogLine(exchange);
 
         assertEquals(POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
         assertEquals(auditloggTaskDTO, exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class));
         assertEquals(TEAM_PROJECT_ID, exchange.getVariable(TEAM_GCP_PROJECT_ID, String.class));
+        assertEquals(PLACE_IN_PACKET_INT, exchange.getVariable(PLACE_IN_PACKET));
     }
 
     @Test
@@ -143,4 +147,3 @@ class NativeLogPacketConsumerProcessorTest {
         verify(metrics).incrementDatabaseSpecificAction(DB_NAME, POSTGRESQL, Metrics.Action.consumed);
     }
 }
-

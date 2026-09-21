@@ -14,9 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
-import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -50,7 +50,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void fileNameNotSet() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(null);
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -58,7 +58,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void fileNameNotSplittable() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn("blah");
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("blah");
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -66,7 +66,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void errorWhenFetchingAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -78,7 +78,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void noMatchingAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -90,7 +90,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void errorWhenRegisteringReceivedLogsForAuditloggTask() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -103,7 +103,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void dbMarkedForDiscardLogs_exitsBeforeSearchingForNaisteam() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -120,7 +120,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void exceptionCallingNaisService_exceptionPassesThrough() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -136,7 +136,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void emptyNaisteamGCPProjectId() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 
@@ -152,7 +152,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     @Test
     void happyPath() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
         when(exchange.getVariable(TEKNOLOGI, TeknologiEnum.class)).thenReturn(TeknologiEnum.DB2);
 

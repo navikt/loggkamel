@@ -15,10 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter.NativeLogStreamSplitterProcessor.LOG_PACKET_MAX_SIZE;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
-import static org.apache.camel.Exchange.FILE_NAME;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,7 +41,7 @@ class NativeLogStreamSplitterProcessorTest {
     @Test
     void missingFileNameThrows() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(null);
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange));
     }
@@ -50,18 +49,14 @@ class NativeLogStreamSplitterProcessorTest {
     @Test
     void filenameWithExtensionGetsUuidAndLoglineSuffix() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn("sikkerhets-test.20260210.auditlog");
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test.20260210.auditlog");
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> objectNameCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(FILE_NAME), fileNameCaptor.capture());
-        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(OBJECT_NAME), objectNameCaptor.capture());
+        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(LOG_FILENAME), fileNameCaptor.capture());
 
         String generatedFileName = fileNameCaptor.getValue();
-        assertEquals(generatedFileName, objectNameCaptor.getValue());
         assertTrue(generatedFileName.startsWith("sikkerhets-test.20260210."));
         assertTrue(generatedFileName.endsWith(LOG_PACKET_EXTENSION));
     }
@@ -69,12 +64,12 @@ class NativeLogStreamSplitterProcessorTest {
     @Test
     void filenameWithoutExtensionStillGetsLoglineSuffix() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn("sikkerhets-test");
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test");
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(FILE_NAME), fileNameCaptor.capture());
+        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(LOG_FILENAME), fileNameCaptor.capture());
 
         String generatedFileName = fileNameCaptor.getValue();
         assertTrue(generatedFileName.startsWith("sikkerhets-test."));
@@ -121,4 +116,3 @@ class NativeLogStreamSplitterProcessorTest {
         assertFalse(packets.hasNext());
     }
 }
-

@@ -1,28 +1,25 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
-import com.google.cloud.logging.Logging;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHandler;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
-import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
+import org.apache.camel.Processor;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Component;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.NativeLogLineEnricherAssigner.NATIVE_LOG_LINE_ENRICHER_ROUTE;
-import static org.apache.camel.Exchange.FILE_NAME;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 
-@Component
-public class NativeLogPacketConsumer extends LogPacketErrorHandler {
+public abstract class NativeLogPacketConsumer extends LogPacketErrorHandler {
 
-    private static final String KEEP_SOURCE_FILE = "keepSourceFile";
+    protected static final String KEEP_SOURCE_FILE = "keepSourceFile";
+
+    protected final NativeLogPacketConsumerProcessor consumerProcessor;
+    private final InputStreamReader inputStreamReader;
 
     @Autowired
     @Qualifier("logPacketIdempotentRepository")
@@ -30,35 +27,19 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
 
     public static final String NATIVE_LOG_PACKET_CONSUMER_ID = "native-log-packet-consumer";
 
-    @Value("${routing.packet.bucket}")
-    private String logPacketConsumerUri;
+    protected NativeLogPacketConsumer(
+            NativeLogPacketConsumerProcessor consumerProcessor,
+            InputStreamReader inputStreamReader
+    ) {
+        this.consumerProcessor = consumerProcessor;
+        this.inputStreamReader = inputStreamReader;
+    }
 
-    @Override
-    public void configure() {
-        // Explicitly delete original local files on route completion. Only necessary when reading from GCP
-        if (logPacketConsumerUri.startsWith("google-storage://")) {
-            onCompletion()
-                    .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
-                    .process(exchange -> {
-                        Logging logging = exchange.getVariable(NativeLogPacketConsumerProcessor.LOGGING_CLIENT, Logging.class);
-                        if (logging == null) {
-                            log.warn("No logging client found for packet {}, cannot flush or close. Possible loss of logs", exchange.getMessage().getHeader(FILE_NAME));
-                            return;
-                        }
-                        logging.flush();
-                        logging.close();
-                    })
-                    .setHeader(OBJECT_NAME, header(FILE_NAME))
-                    .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
-                    .setBody(constant((Object) null))
-                    .log(LoggingLevel.INFO, "Deleting consumed source object ${header.CamelFileName} from consumer bucket")
-                    .to(logPacketConsumerUri);
-        }
-
+    protected void configureConsumer(String logPacketConsumerUri, Processor filenameInitializer) {
         super.errorHandling(Metrics.Multiplicity.packet);
 
         onException(DuplicateKeyException.class)
-                .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${headers['CamelFileName']}, aborting processing without removing source file")
+                .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${header.LoggkamelFilename}, aborting processing without removing source file")
                 .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
 
@@ -67,17 +48,16 @@ public class NativeLogPacketConsumer extends LogPacketErrorHandler {
                 .streamCache(false)
                 .autoStartup(false)
                 .transacted()
-                .bean(NativeLogPacketConsumerProcessor.class, "populateFilenameHeader")
-                .log(LoggingLevel.DEBUG, "Received new file from ${header.CamelFileName}")
-                .idempotentConsumer(header(FILE_NAME), logPacketIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
-                .log(LoggingLevel.INFO, "Consuming log messages from ${header.CamelFileName}, converting to AuditloggLineMessage")
-                .bean(InputStreamReader.class, "prepareBodyAsInputStream")
-                .bean(NativeLogPacketConsumerProcessor.class, "mapToLogLineList")
-                .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesForPacket")
-                .bean(NativeLogPacketConsumerProcessor.class, "incrementMetricsForPacket")
+                .process(filenameInitializer)
+                .idempotentConsumer(header(LOG_FILENAME), logPacketIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
+                .log(LoggingLevel.INFO, "Consuming log messages from ${header.LoggkamelFilename}, converting to AuditloggLineMessage")
+                .process(inputStreamReader::prepareBodyAsInputStream)
+                .process(consumerProcessor::mapToLogLineList)
+                .process(consumerProcessor::initializeExchangeVariablesForPacket)
+                .process(consumerProcessor::incrementMetricsForPacket)
                 .split(body())
-                    .bean(NativeLogPacketConsumerProcessor.class, "initializeExchangeVariablesForLogLine")
-                    .bean(NativeLogPacketConsumerProcessor.class, "incrementMetricsForLine")
+                    .process(consumerProcessor::initializeExchangeVariablesForLogLine)
+                    .process(consumerProcessor::incrementMetricsForLine)
                     .to(NATIVE_LOG_LINE_ENRICHER_ROUTE);
     }
 }
