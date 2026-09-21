@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 class PostgresLogStreamConsumerProcessorTest {
 
     private static final String DESIRED_FILENAME = "desiredFilename";
+    private static final String NAME_WITHOUT_GZIP_ENDING = "I notably do not have a .gz extension";
     private static final String COMPRESSED_FILENAME = DESIRED_FILENAME + COMPRESSION_EXTENSION;
 
     @Mock
@@ -66,8 +67,8 @@ class PostgresLogStreamConsumerProcessorTest {
         processor.initializeGCPConsumerState(exchange);
 
         verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
-        verify(message, never()).setHeader(FILE_NAME, DESIRED_FILENAME);
         verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
+        verifyNoMoreInteractions(message);
     }
 
     @Test
@@ -78,6 +79,7 @@ class PostgresLogStreamConsumerProcessorTest {
 
         verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
         verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
+        verifyNoMoreInteractions(message);
     }
 
     @Test
@@ -89,7 +91,7 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
-        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(DESIRED_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(NAME_WITHOUT_GZIP_ENDING);
 
         processor.decompressIfGzip(exchange);
 

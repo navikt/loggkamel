@@ -86,11 +86,13 @@ class NativeLogPacketProducerProcessorTest {
         assertEquals(TEKNOLOGI_IN_EXCHANGE, typedCapturedList.get(0).getHeader().getTeknologi());
         assertEquals(TEAM_GCP_PROJECT_ID_VALUE, typedCapturedList.get(0).getHeader().getTeamGcpProjectId());
         assertEquals(DB_NAME, typedCapturedList.get(0).getHeader().getAuditloggTaskDTO().getDbname());
+
         assertEquals(LOG_LINE_1, typedCapturedList.get(0).getBody());
         assertEquals(1, typedCapturedList.get(0).getHeader().getPlaceInPacket());
 
         assertEquals(LOG_LINE_2, typedCapturedList.get(1).getBody());
         assertEquals(2, typedCapturedList.get(1).getHeader().getPlaceInPacket());
+
         verify(message).setBody(AUDITLOGG_LIST_AS_STRING);
     }
 }
