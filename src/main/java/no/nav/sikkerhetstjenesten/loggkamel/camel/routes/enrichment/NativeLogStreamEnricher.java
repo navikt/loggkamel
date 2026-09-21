@@ -28,7 +28,6 @@ public class NativeLogStreamEnricher extends LogStreamErrorHandler {
                 .routeId(NATIVE_LOG_STREAM_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching stream-level attributes for ${header.LoggkamelFilename}")
                 .process(enrichmentProcessor::enrich)
-                .process(blah -> {throw new InvalidLogLineException("scary exception bleerrggg");})
                 .to(NATIVE_LOG_STREAM_FILTER_ROUTE);
     }
 }
