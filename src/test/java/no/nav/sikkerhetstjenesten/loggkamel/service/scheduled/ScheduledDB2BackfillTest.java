@@ -8,13 +8,14 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AdvisoryLockService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.ScheduledDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
@@ -59,8 +60,13 @@ class ScheduledDB2BackfillTest {
     @Mock
     AuditloggTaskDTO task2;
 
-    @InjectMocks
     ScheduledDB2Backfill backfill;
+
+    @BeforeEach
+    void setUp() {
+        backfill = new ScheduledDB2Backfill(
+                auditloggTaskService, db2PacketService, advisoryLockService, metrics, unleash, ZoneId.of("Europe/Oslo"));
+    }
 
     @Test
     void scheduledBackfillDoesNothingWhenFeatureFlagIsDisabled() {
