@@ -10,14 +10,20 @@ import org.springframework.stereotype.Component;
 @ConditionalOnGCP
 public class GCPStandardizedLogLineProducer extends StandardizedLogLineProducer {
 
+    private final GCPStandardizedLogLineProducerProcessor producerProcessor;
+
+    public GCPStandardizedLogLineProducer(GCPStandardizedLogLineProducerProcessor producerProcessor) {
+        this.producerProcessor = producerProcessor;
+    }
+
     @Override
     public void configure() {
         super.errorHandling(Metrics.Multiplicity.line);
 
         from(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
-                .log(LoggingLevel.INFO, "Producing log message ${header.CamelFileName} line ${variable.PlaceInPacket} to GCP Logging")
-                .bean(GCPStandardizedLogLineProducerProcessor.class, "incrementMetrics")
-                .bean(GCPStandardizedLogLineProducerProcessor.class, "writeToGcpLogging");
+                .log(LoggingLevel.INFO, "Producing log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} to GCP Logging")
+                .process(producerProcessor::incrementMetrics)
+                .process(producerProcessor::writeToGcpLogging);
     }
 }

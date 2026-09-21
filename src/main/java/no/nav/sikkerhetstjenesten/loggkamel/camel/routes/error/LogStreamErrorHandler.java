@@ -39,7 +39,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
         getContext().setStreamCaching(false);
 
         onException(DependencyException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename}")
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
@@ -53,7 +53,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
                 .to(postgresInvalidMessageRouting);
 
         onException(InvalidLogException.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log(LoggingLevel.INFO, "Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.INFO, "Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${header.LoggkamelFilename}")
                 .maximumRedeliveries(0)
                 .handled(true)
                 .useOriginalBody() //testing
@@ -66,7 +66,7 @@ public abstract class LogStreamErrorHandler extends RouteBuilder {
                 .to(postgresInvalidMessageRouting);
 
         onException(Exception.class).onWhen(variable(TEKNOLOGI).convertTo(TeknologiEnum.class).isEqualTo(TeknologiEnum.POSTGRESQL))
-                .log(LoggingLevel.WARN, "Routing unhandled exception to postgres invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']}")
+                .log(LoggingLevel.WARN, "Routing unhandled exception to postgres invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${header.LoggkamelFilename}")
                 .log(LoggingLevel.DEBUG, "Exception stack trace: ${exception.stacktrace}")
                 .maximumRedeliveries(0)
                 .handled(true)

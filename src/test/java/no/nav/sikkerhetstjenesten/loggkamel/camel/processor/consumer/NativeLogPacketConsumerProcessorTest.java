@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
@@ -59,23 +60,25 @@ class NativeLogPacketConsumerProcessorTest {
     private NativeLogPacketConsumerProcessor processor;
 
     @Test
-    void populateFilenameHeader_usesObjectNameWhenCamelFileNameIsMissing() {
+    void populateGCPFilenameHeader_usesObjectName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
-        processor.populateFilenameHeader(exchange);
+        processor.populateGCPFilenameHeader(exchange);
 
-        assertEquals(NAME_FROM_BUCKET, exchange.getMessage().getHeader(FILE_NAME, String.class));
+        assertEquals(NAME_FROM_BUCKET, exchange.getMessage().getHeader(LOG_FILENAME, String.class));
+        assertNull(exchange.getMessage().getHeader(FILE_NAME));
     }
 
     @Test
-    void populateFilenameHeader_keepsExistingCamelFileName() {
+    void populateLocalFilenameHeader_usesCamelFileName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setHeader(FILE_NAME, NAME_FROM_CAMEL);
         exchange.getMessage().setHeader(OBJECT_NAME, NAME_FROM_BUCKET);
 
-        processor.populateFilenameHeader(exchange);
+        processor.populateLocalFilenameHeader(exchange);
 
+        assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(LOG_FILENAME, String.class));
         assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 
@@ -143,4 +146,3 @@ class NativeLogPacketConsumerProcessorTest {
         verify(metrics).incrementDatabaseSpecificAction(DB_NAME, POSTGRESQL, Metrics.Action.consumed);
     }
 }
-

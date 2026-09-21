@@ -11,10 +11,16 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.Standar
 @Component
 public class StandardizedLogLineFilter extends LogPacketErrorHandler {
 
+    private final StandardizedLogLineFilterProcessor filterProcessor;
+
     public static final String STANDARDIZED_LOG_LINE_FILTER_ID = "standardized-log-line-filter";
     public static final String STANDARDIZED_LOG_LINE_FILTER_ROUTE = "direct:" + STANDARDIZED_LOG_LINE_FILTER_ID;
 
     public static final String MESSAGE_SHOULD_BE_SKIPPED = "MessageShouldBeSkipped";
+
+    public StandardizedLogLineFilter(StandardizedLogLineFilterProcessor filterProcessor) {
+        this.filterProcessor = filterProcessor;
+    }
 
     @Override
     public void configure() {
@@ -22,9 +28,9 @@ public class StandardizedLogLineFilter extends LogPacketErrorHandler {
 
         from(STANDARDIZED_LOG_LINE_FILTER_ROUTE)
                 .routeId(STANDARDIZED_LOG_LINE_FILTER_ID)
-                .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.CamelFileName} line ${variable.PlaceInPacket}")
-                .filter().method(StandardizedLogLineFilterProcessor.class, "messageIsMissingImmediateSkipHeader")
-                .filter().method(StandardizedLogLineFilterProcessor.class, "doesLineActionMatchRelevantAuditloggTask")
+                .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
+                .filter(filterProcessor::messageIsMissingImmediateSkipHeader)
+                .filter(filterProcessor::shouldLineActionTypeBeLoggedForThisTask)
                 .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE);
     }
 }

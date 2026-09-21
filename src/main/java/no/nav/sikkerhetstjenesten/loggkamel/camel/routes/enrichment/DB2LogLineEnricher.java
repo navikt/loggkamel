@@ -6,13 +6,17 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogPacketErrorHan
 import org.apache.camel.LoggingLevel;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter.StandardizedLogLineFilter.STANDARDIZED_LOG_LINE_FILTER_ROUTE;
-
 @Component
 public class DB2LogLineEnricher extends LogPacketErrorHandler {
 
+    private final DB2LogLineEnrichmentProcessor enrichmentProcessor;
+
     public static final String DB2_LOG_LINE_ENRICHER_ID = "db2-log-line-enricher";
     public static final String DB2_LOG_LINE_ENRICHER_ROUTE = "direct:" + DB2_LOG_LINE_ENRICHER_ID;
+
+    public DB2LogLineEnricher(DB2LogLineEnrichmentProcessor enrichmentProcessor) {
+        this.enrichmentProcessor = enrichmentProcessor;
+    }
 
     @Override
     public void configure() {
@@ -20,9 +24,8 @@ public class DB2LogLineEnricher extends LogPacketErrorHandler {
 
         from(DB2_LOG_LINE_ENRICHER_ROUTE)
                 .routeId(DB2_LOG_LINE_ENRICHER_ID)
-                .log(LoggingLevel.INFO, "Enriching DB2 log line from ${header.CamelFileName} line ${variable.PlaceInPacket}")
-                .bean(DB2LogLineEnrichmentProcessor.class, "enrich")
-                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}")
-                .to(STANDARDIZED_LOG_LINE_FILTER_ROUTE);
+                .log(LoggingLevel.INFO, "Enriching DB2 log line from ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
+                .process(enrichmentProcessor::enrich)
+                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}");
     }
 }

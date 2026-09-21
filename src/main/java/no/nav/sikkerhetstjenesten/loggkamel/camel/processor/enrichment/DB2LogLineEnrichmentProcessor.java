@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 
-import static org.apache.camel.Exchange.FILE_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
 @Service
 public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProcessor {
@@ -84,7 +84,7 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
             }
         } catch (JSQLParserException e) {
             log.warn("Failed to parse SQL statement for DB2 Log Packet {}, placeInPacket {}. Likely due to DB2-idiosyncratic syntax.",
-                    exchange.getMessage().getHeader(FILE_NAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
+                    exchange.getMessage().getHeader(LOG_FILENAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
             metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
 
             // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)

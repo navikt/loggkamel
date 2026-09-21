@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 
-import static org.apache.camel.Exchange.FILE_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
 @Service
 public class InputStreamReader {
@@ -36,7 +36,7 @@ public class InputStreamReader {
         // If the body isn't an input stream but can at least be converted to one by camel, we coerce that conversion
         InputStream inputStream = exchange.getMessage().getBody(InputStream.class);
         if (inputStream == null) {
-            throw new InvalidPostgresLogStreamException("Unable to convert message body to InputStream for file " + exchange.getMessage().getHeader(FILE_NAME, String.class));
+            throw new InvalidPostgresLogStreamException("Unable to convert message body to InputStream for file " + exchange.getMessage().getHeader(LOG_FILENAME, String.class));
         }
         log.debug("Converting message body to InputStream");
         exchange.getMessage().setBody(inputStream);

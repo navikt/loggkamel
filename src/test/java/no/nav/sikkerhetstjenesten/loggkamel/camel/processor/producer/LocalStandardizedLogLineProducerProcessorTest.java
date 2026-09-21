@@ -11,8 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.PLACE_IN_PACKET;
-import static org.apache.camel.Exchange.FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,7 +59,7 @@ class LocalStandardizedLogLineProducerProcessorTest {
 
         assertThrows(InvalidLogLineException.class, () -> processor.prepareLogLineHeaders(exchange));
 
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(LOG_PACKET_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(LOG_PACKET_FILENAME);
 
         assertThrows(InvalidLogLineException.class, () -> processor.prepareLogLineHeaders(exchange));
     }
@@ -67,11 +67,11 @@ class LocalStandardizedLogLineProducerProcessorTest {
     @Test
     void prepareLogLineHeaders_addsUUIDToFilenameHeader() {
         when(exchange.getMessage()).thenReturn(message);
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(LOG_PACKET_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(LOG_PACKET_FILENAME);
         when(exchange.getVariable(PLACE_IN_PACKET, Integer.class)).thenReturn(LINE_NUMBER);
 
         processor.prepareLogLineHeaders(exchange);
 
-        verify(message).setHeader(FILE_NAME, LOG_LINE_FILENAME);
+        verify(message).setHeader(LOG_FILENAME, LOG_LINE_FILENAME);
     }
 }

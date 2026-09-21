@@ -17,8 +17,6 @@ import java.util.List;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.CONTENT_TYPE;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
 @Service
 public class NativeLogPacketProducerProcessor {
@@ -54,9 +52,6 @@ public class NativeLogPacketProducerProcessor {
                             .build()
             );
         }
-
         exchange.getMessage().setBody(objectMapper.writeValueAsString(auditloggLineMessageList));
-        exchange.getMessage().setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());
     }
 }
-

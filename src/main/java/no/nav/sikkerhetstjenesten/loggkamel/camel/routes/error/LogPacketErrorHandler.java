@@ -12,6 +12,7 @@ import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 
 public abstract class LogPacketErrorHandler extends RouteBuilder {
@@ -41,7 +42,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .redeliveryDelay(10000) //10-second delay between retries
                 .handled(true)
                 .useOriginalBody()
-                .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
+                .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
                     metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
@@ -53,7 +54,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .useOriginalBody()
-                .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
+                .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
                     metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
@@ -65,7 +66,7 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
                 .maximumRedeliveries(0)
                 .handled(true)
                 .useOriginalBody()
-                .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${headers['CamelFileName']} line ${variable.PlaceInPacket}")
+                .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(exchange -> {
                     TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) != null ? exchange.getVariable(TEKNOLOGI, TeknologiEnum.class) : TeknologiEnum.UNKNOWN;
                     metrics.incrementBackoutQueueMetrics(multiplicity, teknologi);
@@ -77,8 +78,9 @@ public abstract class LogPacketErrorHandler extends RouteBuilder {
     private void prepareExchangeForGCPCopyToInvalidMessageDestination(Exchange exchange) {
         if (invalidMessageRouting.startsWith("google-storage://")) {
             exchange.getMessage().setHeader(GoogleCloudStorageConstants.OPERATION, GoogleCloudStorageOperations.copyObject);
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.OBJECT_NAME, exchange.getMessage().getHeader(LOG_FILENAME));
             exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_BUCKET_NAME, invalidMessageUri);
-            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getMessage().getHeader(GoogleCloudStorageConstants.OBJECT_NAME));
+            exchange.getMessage().setHeader(GoogleCloudStorageConstants.DESTINATION_OBJECT_NAME, exchange.getMessage().getHeader(LOG_FILENAME));
             exchange.getMessage().setBody(null); // Clear body contents since the GCP flow does not use them to move messages to the backout queue
         }
     }

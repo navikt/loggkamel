@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.PLACE_IN_PACKET;
-import static org.apache.camel.Exchange.FILE_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
 @Service
 public class LocalStandardizedLogLineProducerProcessor {
@@ -31,7 +31,7 @@ public class LocalStandardizedLogLineProducerProcessor {
     }
 
     public void prepareLogLineHeaders(Exchange exchange) {
-        String logPacketFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);
+        String logPacketFilename = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
         Integer placeInPacket = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
 
         if (logPacketFilename == null || logPacketFilename.isEmpty() || placeInPacket == null) {
@@ -42,7 +42,7 @@ public class LocalStandardizedLogLineProducerProcessor {
         String logLineFilename = addLogLineNumberToFilename(logPacketFilename,  placeInPacket);
         log.debug("New filename being assigned to packet: {}", logLineFilename);
 
-        exchange.getMessage().setHeader(FILE_NAME, logLineFilename);
+        exchange.getMessage().setHeader(LOG_FILENAME, logLineFilename);
     }
 
     private String addLogLineNumberToFilename(String originalFileName, Integer placeInPacket) {
@@ -51,4 +51,3 @@ public class LocalStandardizedLogLineProducerProcessor {
         return fileBeforeExtension + "." + placeInPacket + fileExtension;
     }
 }
-

@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogStreamConsumerProcessor.COMPRESSION_EXTENSION;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogStreamErrorHandler.ORIGINAL_FILENAME;
@@ -52,30 +53,31 @@ class PostgresLogStreamConsumerProcessorTest {
     }
 
     @Test
-    void initializeConsumerState_setsTeknoLogiVariable() {
-        processor.initializeConsumerState(exchange);
+    void initializeLocalConsumerState_setsTeknoLogiVariable() {
+        processor.initializeLocalConsumerState(exchange);
 
         verify(exchange).setVariable(TEKNOLOGI, TeknologiEnum.POSTGRESQL);
     }
 
     @Test
-    void initializeConsumerState_populatesFilenameFromObjectNameWhenAbsent() {
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
+    void initializeGCPConsumerState_populatesFilenameFromObjectName() {
         when(message.getHeader(OBJECT_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
-        processor.initializeConsumerState(exchange);
+        processor.initializeGCPConsumerState(exchange);
 
-        verify(message).setHeader(FILE_NAME, DESIRED_FILENAME);
+        verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
+        verify(message, never()).setHeader(FILE_NAME, DESIRED_FILENAME);
+        verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
     }
 
     @Test
-    void initializeConsumerState_setOriginalFilename() {
+    void initializeLocalConsumerState_populatesFilenameFromCamelFileNameAndSetsOriginalFilename() {
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
 
-        processor.initializeConsumerState(exchange);
+        processor.initializeLocalConsumerState(exchange);
 
+        verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
         verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
-        verifyNoMoreInteractions(message);
     }
 
     @Test
@@ -87,7 +89,7 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(DESIRED_FILENAME);
 
         processor.decompressIfGzip(exchange);
 
@@ -97,7 +99,7 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void decompressIfGzip_doesNothingWhenFilenameHeaderIsAbsent() {
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(null);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(null);
 
         processor.decompressIfGzip(exchange);
 
@@ -109,13 +111,13 @@ class PostgresLogStreamConsumerProcessorTest {
     void decompressIfGzip_setsBodyToGZIPInputStreamAndUpdatesHeader() throws Exception {
         InputStream inputStream = new ByteArrayInputStream(gzip("audit log line content"));
 
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(COMPRESSED_FILENAME);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         processor.decompressIfGzip(exchange);
 
         verify(message).setBody(any(GZIPInputStream.class));
-        verify(message).setHeader(FILE_NAME, DESIRED_FILENAME);
+        verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
     }
 
     @Test
@@ -123,7 +125,7 @@ class PostgresLogStreamConsumerProcessorTest {
         String originalContent = "audit log line content";
         InputStream inputStream = new ByteArrayInputStream(gzip(originalContent));
 
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(COMPRESSED_FILENAME);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         processor.decompressIfGzip(exchange);
@@ -139,7 +141,7 @@ class PostgresLogStreamConsumerProcessorTest {
     void decompressIfGzip_throwsInvalidPostgresLogStreamExceptionOnCorruptGzip() {
         InputStream inputStream = new ByteArrayInputStream("this is not valid gzip data".getBytes(StandardCharsets.UTF_8));
 
-        when(message.getHeader(FILE_NAME, String.class)).thenReturn(COMPRESSED_FILENAME);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(COMPRESSED_FILENAME);
         when(message.getBody(InputStream.class)).thenReturn(inputStream);
 
         InvalidPostgresLogStreamException exception = assertThrows(
@@ -160,4 +162,3 @@ class PostgresLogStreamConsumerProcessorTest {
         return buffer.toByteArray();
     }
 }
-

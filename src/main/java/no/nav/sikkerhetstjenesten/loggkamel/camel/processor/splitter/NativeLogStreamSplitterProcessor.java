@@ -19,8 +19,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
-import static org.apache.camel.Exchange.FILE_NAME;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
 @Service
 public class NativeLogStreamSplitterProcessor {
@@ -29,7 +28,7 @@ public class NativeLogStreamSplitterProcessor {
     static final int LOG_PACKET_MAX_SIZE = 1000;
 
     public void prepareLogPacketHeaders(Exchange exchange) {
-        String logStreamFilename = exchange.getMessage().getHeader(FILE_NAME, String.class);
+        String logStreamFilename = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
 
         if (logStreamFilename == null || logStreamFilename.isEmpty()) {
             log.warn("Filename header is missing while splitting log stream");
@@ -39,8 +38,7 @@ public class NativeLogStreamSplitterProcessor {
         String logPacketFilename = createFilenameWithUUID(logStreamFilename);
         log.debug("New filename being assigned to packet: {}", logPacketFilename);
 
-        exchange.getMessage().setHeader(FILE_NAME, logPacketFilename);
-        exchange.getMessage().setHeader(OBJECT_NAME, logPacketFilename);
+        exchange.getMessage().setHeader(LOG_FILENAME, logPacketFilename);
     }
 
     private String createFilenameWithUUID(String originalFileName) {
@@ -159,4 +157,3 @@ public class NativeLogStreamSplitterProcessor {
         }
     }
 }
-

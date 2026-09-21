@@ -19,8 +19,6 @@ import java.util.List;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.AUDITLOGG_TASK;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEAM_GCP_PROJECT_ID;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
-import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.CONTENT_TYPE;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -93,9 +91,6 @@ class NativeLogPacketProducerProcessorTest {
 
         assertEquals(LOG_LINE_2, typedCapturedList.get(1).getBody());
         assertEquals(2, typedCapturedList.get(1).getHeader().getPlaceInPacket());
-
         verify(message).setBody(AUDITLOGG_LIST_AS_STRING);
-        verify(message).setHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType());
     }
 }
-

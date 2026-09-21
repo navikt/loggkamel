@@ -10,8 +10,14 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.splitter.NativeL
 @Component
 public class NativeLogStreamFilter extends LogStreamErrorHandler {
 
+    private final NativeLogStreamFilterProcessor filterProcessor;
+
     public static final String NATIVE_LOG_STREAM_FILTER_ID = "native-log-stream-filter";
     public static final String NATIVE_LOG_STREAM_FILTER_ROUTE = "direct:" + NATIVE_LOG_STREAM_FILTER_ID;
+
+    public NativeLogStreamFilter(NativeLogStreamFilterProcessor filterProcessor) {
+        this.filterProcessor = filterProcessor;
+    }
 
     @Override
     public void configure() {
@@ -19,8 +25,8 @@ public class NativeLogStreamFilter extends LogStreamErrorHandler {
 
         from(NATIVE_LOG_STREAM_FILTER_ROUTE)
                 .routeId(NATIVE_LOG_STREAM_FILTER_ID)
-                .log(LoggingLevel.DEBUG, "Determining whether to filter log message group ${header.CamelFileName}")
-                .filter().method(NativeLogStreamFilterProcessor.class)
+                .log(LoggingLevel.DEBUG, "Determining whether to filter log message group ${header.LoggkamelFilename}")
+                .filter(filterProcessor::doesAuditloggTaskRequireForwardingLogs)
                 .to(NATIVE_LOG_STREAM_SPLITTER_ROUTE);
     }
 }
