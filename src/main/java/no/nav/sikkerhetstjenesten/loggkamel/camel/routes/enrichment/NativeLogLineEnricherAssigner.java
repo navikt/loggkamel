@@ -36,6 +36,9 @@ public class NativeLogLineEnricherAssigner extends LogPacketErrorHandler {
                         .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${variable.Teknologi} in file ${header.LoggkamelFilename} line ${variable.PlaceInPacket}, sending to invalid message queue")
                         .throwException(new InvalidLogLineException("Could not determine which enricher to use for log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} with teknologi ${variable.Teknologi}"))
                 .end()
+//                .process(blah -> {
+//                    throw new InvalidLogLineException("Spooky log line exception oooooh");
+//                })
                 .to(STANDARDIZED_LOG_LINE_FILTER_ROUTE);
     }
 }
