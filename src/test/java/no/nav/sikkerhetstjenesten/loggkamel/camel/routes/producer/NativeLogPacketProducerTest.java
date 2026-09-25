@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.NativeLogPacketProducerProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
@@ -22,7 +23,10 @@ class NativeLogPacketProducerTest {
     @Test
     void localProducerSetsOnlyCamelFilenameHeader() {
         Exchange exchange = exchangeWithFilename();
-        LocalNativeLogPacketProducer producer = new LocalNativeLogPacketProducer(mock(NativeLogPacketProducerProcessor.class));
+        LocalNativeLogPacketProducer producer = new LocalNativeLogPacketProducer(
+                mock(NativeLogPacketProducerProcessor.class),
+                mock(RouteConfigurationIdResolver.class)
+        );
 
         producer.prepareTransportHeaders(exchange);
 
@@ -34,7 +38,10 @@ class NativeLogPacketProducerTest {
     @Test
     void gcpProducerSetsOnlyGoogleStorageHeaders() {
         Exchange exchange = exchangeWithFilename();
-        GCPNativeLogPacketProducer producer = new GCPNativeLogPacketProducer(mock(NativeLogPacketProducerProcessor.class));
+        GCPNativeLogPacketProducer producer = new GCPNativeLogPacketProducer(
+                mock(NativeLogPacketProducerProcessor.class),
+                mock(RouteConfigurationIdResolver.class)
+        );
 
         producer.prepareTransportHeaders(exchange);
 

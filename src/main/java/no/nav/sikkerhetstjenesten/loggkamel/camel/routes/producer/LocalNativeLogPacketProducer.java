@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.NativeLogPacketProducerProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,8 +17,11 @@ public class LocalNativeLogPacketProducer extends NativeLogPacketProducer {
     @Value("${routing.packet.bucket}")
     private String logPacketBucket;
 
-    public LocalNativeLogPacketProducer(NativeLogPacketProducerProcessor producerProcessor) {
-        super(producerProcessor);
+    public LocalNativeLogPacketProducer(
+            NativeLogPacketProducerProcessor producerProcessor,
+            RouteConfigurationIdResolver routeConfigurationIdResolver
+    ) {
+        super(producerProcessor, routeConfigurationIdResolver);
     }
 
     @Override

@@ -3,6 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +16,10 @@ public class LocalNativeLogPacketConsumer extends NativeLogPacketConsumer {
 
     public LocalNativeLogPacketConsumer(
             NativeLogPacketConsumerProcessor consumerProcessor,
-            InputStreamReader inputStreamReader
+            InputStreamReader inputStreamReader,
+            RouteConfigurationIdResolver routeConfigurationIdResolver
     ) {
-        super(consumerProcessor, inputStreamReader);
+        super(consumerProcessor, inputStreamReader, routeConfigurationIdResolver);
     }
 
     @Override

@@ -2,9 +2,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogStreamConsumerProcessor;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogStreamErrorHandler;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.idempotent.jdbc.JdbcMessageIdRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,12 +15,13 @@ import org.springframework.dao.DuplicateKeyException;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.NativeLogStreamEnricher.NATIVE_LOG_STREAM_ENRICHER_ROUTE;
 
-public abstract class PostgresLogStreamConsumer extends LogStreamErrorHandler {
+public abstract class PostgresLogStreamConsumer extends RouteBuilder {
 
     protected static final String KEEP_SOURCE_FILE = "keepSourceFile";
 
     protected final PostgresLogStreamConsumerProcessor consumerProcessor;
     private final InputStreamReader inputStreamReader;
+    private final RouteConfigurationIdResolver routeConfigurationIdResolver;
 
     public static final String POSTGRES_LOG_CONSUMER_ID = "postgres-log-stream-consumer";
 
@@ -28,21 +31,22 @@ public abstract class PostgresLogStreamConsumer extends LogStreamErrorHandler {
 
     protected PostgresLogStreamConsumer(
             PostgresLogStreamConsumerProcessor consumerProcessor,
-            InputStreamReader inputStreamReader
+            InputStreamReader inputStreamReader,
+            RouteConfigurationIdResolver routeConfigurationIdResolver
     ) {
         this.consumerProcessor = consumerProcessor;
         this.inputStreamReader = inputStreamReader;
+        this.routeConfigurationIdResolver = routeConfigurationIdResolver;
     }
 
     protected void configureConsumer(String postgresStreamConsumerUri, Processor envSpecificStateInitializer) {
-        this.errorHandling();
-
         onException(DuplicateKeyException.class)
                 .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${header.LoggkamelFilename}, aborting processing without removing source file")
                 .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
 
         from(postgresStreamConsumerUri)
+                .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.STREAM))
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
                 .streamCache(false)
                 .autoStartup(false)
