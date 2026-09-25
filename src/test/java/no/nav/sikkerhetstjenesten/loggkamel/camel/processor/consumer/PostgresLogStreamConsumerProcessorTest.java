@@ -23,7 +23,7 @@ import java.util.zip.GZIPOutputStream;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogStreamConsumerProcessor.COMPRESSION_EXTENSION;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogStreamErrorHandler.ORIGINAL_FILENAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.ORIGINAL_FILENAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
 import static org.junit.jupiter.api.Assertions.*;
