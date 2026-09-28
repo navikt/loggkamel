@@ -16,8 +16,10 @@ import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
+import static org.apache.camel.component.file.FileConstants.FILE_ABSOLUTE_PATH;
 
 @Service
 public class NativeLogPacketConsumerProcessor {
@@ -34,6 +36,10 @@ public class NativeLogPacketConsumerProcessor {
     }
 
     public void populateLocalFilenameHeader(Exchange exchange) {
+        exchange.setProperty(
+                ORIGINAL_FILE_PATH,
+                exchange.getMessage().getHeader(FILE_ABSOLUTE_PATH, String.class)
+        );
         exchange.getMessage().setHeader(LOG_FILENAME, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 

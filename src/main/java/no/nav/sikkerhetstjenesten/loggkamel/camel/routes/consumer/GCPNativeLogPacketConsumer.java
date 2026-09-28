@@ -4,6 +4,7 @@ import com.google.cloud.logging.Logging;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.google.storage.GoogleCloudStorageConstants;
 import org.apache.camel.component.google.storage.GoogleCloudStorageOperations;
@@ -22,9 +23,10 @@ public class GCPNativeLogPacketConsumer extends NativeLogPacketConsumer {
 
     public GCPNativeLogPacketConsumer(
             NativeLogPacketConsumerProcessor consumerProcessor,
-            InputStreamReader inputStreamReader
+            InputStreamReader inputStreamReader,
+            RouteConfigurationIdResolver routeConfigurationIdResolver
     ) {
-        super(consumerProcessor, inputStreamReader);
+        super(consumerProcessor, inputStreamReader, routeConfigurationIdResolver);
     }
 
     @Override

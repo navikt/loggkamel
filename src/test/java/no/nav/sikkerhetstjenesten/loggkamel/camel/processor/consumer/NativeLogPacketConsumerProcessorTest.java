@@ -22,9 +22,11 @@ import java.util.List;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum.POSTGRESQL;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
+import static org.apache.camel.component.file.FileConstants.FILE_ABSOLUTE_PATH;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,11 +73,14 @@ class NativeLogPacketConsumerProcessorTest {
     @Test
     void populateLocalFilenameHeader_usesCamelFileName() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        String sourcePath = "/tmp/" + NAME_FROM_CAMEL;
         exchange.getMessage().setHeader(FILE_NAME, NAME_FROM_CAMEL);
+        exchange.getMessage().setHeader(FILE_ABSOLUTE_PATH, sourcePath);
 
         processor.populateLocalFilenameHeader(exchange);
 
         assertEquals(NAME_FROM_CAMEL, exchange.getMessage().getHeader(LOG_FILENAME, String.class));
+        assertEquals(sourcePath, exchange.getProperty(ORIGINAL_FILE_PATH, String.class));
     }
 
     @Test
