@@ -38,7 +38,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     @Value("${routing.postgres.invalid-message}")
     private String postgresBackoutBucketName;
 
-    // GCP: the consumer bucket a backed-out stream is copied FROM. We send the copy command here because
+    // GCP: the consumer bucket a backed-out stream is copied from. We send the copy command here because
     // the source object still lives in the consumer bucket at the time an exception is handled.
     @Value("${routing.postgres.consumer}")
     private String postgresConsumerUri;
@@ -51,7 +51,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     @Value("${routing.packet.invalid-message}")
     private String packetBackoutBucketName;
 
-    // GCP: the consumer bucket a backed-out packet is copied FROM.
+    // GCP: the consumer bucket a backed-out packet is copied from.
     @Value("${routing.packet.bucket}")
     private String packetConsumerUri;
 
@@ -147,7 +147,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     }
 
     private void incrementPacketBackoutMetric(Exchange exchange) {
-        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.class);
+        TeknologiEnum teknologi = exchange.getVariable(TEKNOLOGI, TeknologiEnum.UNKNOWN, TeknologiEnum.class);
         Metrics.Multiplicity multiplicity = exchange.getProperty(
                 ERROR_METRIC_MULTIPLICITY,
                 Metrics.Multiplicity.packet,
@@ -155,7 +155,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
         );
         metrics.incrementBackoutQueueMetrics(
                 multiplicity,
-                teknologi != null ? teknologi : TeknologiEnum.UNKNOWN
+                teknologi
         );
     }
 

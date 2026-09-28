@@ -28,8 +28,9 @@ class ErrorRouteConfigurationTest {
     Path tempDir;
 
     @Test
-    void definesAllEnvironmentAndInputTypeConfigurations() throws Exception {
+    void configuration_definesAllEnvironmentAndInputTypeConfigurations() throws Exception {
         ErrorRouteConfiguration configuration = new ErrorRouteConfiguration(mock(Metrics.class));
+
         configuration.setCamelContext(new DefaultCamelContext());
         ReflectionTestUtils.setField(configuration, "postgresLocalBackoutDirectoryUri", "direct:postgres-local-backout");
         ReflectionTestUtils.setField(configuration, "postgresBackoutBucketName", "postgres-backout-bucket");
@@ -50,18 +51,18 @@ class ErrorRouteConfigurationTest {
     }
 
     @Test
-    void localBackoutUsesOriginalSourceFileAsBody() throws Exception {
-        Path sourceFile = Files.writeString(tempDir.resolve("source.log"), "original contents");
+    void convertMessageToLocalFileCopy_localBackoutUsesOriginalSourceFileAsBody() throws Exception {
+        Path pathToSourceFile = Files.writeString(tempDir.resolve("source.log"), "original contents");
         DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setProperty(ORIGINAL_FILE_PATH, sourceFile.toString());
+        exchange.setProperty(ORIGINAL_FILE_PATH, pathToSourceFile.toString());
 
         new ErrorRouteConfiguration(mock(Metrics.class)).convertMessageToLocalFileCopy(exchange);
 
-        assertEquals(sourceFile.toFile(), exchange.getMessage().getBody(File.class));
+        assertEquals(pathToSourceFile.toFile(), exchange.getMessage().getBody(File.class));
     }
 
     @Test
-    void localBackoutFailsWhenOriginalSourceFileIsUnavailable() {
+    void convertMessageToLocalFileCopy_localBackoutFailsWhenOriginalSourceFileIsUnavailable() {
         DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setProperty(ORIGINAL_FILE_PATH, tempDir.resolve("missing.log").toString());
 
