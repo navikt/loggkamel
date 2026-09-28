@@ -39,6 +39,8 @@ public class NativeLogStreamSplitter extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Splitting log file ${header.LoggkamelFilename} into bounded-size message lists")
                 .split(methodReferenceToExpressionConverter(splitterProcessor::groupIntoPackets))
                     .streaming()
+                    .shareUnitOfWork()
+                    .stopOnException()
                     .process(splitterProcessor::prepareLogPacketHeaders)
                     .to(NATIVE_LOG_PACKET_PRODUCER_ROUTE);
     }

@@ -53,7 +53,6 @@ public abstract class NativeLogPacketConsumer extends RouteBuilder {
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.packet))
                 .streamCache(false)
                 .autoStartup(false)
-                .transacted()
                 .process(filenameInitializer)
                 .idempotentConsumer(header(LOG_FILENAME), logPacketIdempotentRepository).skipDuplicate(true).removeOnFailure(false)
                 .log(LoggingLevel.INFO, "Consuming log messages from ${header.LoggkamelFilename}, converting to AuditloggLineMessage")
@@ -62,6 +61,8 @@ public abstract class NativeLogPacketConsumer extends RouteBuilder {
                 .process(consumerProcessor::initializeExchangeVariablesForPacket)
                 .process(consumerProcessor::incrementMetricsForPacket)
                 .split(body())
+                    .shareUnitOfWork()
+                    .stopOnException()
                     .process(consumerProcessor::initializeExchangeVariablesForLogLine)
                     .process(consumerProcessor::incrementMetricsForLine)
                     .to(NATIVE_LOG_LINE_ENRICHER_ROUTE);

@@ -14,6 +14,8 @@ import org.apache.camel.model.RouteConfigurationDefinition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 
@@ -26,6 +28,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     public static final String GCP_PACKET = "gcp-packet";
     public static final String ERROR_METRIC_MULTIPLICITY = "ErrorMetricMultiplicity";
     public static final String ORIGINAL_FILENAME = "originalFilename";
+    public static final String ORIGINAL_FILE_PATH = "originalFilePath";
 
     // Local: the directory a backed-out stream is written to directly.
     @Value("${routing.postgres.invalid-message}")
@@ -64,9 +67,9 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
         getContext().setAllowUseOriginalMessage(true);
         getContext().setStreamCaching(false);
 
-        // Local: no GCS copy is needed, the backed-out body is written straight to the backout directory.
-        configureStream(routeConfiguration(LOCAL_STREAM), exchange -> { }, postgresLocalBackoutDirectoryUri);
-        configurePacket(routeConfiguration(LOCAL_PACKET), exchange -> { }, packetLocalBackoutDirectoryUri);
+        // Local: copy the source file because a split child body contains only a packet or log line.
+        configureStream(routeConfiguration(LOCAL_STREAM), this::convertMessageToLocalFileCopy, postgresLocalBackoutDirectoryUri);
+        configurePacket(routeConfiguration(LOCAL_PACKET), this::convertMessageToLocalFileCopy, packetLocalBackoutDirectoryUri);
 
         // GCP: the message is sent back to the consumer bucket with a header instructing it to copy the
         // original object to the backout bucket; the consumer bucket then performs the copy.
@@ -154,6 +157,19 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 multiplicity,
                 teknologi != null ? teknologi : TeknologiEnum.UNKNOWN
         );
+    }
+
+    void convertMessageToLocalFileCopy(Exchange exchange) {
+        String sourceFilePath = exchange.getProperty(ORIGINAL_FILE_PATH, String.class);
+        if (sourceFilePath == null || sourceFilePath.isBlank()) {
+            throw new IllegalStateException("Cannot copy source file to backout queue because its original path is missing");
+        }
+
+        File sourceFile = new File(sourceFilePath);
+        if (!sourceFile.isFile()) {
+            throw new IllegalStateException("Cannot copy source file to backout queue because it does not exist: " + sourceFilePath);
+        }
+        exchange.getMessage().setBody(sourceFile);
     }
 
     private void convertMessageToGCPCopyRequest(Exchange exchange, Object filename, String destinationBucket) {

@@ -23,9 +23,11 @@ import java.util.zip.GZIPOutputStream;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.PostgresLogStreamConsumerProcessor.COMPRESSION_EXTENSION;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILENAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
+import static org.apache.camel.component.file.FileConstants.FILE_ABSOLUTE_PATH;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -73,10 +75,15 @@ class PostgresLogStreamConsumerProcessorTest {
 
     @Test
     void initializeLocalConsumerState_populatesFilenameFromCamelFileNameAndSetsOriginalFilename() {
+        String sourcePath = "/tmp/" + DESIRED_FILENAME;
         when(message.getHeader(FILE_NAME, String.class)).thenReturn(DESIRED_FILENAME);
+        when(message.getHeader(FILE_ABSOLUTE_PATH, String.class)).thenReturn(sourcePath);
 
         processor.initializeLocalConsumerState(exchange);
 
+        verify(exchange).setProperty(ORIGINAL_FILE_PATH, sourcePath);
+        verify(message).getHeader(FILE_ABSOLUTE_PATH, String.class);
+        verify(message).getHeader(FILE_NAME, String.class);
         verify(message).setHeader(LOG_FILENAME, DESIRED_FILENAME);
         verify(message).setHeader(ORIGINAL_FILENAME, DESIRED_FILENAME);
         verifyNoMoreInteractions(message);

@@ -2,9 +2,14 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.support.DefaultExchange;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,10 +17,15 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRoute
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.GCP_STREAM;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.LOCAL_PACKET;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.LOCAL_STREAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 class ErrorRouteConfigurationTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void definesAllEnvironmentAndInputTypeConfigurations() throws Exception {
@@ -37,5 +47,27 @@ class ErrorRouteConfigurationTest {
                 .collect(Collectors.toSet());
 
         assertEquals(Set.of(LOCAL_STREAM, LOCAL_PACKET, GCP_STREAM, GCP_PACKET), configurationIds);
+    }
+
+    @Test
+    void localBackoutUsesOriginalSourceFileAsBody() throws Exception {
+        Path sourceFile = Files.writeString(tempDir.resolve("source.log"), "original contents");
+        DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setProperty(ORIGINAL_FILE_PATH, sourceFile.toString());
+
+        new ErrorRouteConfiguration(mock(Metrics.class)).convertMessageToLocalFileCopy(exchange);
+
+        assertEquals(sourceFile.toFile(), exchange.getMessage().getBody(File.class));
+    }
+
+    @Test
+    void localBackoutFailsWhenOriginalSourceFileIsUnavailable() {
+        DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setProperty(ORIGINAL_FILE_PATH, tempDir.resolve("missing.log").toString());
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> new ErrorRouteConfiguration(mock(Metrics.class)).convertMessageToLocalFileCopy(exchange)
+        );
     }
 }

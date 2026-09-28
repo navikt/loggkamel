@@ -50,7 +50,6 @@ public abstract class PostgresLogStreamConsumer extends RouteBuilder {
                 .routeId(POSTGRES_LOG_CONSUMER_ID)
                 .streamCache(false)
                 .autoStartup(false)
-                .transacted()
                 .process(envSpecificStateInitializer)
                 //Prevent multiple instances of loggkamel from processing the same file, leave removal of the file up to the instance processing it
                 .idempotentConsumer(header(LOG_FILENAME), postgresLogStreamIdempotentRepository).skipDuplicate(true).removeOnFailure(false)

@@ -15,9 +15,11 @@ import java.util.zip.GZIPInputStream;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILENAME;
 import static org.apache.camel.Exchange.FILE_NAME;
 import static org.apache.camel.component.google.storage.GoogleCloudStorageConstants.OBJECT_NAME;
+import static org.apache.camel.component.file.FileConstants.FILE_ABSOLUTE_PATH;
 
 @Service
 public class PostgresLogStreamConsumerProcessor {
@@ -34,6 +36,10 @@ public class PostgresLogStreamConsumerProcessor {
     }
 
     public void initializeLocalConsumerState(Exchange exchange) {
+        exchange.setProperty(
+                ORIGINAL_FILE_PATH,
+                exchange.getMessage().getHeader(FILE_ABSOLUTE_PATH, String.class)
+        );
         initializeConsumerState(exchange, exchange.getMessage().getHeader(FILE_NAME, String.class));
     }
 
