@@ -34,9 +34,9 @@ public class NativeLogStreamEnricher extends RouteBuilder {
                 .routeId(NATIVE_LOG_STREAM_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching stream-level attributes for ${header.LoggkamelFilename}")
                 .process(enrichmentProcessor::enrich)
-//                .process(blah -> {
-//                    throw new InvalidLogLineException("stream failed to process before split");
-//                })
+                .process(blah -> {
+                    throw new InvalidLogLineException("stream failed to process before split");
+                })
                 .to(NATIVE_LOG_STREAM_FILTER_ROUTE);
     }
 }

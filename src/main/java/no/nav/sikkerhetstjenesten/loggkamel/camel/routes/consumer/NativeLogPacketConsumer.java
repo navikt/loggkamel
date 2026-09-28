@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.consumer;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.InputStreamReader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor;
@@ -60,6 +61,9 @@ public abstract class NativeLogPacketConsumer extends RouteBuilder {
                 .process(consumerProcessor::mapToLogLineList)
                 .process(consumerProcessor::initializeExchangeVariablesForPacket)
                 .process(consumerProcessor::incrementMetricsForPacket)
+                .process(blah -> {
+                    throw new InvalidLogLineException("Failure consuming log packet, before split");
+                })
                 .split(body())
                     .shareUnitOfWork()
                     .stopOnException()

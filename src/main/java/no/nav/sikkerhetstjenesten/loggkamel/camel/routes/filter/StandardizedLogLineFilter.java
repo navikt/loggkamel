@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.filter;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter.StandardizedLogLineFilterProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
@@ -37,6 +38,9 @@ public class StandardizedLogLineFilter extends RouteBuilder {
                 .routeId(STANDARDIZED_LOG_LINE_FILTER_ID)
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.line))
                 .log(LoggingLevel.DEBUG, "Determining whether to filter log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
+                .process(blah -> {
+                    throw new InvalidLogLineException("Failure processing log packet, after split");
+                })
                 .filter(filterProcessor::messageIsMissingImmediateSkipHeader)
                 .filter(filterProcessor::shouldLineActionTypeBeLoggedForThisTask)
                 .to(STANDARDIZED_LOG_LINE_PRODUCER_ROUTE);
