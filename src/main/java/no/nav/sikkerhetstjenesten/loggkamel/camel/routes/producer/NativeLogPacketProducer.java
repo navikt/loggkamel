@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.NativeLogPacketProducerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
