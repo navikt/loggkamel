@@ -47,7 +47,8 @@ public class GCPNativeLogPacketConsumer extends NativeLogPacketConsumer {
                 .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)
                 .setBody(constant((Object) null))
                 .log(LoggingLevel.INFO, "Deleting consumed source object ${header.LoggkamelFilename} from consumer bucket")
-                .to(logPacketConsumerUri);
+//                .to(logPacketConsumerUri)
+        ;
 
         configureConsumer(logPacketConsumerUri, consumerProcessor::populateGCPFilenameHeader);
     }
