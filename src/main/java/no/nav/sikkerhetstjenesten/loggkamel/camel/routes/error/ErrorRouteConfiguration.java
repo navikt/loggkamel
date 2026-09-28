@@ -18,7 +18,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FI
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.TEKNOLOGI;
 
 @Component
-public class LogRouteConfiguration extends RouteConfigurationBuilder {
+public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
 
     public static final String LOCAL_STREAM = "local-stream";
     public static final String LOCAL_PACKET = "local-packet";
@@ -54,7 +54,7 @@ public class LogRouteConfiguration extends RouteConfigurationBuilder {
 
     private final Metrics metrics;
 
-    public LogRouteConfiguration(Metrics metrics) {
+    public ErrorRouteConfiguration(Metrics metrics) {
         this.metrics = metrics;
     }
 

@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.NativeLogPacketProducerProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
@@ -8,7 +9,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.ERROR_METRIC_MULTIPLICITY;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ERROR_METRIC_MULTIPLICITY;
 
 public abstract class NativeLogPacketProducer extends RouteBuilder {
 
@@ -35,6 +36,9 @@ public abstract class NativeLogPacketProducer extends RouteBuilder {
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.stream))
                 .log(LoggingLevel.INFO, "Producing log packet ${header.LoggkamelFilename} to log packet endpoint")
                 .process(producerProcessor::incrementMetrics)
+//                .process(blah -> {
+//                    throw new InvalidLogLineException("Log stream processing failed after split");
+//                })
                 .process(producerProcessor::mapToAuditloggLineMessageList)
                 .process(transportHeaderInitializer)
                 .to(logPacketBucket);

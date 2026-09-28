@@ -4,10 +4,10 @@ import no.nav.boot.conditionals.Cluster;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.GCP_PACKET;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.GCP_STREAM;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.LOCAL_PACKET;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.LOCAL_STREAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.GCP_PACKET;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.GCP_STREAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.LOCAL_PACKET;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.LOCAL_STREAM;
 
 @Component
 public class RouteConfigurationIdResolver {

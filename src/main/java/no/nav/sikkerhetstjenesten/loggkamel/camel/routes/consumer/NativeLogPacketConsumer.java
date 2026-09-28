@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DuplicateKeyException;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.LogRouteConfiguration.ERROR_METRIC_MULTIPLICITY;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ERROR_METRIC_MULTIPLICITY;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment.NativeLogLineEnricherAssigner.NATIVE_LOG_LINE_ENRICHER_ROUTE;
 
 public abstract class NativeLogPacketConsumer extends RouteBuilder {
