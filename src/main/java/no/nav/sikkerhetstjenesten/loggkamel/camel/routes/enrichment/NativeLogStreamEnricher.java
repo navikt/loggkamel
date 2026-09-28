@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.NativeLogStreamEnrichmentProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
@@ -34,9 +33,6 @@ public class NativeLogStreamEnricher extends RouteBuilder {
                 .routeId(NATIVE_LOG_STREAM_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching stream-level attributes for ${header.LoggkamelFilename}")
                 .process(enrichmentProcessor::enrich)
-                .process(blah -> {
-                    throw new InvalidLogLineException("stream failed to process before split");
-                })
                 .to(NATIVE_LOG_STREAM_FILTER_ROUTE);
     }
 }
