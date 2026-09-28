@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_PACKET_INDEX;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter.NativeLogStreamSplitterProcessor.LOG_PACKET_MAX_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,7 +49,7 @@ class NativeLogStreamSplitterProcessorTest {
     void filenameWithExtensionGetsSequentialNumberAndPacketSuffix() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test.20260210.auditlog");
-        when(message.getHeader(LOG_PACKET_INDEX, Integer.class)).thenReturn(0, 1);
+        when(exchange.getProperty(Exchange.SPLIT_INDEX, Integer.class)).thenReturn(0, 1);
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
@@ -63,7 +62,7 @@ class NativeLogStreamSplitterProcessorTest {
     void filenameWithoutExtensionGetsSequentialNumberAndPacketSuffix() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test");
-        when(message.getHeader(LOG_PACKET_INDEX, Integer.class)).thenReturn(0);
+        when(exchange.getProperty(Exchange.SPLIT_INDEX, Integer.class)).thenReturn(0);
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
@@ -84,11 +83,11 @@ class NativeLogStreamSplitterProcessorTest {
         DefaultCamelContext context = new DefaultCamelContext();
         Exchange firstStream = new DefaultExchange(context);
         firstStream.getMessage().setHeader(LOG_FILENAME, "first.auditlog");
-        firstStream.getMessage().setHeader(LOG_PACKET_INDEX, 0);
+        firstStream.setProperty(Exchange.SPLIT_INDEX, 0);
         firstStream.getMessage().setBody(entries);
         Exchange secondStream = new DefaultExchange(context);
         secondStream.getMessage().setHeader(LOG_FILENAME, "second.auditlog");
-        secondStream.getMessage().setHeader(LOG_PACKET_INDEX, 0);
+        secondStream.setProperty(Exchange.SPLIT_INDEX, 0);
         secondStream.getMessage().setBody(entries);
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(firstStream);

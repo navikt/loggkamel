@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_PACKET_INDEX;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.NATIVE_LOG_PACKET_PRODUCER_ROUTE;
 
 @Component
@@ -42,7 +41,6 @@ public class NativeLogStreamSplitter extends RouteBuilder {
                     .streaming()
                     .shareUnitOfWork()
                     .stopOnException()
-                    .setHeader(LOG_PACKET_INDEX, exchangeProperty(Exchange.SPLIT_INDEX))
                     .process(splitterProcessor::prepareLogPacketHeaders)
                     .to(NATIVE_LOG_PACKET_PRODUCER_ROUTE);
     }

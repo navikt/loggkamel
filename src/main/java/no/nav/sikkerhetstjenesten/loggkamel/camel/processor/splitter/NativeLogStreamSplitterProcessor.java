@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_PACKET_INDEX;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 
 @Service
@@ -35,9 +34,9 @@ public class NativeLogStreamSplitterProcessor {
             throw new InvalidLogStreamException("Filename header is missing while splitting log stream");
         }
 
-        Integer packetIndex = exchange.getMessage().getHeader(LOG_PACKET_INDEX, Integer.class);
+        Integer packetIndex = exchange.getProperty(Exchange.SPLIT_INDEX, Integer.class);
         if (packetIndex == null || packetIndex < 0) {
-            throw new InvalidLogStreamException("Packet index header is missing or invalid while splitting log stream");
+            throw new InvalidLogStreamException("Split index property is missing or invalid while splitting log stream");
         }
 
         String logPacketFilename = createFilenameWithSequence(logStreamFilename, packetIndex + 1);
