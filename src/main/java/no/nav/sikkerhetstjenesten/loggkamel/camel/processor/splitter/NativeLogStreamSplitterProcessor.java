@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_PACKET_INDEX;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 
 @Service
 public class NativeLogStreamSplitterProcessor {
@@ -35,16 +35,21 @@ public class NativeLogStreamSplitterProcessor {
             throw new InvalidLogStreamException("Filename header is missing while splitting log stream");
         }
 
-        String logPacketFilename = createFilenameWithUUID(logStreamFilename);
+        Integer packetIndex = exchange.getMessage().getHeader(LOG_PACKET_INDEX, Integer.class);
+        if (packetIndex == null || packetIndex < 0) {
+            throw new InvalidLogStreamException("Packet index header is missing or invalid while splitting log stream");
+        }
+
+        String logPacketFilename = createFilenameWithSequence(logStreamFilename, packetIndex + 1);
         log.debug("New filename being assigned to packet: {}", logPacketFilename);
 
         exchange.getMessage().setHeader(LOG_FILENAME, logPacketFilename);
     }
 
-    private String createFilenameWithUUID(String originalFileName) {
+    private String createFilenameWithSequence(String originalFileName, int packetNumber) {
         String fileExtension = originalFileName.contains(".") ? originalFileName.substring(originalFileName.lastIndexOf('.')) : "";
         String fileBeforeExtension = fileExtension.isEmpty() ? originalFileName : originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-        return fileBeforeExtension + "." + UUID.randomUUID() + fileExtension + LOG_PACKET_EXTENSION;
+        return fileBeforeExtension + "." + packetNumber + fileExtension + LOG_PACKET_EXTENSION;
     }
 
     public Iterator<List<String>> groupIntoPackets(Exchange exchange) {

@@ -3,9 +3,10 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.support.DefaultExchange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,13 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_PACKET_INDEX;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.splitter.NativeLogStreamSplitterProcessor.LOG_PACKET_MAX_SIZE;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.producer.NativeLogPacketProducer.LOG_PACKET_EXTENSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,33 +47,57 @@ class NativeLogStreamSplitterProcessorTest {
     }
 
     @Test
-    void filenameWithExtensionGetsUuidAndLoglineSuffix() {
+    void filenameWithExtensionGetsSequentialNumberAndPacketSuffix() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test.20260210.auditlog");
+        when(message.getHeader(LOG_PACKET_INDEX, Integer.class)).thenReturn(0, 1);
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
+        nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
-        ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(LOG_FILENAME), fileNameCaptor.capture());
-
-        String generatedFileName = fileNameCaptor.getValue();
-        assertTrue(generatedFileName.startsWith("sikkerhets-test.20260210."));
-        assertTrue(generatedFileName.endsWith(LOG_PACKET_EXTENSION));
+        verify(message).setHeader(LOG_FILENAME, "sikkerhets-test.20260210.1.auditlog.packet");
+        verify(message).setHeader(LOG_FILENAME, "sikkerhets-test.20260210.2.auditlog.packet");
     }
 
     @Test
-    void filenameWithoutExtensionStillGetsLoglineSuffix() {
+    void filenameWithoutExtensionGetsSequentialNumberAndPacketSuffix() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test");
+        when(message.getHeader(LOG_PACKET_INDEX, Integer.class)).thenReturn(0);
 
         nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange);
 
-        ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(message, times(1)).setHeader(org.mockito.ArgumentMatchers.eq(LOG_FILENAME), fileNameCaptor.capture());
+        verify(message).setHeader(LOG_FILENAME, "sikkerhets-test.1.packet");
+    }
 
-        String generatedFileName = fileNameCaptor.getValue();
-        assertTrue(generatedFileName.startsWith("sikkerhets-test."));
-        assertTrue(generatedFileName.endsWith(LOG_PACKET_EXTENSION));
+    @Test
+    void missingPacketIndexThrows() {
+        when(exchange.getMessage()).thenReturn(message);
+        when(message.getHeader(LOG_FILENAME, String.class)).thenReturn("sikkerhets-test");
+
+        assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(exchange));
+    }
+
+    @Test
+    void packetSequenceRestartsForEachStreamWithoutChangingEntries() {
+        List<String> entries = List.of("first\ncontinuation", "second");
+        DefaultCamelContext context = new DefaultCamelContext();
+        Exchange firstStream = new DefaultExchange(context);
+        firstStream.getMessage().setHeader(LOG_FILENAME, "first.auditlog");
+        firstStream.getMessage().setHeader(LOG_PACKET_INDEX, 0);
+        firstStream.getMessage().setBody(entries);
+        Exchange secondStream = new DefaultExchange(context);
+        secondStream.getMessage().setHeader(LOG_FILENAME, "second.auditlog");
+        secondStream.getMessage().setHeader(LOG_PACKET_INDEX, 0);
+        secondStream.getMessage().setBody(entries);
+
+        nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(firstStream);
+        nativeLogStreamSplitterProcessor.prepareLogPacketHeaders(secondStream);
+
+        assertEquals("first.1.auditlog.packet", firstStream.getMessage().getHeader(LOG_FILENAME));
+        assertEquals("second.1.auditlog.packet", secondStream.getMessage().getHeader(LOG_FILENAME));
+        assertEquals(entries, firstStream.getMessage().getBody());
+        assertEquals(entries, secondStream.getMessage().getBody());
     }
 
     @Test
