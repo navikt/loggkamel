@@ -36,9 +36,6 @@ public abstract class NativeLogPacketProducer extends RouteBuilder {
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.stream))
                 .log(LoggingLevel.INFO, "Producing log packet ${header.LoggkamelFilename} to log packet endpoint")
                 .process(producerProcessor::incrementMetrics)
-                .process(blah -> {
-                    throw new InvalidLogLineException("Log stream processing failed after split");
-                })
                 .process(producerProcessor::mapToAuditloggLineMessageList)
                 .process(transportHeaderInitializer)
                 .to(logPacketBucket);
