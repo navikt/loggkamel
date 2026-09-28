@@ -43,7 +43,7 @@ public class IdempotentRepositoryCleanupService {
         boolean lockAcquired = advisoryLockService.runIfLockAcquired(CLEANUP_LOCK_KEY, this::deleteExpiredLocks);
 
         if (!lockAcquired) {
-            log.info("Another instance holds the idempotent repository cleanup lock, skipping scheduled cleanup");
+            log.debug("Another instance holds the idempotent repository cleanup lock, skipping scheduled cleanup");
         }
     }
 
