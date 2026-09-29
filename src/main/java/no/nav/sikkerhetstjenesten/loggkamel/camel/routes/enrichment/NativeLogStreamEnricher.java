@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.NativeLogStreamEnrichmentProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
@@ -32,6 +33,10 @@ public class NativeLogStreamEnricher extends RouteBuilder {
                 .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.STREAM))
                 .routeId(NATIVE_LOG_STREAM_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching stream-level attributes for ${header.LoggkamelFilename}")
+                .process(blah -> {
+                    //TESTING, REMOVE WHEN DONE
+                    throw new InvalidLogStreamException("Exception when processing log stream");
+                })
                 .process(enrichmentProcessor::enrich)
                 .to(NATIVE_LOG_STREAM_FILTER_ROUTE);
     }

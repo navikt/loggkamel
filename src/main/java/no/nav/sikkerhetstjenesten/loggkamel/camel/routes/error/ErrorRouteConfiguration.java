@@ -102,6 +102,10 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .handled(true)
                 .useOriginalBody()
                 .process(exchange -> metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL))
+                .process(blah -> {
+                    //TESTING, REMOVE AFTER DONE
+                    throw new RuntimeException("Something went wrong with the backout!");
+                })
                 .process(prepareBackout)
                 .to(backoutEndpointUri);
 
