@@ -93,11 +93,6 @@ public class NativeLogPacketConsumerProcessor {
         }
 
         try {
-            //TESTING, REMOVE WHEN DONE
-            if (true) {
-                throw new Exception("Failure when writing log entries for packet " + filename);
-            }
-
             logging.write(pendingLogEntries);
         } catch (Exception e) {
             log.warn("Error while writing {} log entries to GCP Logging for packet {}, error message: {}", pendingLogEntries.size(), filename, e.getMessage());
