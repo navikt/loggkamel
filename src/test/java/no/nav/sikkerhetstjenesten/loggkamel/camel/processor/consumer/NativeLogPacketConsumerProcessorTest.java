@@ -7,6 +7,7 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Synchronicity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -156,7 +157,7 @@ class NativeLogPacketConsumerProcessorTest {
         Exchange exchange = packetExchange(List.of());
         exchange.removeVariable(LOGGING_CLIENT);
 
-        assertThrows(GCPDependencyException.class, () -> processor.writePendingLogEntries(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.writePendingLogEntries(exchange));
     }
 
     @Test
