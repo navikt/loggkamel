@@ -1,6 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
+import com.google.cloud.storage.CopyWriter;
+import com.google.cloud.storage.StorageException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
+import org.apache.camel.InvalidPayloadException;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRoute
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ErrorRouteConfigurationTest {
 
@@ -69,6 +74,40 @@ class ErrorRouteConfigurationTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> new ErrorRouteConfiguration(mock(Metrics.class)).convertMessageToLocalFileCopy(exchange)
+        );
+    }
+
+    @Test
+    void awaitGCPCopyCompletion_completesCopy() throws Exception {
+        CopyWriter copyWriter = mock(CopyWriter.class);
+        DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getMessage().setBody(copyWriter);
+
+        new ErrorRouteConfiguration(mock(Metrics.class)).awaitGCPCopyCompletion(exchange);
+
+        verify(copyWriter).getResult();
+    }
+
+    @Test
+    void awaitGCPCopyCompletion_propagatesCopyFailure() {
+        CopyWriter copyWriter = mock(CopyWriter.class);
+        when(copyWriter.getResult()).thenThrow(new StorageException(503, "unavailable"));
+        DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getMessage().setBody(copyWriter);
+
+        assertThrows(
+                StorageException.class,
+                () -> new ErrorRouteConfiguration(mock(Metrics.class)).awaitGCPCopyCompletion(exchange)
+        );
+    }
+
+    @Test
+    void awaitGCPCopyCompletion_failsWhenBodyIsNotACopyWriter() {
+        DefaultExchange exchange = new DefaultExchange(new DefaultCamelContext());
+
+        assertThrows(
+                InvalidPayloadException.class,
+                () -> new ErrorRouteConfiguration(mock(Metrics.class)).awaitGCPCopyCompletion(exchange)
         );
     }
 }

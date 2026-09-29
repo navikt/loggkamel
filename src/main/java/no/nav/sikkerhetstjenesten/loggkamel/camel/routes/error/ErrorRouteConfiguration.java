@@ -1,10 +1,12 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error;
 
+import com.google.cloud.storage.CopyWriter;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.Exchange;
+import org.apache.camel.InvalidPayloadException;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteConfigurationBuilder;
@@ -68,24 +70,26 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
         getContext().setStreamCaching(false);
 
         // Local: copy the source file because a split child body contains only a packet or log line.
-        configureStream(routeConfiguration(LOCAL_STREAM), this::convertMessageToLocalFileCopy, postgresLocalBackoutDirectoryUri);
-        configurePacket(routeConfiguration(LOCAL_PACKET), this::convertMessageToLocalFileCopy, packetLocalBackoutDirectoryUri);
+        configureStream(routeConfiguration(LOCAL_STREAM), this::convertMessageToLocalFileCopy, postgresLocalBackoutDirectoryUri, exchange -> {});
+        configurePacket(routeConfiguration(LOCAL_PACKET), this::convertMessageToLocalFileCopy, packetLocalBackoutDirectoryUri, exchange -> {});
 
         // GCP: the message is sent back to the consumer bucket with a header instructing it to copy the
         // original object to the backout bucket; the consumer bucket then performs the copy.
         configureStream(
                 routeConfiguration(GCP_STREAM),
                 exchange -> convertMessageToGCPCopyRequest(exchange, exchange.getMessage().getHeader(ORIGINAL_FILENAME), postgresBackoutBucketName),
-                postgresConsumerUri
+                postgresConsumerUri,
+                this::awaitGCPCopyCompletion
         );
         configurePacket(
                 routeConfiguration(GCP_PACKET),
                 exchange -> convertMessageToGCPCopyRequest(exchange, exchange.getMessage().getHeader(LOG_FILENAME), packetBackoutBucketName),
-                packetConsumerUri
+                packetConsumerUri,
+                this::awaitGCPCopyCompletion
         );
     }
 
-    private void configureStream(RouteConfigurationDefinition configuration, Processor prepareBackout, String backoutEndpointUri) {
+    private void configureStream(RouteConfigurationDefinition configuration, Processor prepareBackout, String backoutEndpointUri, Processor confirmBackout) {
         configuration.onException(DependencyException.class)
                 .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename}")
                 .maximumRedeliveries(3)
@@ -94,7 +98,8 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .useOriginalBody()
                 .process(exchange -> metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL))
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
 
         configuration.onException(InvalidLogException.class)
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to postgres invalid-messages channel: ${exception.message}, filename: ${header.LoggkamelFilename}")
@@ -103,7 +108,8 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .useOriginalBody()
                 .process(exchange -> metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL))
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
 
         configuration.onException(Exception.class)
                 .log(LoggingLevel.WARN, "Routing unhandled exception to postgres invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${header.LoggkamelFilename}")
@@ -113,10 +119,11 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .useOriginalBody()
                 .process(exchange -> metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL))
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
     }
 
-    private void configurePacket(RouteConfigurationDefinition configuration, Processor prepareBackout, String backoutEndpointUri) {
+    private void configurePacket(RouteConfigurationDefinition configuration, Processor prepareBackout, String backoutEndpointUri, Processor confirmBackout) {
         configuration.onException(DependencyException.class)
                 .maximumRedeliveries(3)
                 .redeliveryDelay(10000)
@@ -125,7 +132,8 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(this::incrementPacketBackoutMetric)
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
 
         configuration.onException(InvalidLogException.class)
                 .maximumRedeliveries(0)
@@ -134,7 +142,8 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .log(LoggingLevel.INFO, "Routing InvalidLogException to invalid-messages channel: ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(this::incrementPacketBackoutMetric)
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
 
         configuration.onException(Exception.class)
                 .maximumRedeliveries(0)
@@ -143,7 +152,8 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
                 .log(LoggingLevel.WARN, "Routing unhandled exception directly to invalid-messages channel: ${exception.class} - ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
                 .process(this::incrementPacketBackoutMetric)
                 .process(prepareBackout)
-                .to(backoutEndpointUri);
+                .to(backoutEndpointUri)
+                .process(confirmBackout);
     }
 
     private void incrementPacketBackoutMetric(Exchange exchange) {
@@ -170,6 +180,11 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
             throw new IllegalStateException("Cannot copy source file to backout queue because it does not exist: " + sourceFilePath);
         }
         exchange.getMessage().setBody(sourceFile);
+    }
+
+    // The GCS producer returns an unfinished CopyWriter; a multi-call rewrite only creates the target once getResult() completes it
+    void awaitGCPCopyCompletion(Exchange exchange) throws InvalidPayloadException {
+        exchange.getMessage().getMandatoryBody(CopyWriter.class).getResult();
     }
 
     private void convertMessageToGCPCopyRequest(Exchange exchange, Object filename, String destinationBucket) {
