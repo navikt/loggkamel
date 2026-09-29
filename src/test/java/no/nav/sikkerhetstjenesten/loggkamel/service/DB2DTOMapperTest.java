@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
@@ -56,7 +56,7 @@ class DB2DTOMapperTest {
         when(objectMapper.writeValueAsString(db2AuditloggLineDTO1)).thenThrow(new JsonProcessingException("oh noooo"){});
         when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
 
-        assertThrows(InvalidLogLineException.class, () -> db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(db2AuditloggLineDTOs, auditloggTaskDTO, GCP_ID));
+        assertThrows(InvalidLogPacketException.class, () -> db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(db2AuditloggLineDTOs, auditloggTaskDTO, GCP_ID));
     }
 
     @Test

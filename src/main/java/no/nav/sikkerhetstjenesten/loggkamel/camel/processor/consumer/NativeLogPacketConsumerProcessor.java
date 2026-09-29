@@ -7,7 +7,7 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import com.google.cloud.logging.Synchronicity;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -86,7 +86,7 @@ public class NativeLogPacketConsumerProcessor {
         String filename = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
 
         if (logging == null || pendingLogEntries == null) {
-            throw new InvalidLogLineException("Logging client or pending log entries missing for packet " + filename);
+            throw new InvalidLogPacketException("Logging client or pending log entries missing for packet " + filename);
         }
         if (pendingLogEntries.isEmpty()) {
             return;

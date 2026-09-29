@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -52,7 +52,7 @@ public class GCPStandardizedLogLineProducerProcessor {
         EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
 
         if (pendingLogEntries == null || enrichedAuditLogg == null) {
-            throw new InvalidLogLineException("Log line upload attempted with missing pending log entries or log body");
+            throw new InvalidLogPacketException("Log line upload attempted with missing pending log entries or log body");
         }
 
         Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});

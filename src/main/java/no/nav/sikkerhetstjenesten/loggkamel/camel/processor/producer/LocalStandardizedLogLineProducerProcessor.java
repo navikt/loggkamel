@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class LocalStandardizedLogLineProducerProcessor {
 
         if (logPacketFilename == null || logPacketFilename.isEmpty() || placeInPacket == null) {
             log.warn("Filename or PlaceInPacket placeInPacket header is missing while splitting log packet");
-            throw new InvalidLogLineException("Filename or PlaceInPacket header is missing while splitting log packet");
+            throw new InvalidLogPacketException("Filename or PlaceInPacket header is missing while splitting log packet");
         }
 
         String logLineFilename = addLogLineNumberToFilename(logPacketFilename,  placeInPacket);

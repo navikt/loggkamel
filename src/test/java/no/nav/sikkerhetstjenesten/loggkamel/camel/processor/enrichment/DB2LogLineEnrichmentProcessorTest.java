@@ -6,7 +6,7 @@ import jakarta.validation.Validator;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.comment.Comment;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2LogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2LogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
@@ -86,7 +86,7 @@ class DB2LogLineEnrichmentProcessorTest {
     void enrich_messageBodyMissing() {
         when(auditloggLineMessage.getBody()).thenReturn("");
 
-        assertThrows(InvalidDB2LogLineException.class, () -> processor.enrich(exchange));
+        assertThrows(InvalidDB2LogPacketException.class, () -> processor.enrich(exchange));
     }
 
     @Test
@@ -94,7 +94,7 @@ class DB2LogLineEnrichmentProcessorTest {
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
         when(objectMapper.readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class)).thenThrow(new JsonProcessingException("blah"){});
 
-        assertThrows(InvalidDB2LogLineException.class, () -> processor.enrich(exchange));
+        assertThrows(InvalidDB2LogPacketException.class, () -> processor.enrich(exchange));
     }
 
     @Test

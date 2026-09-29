@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -79,7 +79,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(PENDING_LOG_ENTRIES, new ArrayList<LogEntry>());
 
-        assertThrows(InvalidLogLineException.class, () -> processor.queueLogEntry(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
     }
 
     @Test
@@ -87,7 +87,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getMessage().setBody(EnrichedAuditlogg.builder().build());
 
-        assertThrows(InvalidLogLineException.class, () -> processor.queueLogEntry(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
     }
 
     @Test

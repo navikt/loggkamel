@@ -1,7 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -57,11 +57,11 @@ class LocalStandardizedLogLineProducerProcessorTest {
     void prepareLogLineHeaders_exceptionIfFilenameMissing() {
         when(exchange.getMessage()).thenReturn(message);
 
-        assertThrows(InvalidLogLineException.class, () -> processor.prepareLogLineHeaders(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.prepareLogLineHeaders(exchange));
 
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(LOG_PACKET_FILENAME);
 
-        assertThrows(InvalidLogLineException.class, () -> processor.prepareLogLineHeaders(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.prepareLogLineHeaders(exchange));
     }
 
     @Test

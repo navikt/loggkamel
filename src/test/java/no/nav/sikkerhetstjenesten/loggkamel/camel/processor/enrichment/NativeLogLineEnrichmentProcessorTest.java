@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
 import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
@@ -112,7 +112,7 @@ class NativeLogLineEnrichmentProcessorTest {
         when(violation.getPropertyPath()).thenReturn(path);
         when(violation.getMessage()).thenReturn("message");
 
-        assertThrows(InvalidLogLineException.class, () -> nativeLogLineEnrichmentProcessor.validateEnrichedAuditlogg(enrichedAuditlogg));
+        assertThrows(InvalidLogPacketException.class, () -> nativeLogLineEnrichmentProcessor.validateEnrichedAuditlogg(enrichedAuditlogg));
     }
 
     @Test

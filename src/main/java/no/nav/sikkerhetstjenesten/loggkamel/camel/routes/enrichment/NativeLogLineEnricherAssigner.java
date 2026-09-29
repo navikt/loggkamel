@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;
@@ -43,7 +43,7 @@ public class NativeLogLineEnricherAssigner extends RouteBuilder {
                         .to(DB2_LOG_LINE_ENRICHER_ROUTE)
                     .otherwise()
                         .log(LoggingLevel.WARN, "No specific enricher found for teknologi ${variable.Teknologi} in file ${header.LoggkamelFilename} line ${variable.PlaceInPacket}, sending to invalid message queue")
-                        .throwException(new InvalidLogLineException("Could not determine which enricher to use for log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} with teknologi ${variable.Teknologi}"))
+                        .throwException(new InvalidLogPacketException("Could not determine which enricher to use for log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} with teknologi ${variable.Teknologi}"))
                 .end()
                 .to(STANDARDIZED_LOG_LINE_FILTER_ROUTE);
     }

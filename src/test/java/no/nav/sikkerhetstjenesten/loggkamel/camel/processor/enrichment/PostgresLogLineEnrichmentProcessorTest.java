@@ -5,7 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraPro
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
@@ -82,7 +82,7 @@ class PostgresLogLineEnrichmentProcessorTest {
     void enrich_throwsOnMissingLogBody(String logMessageBody) {
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
-        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogPacketException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
 
     private static Stream<String> provideMissingLogBodies() {
@@ -117,7 +117,7 @@ class PostgresLogLineEnrichmentProcessorTest {
 
         when(auditloggLineMessage.getBody()).thenReturn(logMessageBody);
 
-        assertThrows(InvalidPostgresLogLineException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
+        assertThrows(InvalidPostgresLogPacketException.class, () -> postgresLogLineEnrichmentProcessor.enrich(exchange));
     }
 
     @Test

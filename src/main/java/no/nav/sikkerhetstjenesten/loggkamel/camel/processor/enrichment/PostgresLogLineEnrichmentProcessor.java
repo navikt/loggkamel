@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidPostgresLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
@@ -42,7 +42,7 @@ public class PostgresLogLineEnrichmentProcessor extends NativeLogLineEnrichmentP
         String body = exchange.getMessage().getBody(AuditloggLineMessage.class).getBody();
 
         if (body == null || body.isBlank()) {
-            throw new InvalidPostgresLogLineException("Audit log message is blank");
+            throw new InvalidPostgresLogPacketException("Audit log message is blank");
         }
 
         if (messageContainsPostgresNonLogStatement(body)) {
@@ -55,7 +55,7 @@ public class PostgresLogLineEnrichmentProcessor extends NativeLogLineEnrichmentP
         try {
             enrichedAuditlogg = extractEnrichmentFromLog(body);
         } catch (RuntimeException e) {
-            throw new InvalidPostgresLogLineException("Failure converting values extracted from log line into EnrichedAuditlogg", e);
+            throw new InvalidPostgresLogPacketException("Failure converting values extracted from log line into EnrichedAuditlogg", e);
         }
         enrichedAuditlogg.setEpost(getAnsattEpostFromNavIdent(enrichedAuditlogg.getNavIdent()));
 
@@ -88,7 +88,7 @@ public class PostgresLogLineEnrichmentProcessor extends NativeLogLineEnrichmentP
         if (!matcher.find()) {
             log.warn(UNEXPECTED_LOG_PATTERN_MESSAGE);
             log.debug("Log failed to match expected pattern, cannot extract enrichment attributes. Failing log line: {}", body);
-            throw new InvalidPostgresLogLineException(UNEXPECTED_LOG_PATTERN_MESSAGE);
+            throw new InvalidPostgresLogPacketException(UNEXPECTED_LOG_PATTERN_MESSAGE);
         }
 
         ZonedDateTime logTime = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMATTER);
