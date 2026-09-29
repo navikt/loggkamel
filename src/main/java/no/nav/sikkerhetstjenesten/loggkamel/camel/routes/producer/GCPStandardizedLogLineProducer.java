@@ -30,8 +30,8 @@ public class GCPStandardizedLogLineProducer extends StandardizedLogLineProducer 
                 .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.PACKET))
                 .routeId(STANDARDIZED_LOG_LINE_PRODUCER_ID)
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.line))
-                .log(LoggingLevel.INFO, "Producing log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} to GCP Logging")
+                .log(LoggingLevel.INFO, "Queueing log message ${header.LoggkamelFilename} line ${variable.PlaceInPacket} for GCP Logging")
                 .process(producerProcessor::incrementMetrics)
-                .process(producerProcessor::writeToGcpLogging);
+                .process(producerProcessor::queueLogEntry);
     }
 }

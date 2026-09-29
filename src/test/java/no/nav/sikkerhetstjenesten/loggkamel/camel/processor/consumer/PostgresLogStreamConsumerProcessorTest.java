@@ -97,6 +97,13 @@ class PostgresLogStreamConsumerProcessorTest {
     }
 
     @Test
+    void incrementBackoutFailureMetric_incrementsStreamBackoutFailure() {
+        processor.incrementBackoutFailureMetric(exchange);
+
+        verify(metrics).incrementBackoutFailure(Metrics.Multiplicity.stream);
+    }
+
+    @Test
     void decompressIfGzip_doesNothingWhenFilenameHasNoGzExtension() {
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(NAME_WITHOUT_GZIP_ENDING);
 

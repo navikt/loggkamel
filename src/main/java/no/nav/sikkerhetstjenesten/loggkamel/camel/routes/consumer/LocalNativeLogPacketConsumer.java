@@ -24,6 +24,6 @@ public class LocalNativeLogPacketConsumer extends NativeLogPacketConsumer {
 
     @Override
     public void configure() {
-        configureConsumer(logPacketConsumerUri, consumerProcessor::populateLocalFilenameHeader);
+        configureConsumer(logPacketConsumerUri, consumerProcessor::populateLocalFilenameHeader, exchange -> {});
     }
 }

@@ -57,6 +57,10 @@ public class PostgresLogStreamConsumerProcessor {
         metrics.incrementHappyPath(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL, Metrics.Action.consumed);
     }
 
+    public void incrementBackoutFailureMetric(Exchange exchange) {
+        metrics.incrementBackoutFailure(Metrics.Multiplicity.stream);
+    }
+
     public void decompressIfGzip(Exchange exchange) {
         String fileName = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
         if (fileName == null || !fileName.endsWith(COMPRESSION_EXTENSION)) {

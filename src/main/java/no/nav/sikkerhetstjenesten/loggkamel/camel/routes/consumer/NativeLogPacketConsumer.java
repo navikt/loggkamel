@@ -41,11 +41,20 @@ public abstract class NativeLogPacketConsumer extends RouteBuilder {
         this.routeConfigurationIdResolver = routeConfigurationIdResolver;
     }
 
-    protected void configureConsumer(String logPacketConsumerUri, Processor filenameInitializer) {
+    protected void configureConsumer(String logPacketConsumerUri, Processor filenameInitializer, Processor pendingLogEntriesWriter) {
         onException(DuplicateKeyException.class)
                 .log(LoggingLevel.INFO, "Caught DuplicateKeyException when trying to claim filename: ${header.LoggkamelFilename}, aborting processing without removing source file")
                 .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
+
+        // Every backout handler ends by copying the source file to the backout queue and marking the exchange as successful, so a failed exchange means that copy failed
+        onCompletion()
+                .onFailureOnly()
+                .log(LoggingLevel.ERROR, "Failed to copy ${header.LoggkamelFilename} to backout queue, keeping source file in consumer bucket: ${exception.class} - ${exception.message}")
+                .process(consumerProcessor::incrementBackoutFailureMetric);
+
+        onCompletion()
+                .process(consumerProcessor::closeLoggingClient);
 
         from(logPacketConsumerUri)
                 .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.PACKET))
@@ -65,6 +74,8 @@ public abstract class NativeLogPacketConsumer extends RouteBuilder {
                     .stopOnException()
                     .process(consumerProcessor::initializeExchangeVariablesForLogLine)
                     .process(consumerProcessor::incrementMetricsForLine)
-                    .to(NATIVE_LOG_LINE_ENRICHER_ROUTE);
+                    .to(NATIVE_LOG_LINE_ENRICHER_ROUTE)
+                .end()
+                .process(pendingLogEntriesWriter);
     }
 }
