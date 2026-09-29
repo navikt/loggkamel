@@ -78,6 +78,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     void queueLogEntry_exceptionOnNullMessage() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.setVariable(PENDING_LOG_ENTRIES, new ArrayList<LogEntry>());
+        exchange.getMessage().setBody(null);
 
         assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
     }
@@ -85,6 +86,7 @@ class GCPStandardizedLogLineProducerProcessorTest {
     @Test
     void queueLogEntry_exceptionOnMissingPendingLogEntries() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setVariable(PENDING_LOG_ENTRIES, null);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder().build());
 
         assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
