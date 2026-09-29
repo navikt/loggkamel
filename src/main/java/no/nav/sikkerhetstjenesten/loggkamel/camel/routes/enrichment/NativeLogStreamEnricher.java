@@ -33,10 +33,6 @@ public class NativeLogStreamEnricher extends RouteBuilder {
                 .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.STREAM))
                 .routeId(NATIVE_LOG_STREAM_ENRICHER_ID)
                 .log(LoggingLevel.DEBUG, "Enriching stream-level attributes for ${header.LoggkamelFilename}")
-                .process(blah -> {
-                    //TESTING, REMOVE WHEN DONE
-                    throw new InvalidLogStreamException("Exception when processing log stream");
-                })
                 .process(enrichmentProcessor::enrich)
                 .to(NATIVE_LOG_STREAM_FILTER_ROUTE);
     }
