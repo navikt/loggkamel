@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
@@ -69,7 +69,7 @@ public abstract class NativeLogLineEnrichmentProcessor {
     void validateEnrichedAuditlogg(EnrichedAuditlogg enrichedAuditlogg) {
         Set<ConstraintViolation<EnrichedAuditlogg>> violations = validator.validate(enrichedAuditlogg);
         if (!violations.isEmpty()) {
-            throw new InvalidLogLineException("Validation failed: " +
+            throw new InvalidLogPacketException("Validation failed: " +
                     violations.stream()
                             .map(v -> v.getPropertyPath() + " " + v.getMessage())
                             .collect(Collectors.joining(", ")));

@@ -45,6 +45,12 @@ public abstract class PostgresLogStreamConsumer extends RouteBuilder {
                 .setProperty(KEEP_SOURCE_FILE, constant(true))
                 .handled(true);
 
+        // Every backout handler ends by copying the source file to the backout queue and marking the exchange as successful, so a failed exchange means that copy failed
+        onCompletion()
+                .onFailureOnly()
+                .log(LoggingLevel.ERROR, "Failed to copy ${header.originalFilename} to backout queue, keeping source file in consumer bucket: ${exception.class} - ${exception.message}")
+                .process(consumerProcessor::incrementBackoutFailureMetric);
+
         from(postgresStreamConsumerUri)
                 .routeConfigurationId(routeConfigurationIdResolver.resolve(InputFileType.STREAM))
                 .routeId(POSTGRES_LOG_CONSUMER_ID)

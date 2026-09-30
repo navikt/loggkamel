@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2LogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2LogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
@@ -46,14 +46,14 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
         AuditloggLineMessage auditloggLineMessage = exchange.getMessage().getBody(AuditloggLineMessage.class);
 
         if (auditloggLineMessage == null || auditloggLineMessage.getBody().isBlank()) {
-            throw new InvalidDB2LogLineException("Audit log message is blank");
+            throw new InvalidDB2LogPacketException("Audit log message is blank");
         }
 
         DB2AuditloggLineDTO bodyAsDTO;
         try {
             bodyAsDTO = objectMapper.readValue(auditloggLineMessage.getBody(), DB2AuditloggLineDTO.class);
         } catch (JsonProcessingException e) {
-            throw new InvalidDB2LogLineException("Failure assigning serialized DB2AuditloggLineDTO to appropriate class", e);
+            throw new InvalidDB2LogPacketException("Failure assigning serialized DB2AuditloggLineDTO to appropriate class", e);
         }
 
         String pgCommand;

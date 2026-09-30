@@ -31,6 +31,7 @@ public class GCPPostgresLogStreamConsumer extends PostgresLogStreamConsumer {
     @Override
     public void configure() {
         onCompletion()
+                .onCompleteOnly()
                 .onWhen(simple("${exchangeProperty." + KEEP_SOURCE_FILE + "} != true && ${header.CamelDuplicateMessage} != true"))
                 .setHeader(OBJECT_NAME, header(ORIGINAL_FILENAME))
                 .setHeader(GoogleCloudStorageConstants.OPERATION, () -> GoogleCloudStorageOperations.deleteObject)

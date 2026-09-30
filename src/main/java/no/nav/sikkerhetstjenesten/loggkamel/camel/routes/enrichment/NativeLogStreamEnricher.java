@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.routes.enrichment;
 
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.NativeLogStreamEnrichmentProcessor;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.InputFileType;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.RouteConfigurationIdResolver;

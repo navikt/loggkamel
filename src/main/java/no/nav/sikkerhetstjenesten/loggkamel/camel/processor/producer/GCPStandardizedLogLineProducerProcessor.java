@@ -3,11 +3,9 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.logging.LogEntry;
-import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -15,22 +13,17 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.apache.camel.Exchange;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.PENDING_LOG_ENTRIES;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 
 @Service
 public class GCPStandardizedLogLineProducerProcessor {
-
-    private static final Logger log = LoggerFactory.getLogger(GCPStandardizedLogLineProducerProcessor.class);
 
     final static String CLOUD_LOGGING_ENTRY_NAME = "loggkamel-arkiv";
 
@@ -53,13 +46,13 @@ public class GCPStandardizedLogLineProducerProcessor {
         metrics.incrementDatabaseSpecificAction(dbName, teknologi, Metrics.Action.produced);
     }
 
-    public void writeToGcpLogging(Exchange exchange) {
-        Logging logging = exchange.getVariable(LOGGING_CLIENT, Logging.class);
+    public void queueLogEntry(Exchange exchange) {
+        List<LogEntry> pendingLogEntries = exchange.getVariable(PENDING_LOG_ENTRIES, List.class);
 
         EnrichedAuditlogg enrichedAuditLogg = exchange.getMessage().getBody(EnrichedAuditlogg.class);
 
-        if (logging == null || enrichedAuditLogg == null) {
-            throw new InvalidLogLineException("Log line upload attempted with missing logging client or log body");
+        if (pendingLogEntries == null || enrichedAuditLogg == null) {
+            throw new InvalidLogPacketException("Log line upload attempted with missing pending log entries or log body");
         }
 
         Map<String, Object> logMessageAsMap = objectMapper.convertValue(enrichedAuditLogg, new TypeReference<>() {});
@@ -72,13 +65,6 @@ public class GCPStandardizedLogLineProducerProcessor {
                 .setInsertId(DigestUtils.sha256Hex(enrichedAuditLogg.getSqlStatement() + enrichedAuditLogg.getSqlParameters()))
                 .build();
 
-        try {
-            logging.write(Collections.singleton(entry));
-        } catch (Exception e) {
-            String fileName = exchange.getMessage().getHeader(LOG_FILENAME, String.class);
-            Integer lineNumber = exchange.getVariable(PLACE_IN_PACKET, Integer.class);
-            log.warn("Error while writing log entry to GCP Logging for file {} line {}, error message: {}", fileName, lineNumber, e.getMessage());
-            throw new GCPDependencyException("Error while writing log entry to GCP Logging for file " + fileName + " line " + lineNumber, e);
-        }
+        pendingLogEntries.add(entry);
     }
 }

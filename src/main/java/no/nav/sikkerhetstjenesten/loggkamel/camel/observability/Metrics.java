@@ -10,6 +10,7 @@ public class Metrics {
     private static final String LOGGKAMEL_APP_PREFIX = "loggkamel.auditlogs.";
     private static final String HAPPY_PATH_METRIC = LOGGKAMEL_APP_PREFIX + "happy";
     private static final String BACKOUT_QUEUE_METRIC = LOGGKAMEL_APP_PREFIX + "backout";
+    private static final String BACKOUT_FAILURE_METRIC = LOGGKAMEL_APP_PREFIX + "backout.failure";
     private static final String UNIQUE_DATABASE_ACTION_METRIC = LOGGKAMEL_APP_PREFIX + "unik";
     private static final String UNKNOWN_NAV_IDENT_METRIC = LOGGKAMEL_APP_PREFIX + "unknown";
     private static final String DB2_STATEMENT_ISSUE_TYPE_METRIC = LOGGKAMEL_APP_PREFIX + "statement.issue";
@@ -43,6 +44,8 @@ public class Metrics {
 
                 meterRegistry.counter(BACKOUT_QUEUE_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase());
             }
+
+            meterRegistry.counter(BACKOUT_FAILURE_METRIC, MULTIPLICITY_LABEL, multiplicity.name());
         }
 
         meterRegistry.counter(UNKNOWN_NAV_IDENT_METRIC);
@@ -58,6 +61,10 @@ public class Metrics {
 
     public void incrementBackoutQueueMetrics(Multiplicity multiplicity, TeknologiEnum teknologi) {
         meterRegistry.counter(BACKOUT_QUEUE_METRIC, MULTIPLICITY_LABEL, multiplicity.name(), TEKNOLOGI_LABEL, teknologi.name().toLowerCase()).increment();
+    }
+
+    public void incrementBackoutFailure(Multiplicity multiplicity) {
+        meterRegistry.counter(BACKOUT_FAILURE_METRIC, MULTIPLICITY_LABEL, multiplicity.name()).increment();
     }
 
     public void incrementDatabaseSpecificAction(String databaseName, TeknologiEnum teknologi, Action action) {

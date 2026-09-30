@@ -2,7 +2,12 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
+import com.google.cloud.logging.Payload;
+import com.google.cloud.logging.Synchronicity;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -21,6 +26,7 @@ import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.PENDING_LOG_ENTRIES;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.routes.error.ErrorRouteConfiguration.ORIGINAL_FILE_PATH;
 import static no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum.POSTGRESQL;
@@ -30,8 +36,7 @@ import static org.apache.camel.component.file.FileConstants.FILE_ABSOLUTE_PATH;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NativeLogPacketConsumerProcessorTest {
@@ -56,6 +61,9 @@ class NativeLogPacketConsumerProcessorTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private Logging logging;
 
     @InjectMocks
     private NativeLogPacketConsumerProcessor processor;
@@ -109,7 +117,77 @@ class NativeLogPacketConsumerProcessorTest {
         assertNotNull(exchange.getVariable(LOGGING_CLIENT, Logging.class));
         assertNotNull(exchange.getVariable(LOGGING_CLIENT, Logging.class).getOptions());
         assertEquals(TEAM_PROJECT_ID, exchange.getVariable(LOGGING_CLIENT, Logging.class).getOptions().getProjectId());
+        assertEquals(Synchronicity.SYNC, exchange.getVariable(LOGGING_CLIENT, Logging.class).getWriteSynchronicity());
+        assertEquals(List.of(), exchange.getVariable(PENDING_LOG_ENTRIES, List.class));
         assertEquals(POSTGRESQL, exchange.getVariable(TEKNOLOGI, TeknologiEnum.class));
+    }
+
+    @Test
+    void writePendingLogEntries_writesAllEntriesInOneCall() {
+        List<LogEntry> pendingLogEntries = List.of(LogEntry.of(Payload.StringPayload.of("a")), LogEntry.of(Payload.StringPayload.of("b")));
+        Exchange exchange = packetExchange(pendingLogEntries);
+
+        processor.writePendingLogEntries(exchange);
+
+        verify(logging).write(pendingLogEntries);
+    }
+
+    @Test
+    void writePendingLogEntries_skipsWriteWhenNoEntriesArePending() {
+        Exchange exchange = packetExchange(List.of());
+
+        processor.writePendingLogEntries(exchange);
+
+        verifyNoInteractions(logging);
+    }
+
+    @Test
+    void writePendingLogEntries_wrapsWriteFailureAsGcpDependencyException() {
+        Exchange exchange = packetExchange(List.of(LogEntry.of(Payload.StringPayload.of("a"))));
+        doThrow(new RuntimeException("boom")).when(logging).write(any());
+
+        GCPDependencyException exception = assertThrows(GCPDependencyException.class, () -> processor.writePendingLogEntries(exchange));
+
+        assertTrue(exception.getMessage().contains(NAME_FROM_BUCKET));
+        assertEquals("boom", exception.getCause().getMessage());
+    }
+
+    @Test
+    void writePendingLogEntries_failsWhenLoggingClientIsMissing() {
+        Exchange exchange = packetExchange(List.of());
+        exchange.removeVariable(LOGGING_CLIENT);
+
+        assertThrows(InvalidLogPacketException.class, () -> processor.writePendingLogEntries(exchange));
+    }
+
+    @Test
+    void closeLoggingClient_closesClient() throws Exception {
+        processor.closeLoggingClient(packetExchange(List.of()));
+
+        verify(logging).close();
+    }
+
+    @Test
+    void closeLoggingClient_toleratesMissingClientAndCloseFailure() throws Exception {
+        assertDoesNotThrow(() -> processor.closeLoggingClient(new DefaultExchange(new DefaultCamelContext())));
+
+        doThrow(new RuntimeException("boom")).when(logging).close();
+        assertDoesNotThrow(() -> processor.closeLoggingClient(packetExchange(List.of())));
+    }
+
+    @Test
+    void incrementBackoutFailureMetric_incrementsPacketBackoutFailure() {
+        processor.incrementBackoutFailureMetric(new DefaultExchange(new DefaultCamelContext()));
+
+        verify(metrics).incrementBackoutFailure(Metrics.Multiplicity.packet);
+    }
+
+    private Exchange packetExchange(List<LogEntry> pendingLogEntries) {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.getMessage().setHeader(LOG_FILENAME, NAME_FROM_BUCKET);
+        exchange.setVariable(LOGGING_CLIENT, logging);
+        exchange.setVariable(PENDING_LOG_ENTRIES, pendingLogEntries);
+        return exchange;
     }
 
     @Test

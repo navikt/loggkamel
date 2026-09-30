@@ -3,11 +3,9 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.logging.LogEntry;
-import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.Payload;
 import com.google.cloud.logging.Severity;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.GCPDependencyException;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.util.GCPTimestampProvider;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
@@ -19,22 +17,22 @@ import org.apache.camel.support.DefaultExchange;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.LOGGING_CLIENT;
+import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.consumer.NativeLogPacketConsumerProcessor.PENDING_LOG_ENTRIES;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader.*;
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.processor.producer.GCPStandardizedLogLineProducerProcessor.CLOUD_LOGGING_ENTRY_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,9 +56,6 @@ class GCPStandardizedLogLineProducerProcessorTest {
     private GCPTimestampProvider  gcpTimestampProvider;
 
     @Mock
-    private Logging logging;
-
-    @Mock
     private AuditloggTaskDTO auditloggTaskDTO;
 
     @InjectMocks
@@ -80,16 +75,28 @@ class GCPStandardizedLogLineProducerProcessorTest {
     }
 
     @Test
-    void writeToGcpLogging_exceptionOnNullMessage() {
+    void queueLogEntry_exceptionOnNullMessage() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setVariable(PENDING_LOG_ENTRIES, new ArrayList<LogEntry>());
+        exchange.getMessage().setBody(null);
 
-        assertThrows(InvalidLogLineException.class, () -> processor.writeToGcpLogging(exchange));
+        assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
     }
 
     @Test
-    void writeToGcpLogging_writesInfoEntryToExpectedLogName() {
+    void queueLogEntry_exceptionOnMissingPendingLogEntries() {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(LOGGING_CLIENT, logging);
+        exchange.setVariable(PENDING_LOG_ENTRIES, null);
+        exchange.getMessage().setBody(EnrichedAuditlogg.builder().build());
+
+        assertThrows(InvalidLogPacketException.class, () -> processor.queueLogEntry(exchange));
+    }
+
+    @Test
+    void queueLogEntry_queuesInfoEntryWithExpectedLogName() {
+        List<LogEntry> pendingLogEntries = new ArrayList<>();
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        exchange.setVariable(PENDING_LOG_ENTRIES, pendingLogEntries);
         exchange.getMessage().setHeader(LOG_FILENAME, PROVIDED_FILENAME);
         exchange.getMessage().setBody(EnrichedAuditlogg.builder()
                 .dbName(DATABASE_NAME)
@@ -101,13 +108,10 @@ class GCPStandardizedLogLineProducerProcessorTest {
         when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
         when(gcpTimestampProvider.getTimestampFromLogTime(NOW)).thenReturn(NOW.toInstant());
 
-        processor.writeToGcpLogging(exchange);
+        processor.queueLogEntry(exchange);
 
-        ArgumentCaptor<Iterable> entriesCaptor = ArgumentCaptor.forClass(Iterable.class);
-        verify(logging).write(entriesCaptor.capture());
-
-        Object entryObject = entriesCaptor.getValue().iterator().next();
-        LogEntry entry = assertInstanceOf(LogEntry.class, entryObject);
+        assertEquals(1, pendingLogEntries.size());
+        LogEntry entry = pendingLogEntries.getFirst();
         assertEquals(CLOUD_LOGGING_ENTRY_NAME, entry.getLogName());
         assertEquals(Severity.INFO, entry.getSeverity());
         assertEquals(NOW.toInstant(), entry.getInstantTimestamp());
@@ -115,29 +119,5 @@ class GCPStandardizedLogLineProducerProcessorTest {
 
         Payload.JsonPayload loggedJsonPayload = assertInstanceOf(Payload.JsonPayload.class, entry.getPayload());
         assertEquals(auditloggAsMap, loggedJsonPayload.getDataAsMap());
-    }
-
-    @Test
-    void writeToGcpLogging_wrapsAnyFailureAsGcpDependencyException() {
-        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.setVariable(LOGGING_CLIENT, logging);
-        exchange.setVariable(PLACE_IN_PACKET, 1);
-        exchange.getMessage().setHeader(LOG_FILENAME, PROVIDED_FILENAME);
-        exchange.getMessage().setBody(EnrichedAuditlogg.builder()
-                .dbName(DATABASE_NAME)
-                .logTime(NOW)
-                .sqlStatement(SQL_STATEMENT)
-                .sqlParameters(SQL_PARAMETERS).build());
-
-        Map<String, Object> auditloggAsMap = Map.of("key1", "value1", "key2", "value2");
-        when(objectMapper.convertValue(any(EnrichedAuditlogg.class), any(TypeReference.class))).thenReturn(auditloggAsMap);
-
-        doThrow(new RuntimeException("boom")).when(logging).write(any());
-
-        GCPDependencyException exception = assertThrows(GCPDependencyException.class, () -> processor.writeToGcpLogging(exchange));
-
-        assertTrue(exception.getMessage().contains(PROVIDED_FILENAME));
-        RuntimeException cause = assertInstanceOf(RuntimeException.class, exception.getCause());
-        assertEquals("boom", cause.getMessage());
     }
 }

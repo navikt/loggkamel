@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogLineException;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
@@ -40,7 +40,7 @@ public class DB2DTOMapper {
                                 .build())
                         .build();
             } catch (JsonProcessingException e) {
-                throw new InvalidLogLineException("Failed to convert db2LogLine to JSON String, conversion was for database: " + auditloggTaskDTO.getDbname(), e);
+                throw new InvalidLogPacketException("Failed to convert db2LogLine to JSON String, conversion was for database: " + auditloggTaskDTO.getDbname(), e);
             }
 
             packetAsAuditloggLineMessages.add(auditloggLineMessage);
