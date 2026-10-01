@@ -34,7 +34,6 @@ public class DB2LogLineEnricher extends RouteBuilder {
                 .routeId(DB2_LOG_LINE_ENRICHER_ID)
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.line))
                 .log(LoggingLevel.INFO, "Enriching DB2 log line from ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
-                .process(enrichmentProcessor::enrich)
-                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}");
+                .process(enrichmentProcessor::enrich);
     }
 }

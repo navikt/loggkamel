@@ -34,7 +34,6 @@ public class PostgresLogLineEnricher extends RouteBuilder {
                 .routeId(POSTGRES_LOG_LINE_ENRICHER_ID)
                 .setProperty(ERROR_METRIC_MULTIPLICITY, constant(Metrics.Multiplicity.line))
                 .log(LoggingLevel.INFO, "Enriching postgres log line from ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
-                .process(enrichmentProcessor::enrich)
-                .log(LoggingLevel.DEBUG, "Per-message variables visible in the route after bean execution: ${variables}");
+                .process(enrichmentProcessor::enrich);
     }
 }
