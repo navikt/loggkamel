@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
+import java.util.StringTokenizer;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
@@ -87,6 +88,8 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                     exchange.getMessage().getHeader(LOG_FILENAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
             metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
 
+            log.info("DB2 statement which we failed to parse beings with: {}", getFirstWordsOfString(bodyAsDTO.getSqlQuery()));
+
             // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
             pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
             pgCommand = "UNKNOWN";
@@ -106,5 +109,17 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
         enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(enrichedAuditlogg.getNavIdent()));
         validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
+    }
+
+    private String getFirstWordsOfString(String input) {
+        StringTokenizer tokenizer = new StringTokenizer(input);
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < 3 && tokenizer.hasMoreTokens(); i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(tokenizer.nextToken());
+        }
+
+        return sb.toString();
     }
 }
