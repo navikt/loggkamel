@@ -112,6 +112,10 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
     }
 
     private String getFirstWordsOfString(String input) {
+        if (input == null || input.isEmpty()) {
+            return "";
+        }
+
         StringTokenizer tokenizer = new StringTokenizer(input);
         StringBuilder sb = new StringBuilder();
 
