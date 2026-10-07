@@ -37,7 +37,7 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FI
 @Service
 public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProcessor {
 
-    private static final Logger secureLogger = LoggerFactory.getLogger("secure-appender");
+    private static final Logger secureLogger = LoggerFactory.getLogger("secureLog");
 
     private final ObjectMapper objectMapper;
 
