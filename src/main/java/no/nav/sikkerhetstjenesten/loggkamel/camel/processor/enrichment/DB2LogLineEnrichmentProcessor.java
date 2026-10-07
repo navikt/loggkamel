@@ -24,6 +24,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.Enric
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,8 @@ import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FI
 
 @Service
 public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProcessor {
+
+    private static final Logger secureLogger = LoggerFactory.getLogger("secure-appender");
 
     private final ObjectMapper objectMapper;
 
@@ -88,7 +92,8 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                     exchange.getMessage().getHeader(LOG_FILENAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
             metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
 
-            log.info("DB2 statement which we failed to parse beings with: {}", getFirstWordsOfString(bodyAsDTO.getSqlQuery()));
+            log.info("DB2 statement which we failed to parse begins with: {}", getFirstWordsOfString(bodyAsDTO.getSqlQuery()));
+            secureLogger.info("Unparsable DB2 statement is: {}", bodyAsDTO.getSqlQuery());
 
             // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
             pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
