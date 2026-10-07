@@ -39,6 +39,10 @@ public class PostgresLogLineEnrichmentProcessor extends NativeLogLineEnrichmentP
     }
 
     public void enrich(Exchange exchange) {
+        //TESTING, REMOVE BEFORE MERGING
+        Logger secureLogger = LoggerFactory.getLogger("secureLog");
+        secureLogger.info("THIS IS A TEST MESSAGE TO CONFIRM THE LOGS GO WHERE EXPECTED");
+
         String body = exchange.getMessage().getBody(AuditloggLineMessage.class).getBody();
 
         if (body == null || body.isBlank()) {
