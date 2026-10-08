@@ -21,9 +21,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
-@Profile(EnvUtil.LOCAL)
+@Profile({EnvUtil.LOCAL, EnvUtil.DEV, EnvUtil.TEST})
 public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
 
     private static final Logger log = LoggerFactory.getLogger(MockNaisTokenIntrospector.class);
@@ -36,9 +37,9 @@ public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
             List.of(new SimpleGrantedAuthority("MOCK_AUTHENTICATION_LOCAL_DEVELOPMENT_ONLY"));
 
     @PostConstruct
-    void rejectNonLocalCluster() {
+    void rejectNonDevelopmentCluster() {
         Cluster currentCluster = Cluster.currentCluster();
-        if (currentCluster != Cluster.LOCAL) {
+        if (!Set.of(Cluster.LOCAL, Cluster.DEV_GCP, Cluster.TEST).contains(currentCluster)) {
             throw new IllegalStateException(
                     "MockNaisTokenIntrospector skips token validation and can only run locally, but the current cluster is "
                             + currentCluster.clusterName());

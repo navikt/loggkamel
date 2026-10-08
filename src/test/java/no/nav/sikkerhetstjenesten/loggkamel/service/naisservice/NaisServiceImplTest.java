@@ -14,24 +14,24 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_NAME;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.USER;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.EMAIL;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_ENVIRONMENTS_QUERY;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.TEAM_MEMBERSHIPS_FOR_USER_QUERY;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.GCPProject;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeam;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamConnection;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamEnvironments;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisTeamNode;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceGCP.NaisUserTeamMemberships;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.TEAM;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.TEAM_NAME;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.USER;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.EMAIL;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.TEAM_ENVIRONMENTS_QUERY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.TEAM_MEMBERSHIPS_FOR_USER_QUERY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.GCPProject;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.NaisTeam;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.NaisTeamConnection;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.NaisTeamEnvironments;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.NaisTeamNode;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisServiceImpl.NaisUserTeamMemberships;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NaisServiceGCPTest {
+class NaisServiceImplTest {
 
     private static final String NAIS_TEAM = "naisteam";
     private static final String GCP_PROJECT_ID = "gcpProjectId";
@@ -59,7 +59,7 @@ class NaisServiceGCPTest {
     HttpSyncGraphQlClient naisGraphqlClient;
 
     @InjectMocks
-    NaisServiceGCP naisServiceGCP;
+    NaisServiceImpl naisServiceImpl;
 
     @Test
     void getCurrentEnvGCPIDForTeam_graphQlExceptionConvertedToDependencyException() {
@@ -69,7 +69,7 @@ class NaisServiceGCPTest {
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenThrow(new RuntimeException("GraphQL client error"));
 
-        assertThrows(NaisDependencyException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(NaisDependencyException.class, () -> naisServiceImpl.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -80,7 +80,7 @@ class NaisServiceGCPTest {
         when(retrieveSpec.toEntity(NaisTeamEnvironments.class)).thenReturn(naisTeamEnvironmentsMono);
         when(naisTeamEnvironmentsMono.block()).thenReturn(null);
 
-        assertThrows(InvalidLogStreamException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogStreamException.class, () -> naisServiceImpl.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -92,7 +92,7 @@ class NaisServiceGCPTest {
         when(naisTeamEnvironmentsMono.block()).thenReturn(naisTeamEnvironments);
         when(naisTeamEnvironments.environments()).thenReturn(java.util.List.of());
 
-        assertThrows(InvalidLogStreamException.class, () -> naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertThrows(InvalidLogStreamException.class, () -> naisServiceImpl.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -106,7 +106,7 @@ class NaisServiceGCPTest {
         when(gcpProject.name()).thenReturn("local");
         when(gcpProject.gcpProjectID()).thenReturn(GCP_PROJECT_ID);
 
-        assertEquals(GCP_PROJECT_ID, naisServiceGCP.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
+        assertEquals(GCP_PROJECT_ID, naisServiceImpl.getCurrentEnvGCPIDForTeam(NAIS_TEAM));
     }
 
     @Test
@@ -119,7 +119,7 @@ class NaisServiceGCPTest {
                 new NaisTeamConnection(List.of(new NaisTeamNode(new NaisTeam(NAIS_TEAM))))
         ));
 
-        assertEquals(List.of(NAIS_TEAM), naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+        assertEquals(List.of(NAIS_TEAM), naisServiceImpl.getAllNaisteamsForEmail(USER_EMAIL));
     }
 
     @Test
@@ -130,19 +130,19 @@ class NaisServiceGCPTest {
         when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
         when(naisUserTeamMembershipsMono.block()).thenReturn(null);
 
-        assertThrows(MissingNaisTeamException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(USER_EMAIL));
+        assertThrows(MissingNaisTeamException.class, () -> naisServiceImpl.getAllNaisteamsForEmail(USER_EMAIL));
     }
 
     @Test
     void getAllNaisteamsForEmail_missingEmailThrowsForbiddenOperationException() {
-        assertThrows(ForbiddenOperationException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(null));
+        assertThrows(ForbiddenOperationException.class, () -> naisServiceImpl.getAllNaisteamsForEmail(null));
 
         verifyNoInteractions(naisGraphqlClient);
     }
 
     @Test
     void getAllNaisteamsForEmail_blankEmailThrowsForbiddenOperationException() {
-        assertThrows(ForbiddenOperationException.class, () -> naisServiceGCP.getAllNaisteamsForEmail(" "));
+        assertThrows(ForbiddenOperationException.class, () -> naisServiceImpl.getAllNaisteamsForEmail(" "));
 
         verifyNoInteractions(naisGraphqlClient);
     }

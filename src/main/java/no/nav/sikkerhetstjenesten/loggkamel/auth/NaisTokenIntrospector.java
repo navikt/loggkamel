@@ -1,11 +1,12 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
-import no.nav.boot.conditionals.ConditionalOnGCP;
+import no.nav.boot.conditionals.EnvUtil;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
@@ -24,13 +25,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
-@ConditionalOnGCP
+@Profile({EnvUtil.PROD})
 public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
 
     private static final Logger log = LoggerFactory.getLogger(NaisTokenIntrospector.class);
