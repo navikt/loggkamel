@@ -4,7 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.Database
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisGcpProjectService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
@@ -20,12 +20,12 @@ public class NativeLogStreamEnrichmentProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(NativeLogStreamEnrichmentProcessor.class);
 
-    private final NaisService naisService;
+    private final NaisGcpProjectService naisGcpProjectService;
     private final AuditloggTaskService auditloggTaskService;
 
     @Autowired
-    public NativeLogStreamEnrichmentProcessor(NaisService naisService, AuditloggTaskService auditloggTaskService) {
-        this.naisService = naisService;
+    public NativeLogStreamEnrichmentProcessor(NaisGcpProjectService naisGcpProjectService, AuditloggTaskService auditloggTaskService) {
+        this.naisGcpProjectService = naisGcpProjectService;
         this.auditloggTaskService = auditloggTaskService;
     }
 
@@ -61,7 +61,7 @@ public class NativeLogStreamEnrichmentProcessor {
             return;
         }
 
-        String teamGcpProjectId = naisService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
+        String teamGcpProjectId = naisGcpProjectService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
         if (teamGcpProjectId == null || teamGcpProjectId.isEmpty()) {
             log.info("Could not find GCP project id for naisteam {}, sending log message to backout queue", auditloggTaskDTO.getNaisteam());
             throw new InvalidLogStreamException("Could not find GCP project id for naisteam " + auditloggTaskDTO.getNaisteam());

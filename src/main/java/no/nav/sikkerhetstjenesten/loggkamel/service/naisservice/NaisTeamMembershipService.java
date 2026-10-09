@@ -4,11 +4,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 
 import java.util.List;
 
-public interface NaisService {
+public interface NaisTeamMembershipService {
 
     String EMAIL_CLAIM = "preferred_username";
-
-    String getCurrentEnvGCPIDForTeam(String naisTeam);
 
     List<String> getAllNaisteamsForEmail(String email);
 

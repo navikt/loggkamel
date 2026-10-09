@@ -4,7 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.Audit
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.packet.PacketPersistenceService;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisGcpProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,18 +33,18 @@ public class DB2PacketService {
 
     private final LoggkamelProxyService loggkamelProxyService;
 
-    private final NaisService naisService;
+    private final NaisGcpProjectService naisGcpProjectService;
 
     private final DB2DTOMapper db2DTOMapper;
 
     private final AuditloggTaskService auditloggTaskService;
 
     @Autowired
-    public DB2PacketService(PacketPersistenceService packetPersistenceService, LoggkamelProxyService loggkamelProxyService, NaisService naisService,
+    public DB2PacketService(PacketPersistenceService packetPersistenceService, LoggkamelProxyService loggkamelProxyService, NaisGcpProjectService naisGcpProjectService,
                             DB2DTOMapper db2DTOMapper, AuditloggTaskService auditloggTaskService) {
         this.packetPersistenceService = packetPersistenceService;
         this.loggkamelProxyService = loggkamelProxyService;
-        this.naisService = naisService;
+        this.naisGcpProjectService = naisGcpProjectService;
         this.db2DTOMapper = db2DTOMapper;
         this.auditloggTaskService = auditloggTaskService;
     }
@@ -92,7 +92,7 @@ public class DB2PacketService {
     }
 
     void persistAuditloggLinesAsPacketsSeparatedByDate(List<DB2AuditloggLineDTO> auditloggLineDTOs, AuditloggTaskDTO auditloggTaskDTO) {
-        String gcpId = naisService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
+        String gcpId = naisGcpProjectService.getCurrentEnvGCPIDForTeam(auditloggTaskDTO.getNaisteam());
 
         Map<LocalDate, List<DB2AuditloggLineDTO>> auditloggLinesGroupedByDate =
                 auditloggLineDTOs.stream().collect(

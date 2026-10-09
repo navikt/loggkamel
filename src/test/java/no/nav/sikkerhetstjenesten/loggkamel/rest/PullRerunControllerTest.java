@@ -6,7 +6,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.PullRerunRequiredDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.PullRerunService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +46,7 @@ class PullRerunControllerTest {
     DB2PacketService db2PacketService;
 
     @Mock
-    NaisService naisService;
+    NaisTeamMembershipService naisTeamMembershipService;
 
     @Mock
     OAuth2AuthenticatedPrincipal principal;
@@ -61,17 +61,17 @@ class PullRerunControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisService, new PullRerunAdminProperties(List.of(SIKKERHETSTJENESTEN_NAISTEAM)));
+        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisTeamMembershipService, new PullRerunAdminProperties(List.of(SIKKERHETSTJENESTEN_NAISTEAM)));
     }
 
     private void memberOfAdminTeam() {
-        when(principal.getAttribute(NaisService.EMAIL_CLAIM)).thenReturn(EMAIL);
-        when(naisService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of(SIKKERHETSTJENESTEN_NAISTEAM));
+        when(principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM)).thenReturn(EMAIL);
+        when(naisTeamMembershipService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of(SIKKERHETSTJENESTEN_NAISTEAM));
     }
 
     private void notMemberOfAdminTeam() {
-        when(principal.getAttribute(NaisService.EMAIL_CLAIM)).thenReturn(EMAIL);
-        when(naisService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of("team-a"));
+        when(principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM)).thenReturn(EMAIL);
+        when(naisTeamMembershipService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of("team-a"));
     }
 
     @Test

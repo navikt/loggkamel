@@ -9,7 +9,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.PullRerunRequiredDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.PullRerunService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +40,16 @@ public class PullRerunController {
     private final PullRerunService pullRerunService;
     private final AuditloggTaskService auditloggTaskService;
     private final DB2PacketService db2PacketService;
-    private final NaisService naisService;
+    private final NaisTeamMembershipService naisTeamMembershipService;
     private final List<String> adminNaisteams;
 
     @Autowired
-    public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisService naisService,
+    public PullRerunController(PullRerunService pullRerunService, AuditloggTaskService auditloggTaskService, DB2PacketService db2PacketService, NaisTeamMembershipService naisTeamMembershipService,
                                 PullRerunAdminProperties adminProperties) {
         this.pullRerunService = pullRerunService;
         this.auditloggTaskService = auditloggTaskService;
         this.db2PacketService = db2PacketService;
-        this.naisService = naisService;
+        this.naisTeamMembershipService = naisTeamMembershipService;
         this.adminNaisteams = adminProperties.adminTeams();
     }
 
@@ -99,8 +99,8 @@ public class PullRerunController {
     }
 
     private void requireAdminTeamMembership(OAuth2AuthenticatedPrincipal principal) {
-        String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);
-        List<String> naisteams = naisService.getAllNaisteamsForEmail(email);
+        String email = principal == null ? null : principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM);
+        List<String> naisteams = naisTeamMembershipService.getAllNaisteamsForEmail(email);
         if (naisteams.stream().noneMatch(adminNaisteams::contains)) {
             log.warn("Bruker uten medlemskap i et av naisteamene {} forsøkte å administrere loggpuller", adminNaisteams);
             throw new ForbiddenOperationException("Denne operasjonen krever medlemskap i et av naisteamene " + adminNaisteams);

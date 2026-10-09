@@ -3,7 +3,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.auth;
 import jakarta.annotation.PostConstruct;
 import no.nav.boot.conditionals.Cluster;
 import no.nav.boot.conditionals.EnvUtil;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Profile(EnvUtil.LOCAL)
@@ -36,7 +37,7 @@ public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
             List.of(new SimpleGrantedAuthority("MOCK_AUTHENTICATION_LOCAL_DEVELOPMENT_ONLY"));
 
     @PostConstruct
-    void rejectNonLocalCluster() {
+    void rejectNonDevelopmentCluster() {
         Cluster currentCluster = Cluster.currentCluster();
         if (currentCluster != Cluster.LOCAL) {
             throw new IllegalStateException(
@@ -59,7 +60,7 @@ public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
                 OAuth2TokenIntrospectionClaimNames.SUB, MOCK_SUBJECT,
                 OAuth2TokenIntrospectionClaimNames.IAT, issuedAt,
                 OAuth2TokenIntrospectionClaimNames.EXP, issuedAt.plus(MOCK_TOKEN_LIFETIME),
-                NaisService.EMAIL_CLAIM, MOCK_EMAIL
+                NaisTeamMembershipService.EMAIL_CLAIM, MOCK_EMAIL
         );
 
         return new DefaultOAuth2AuthenticatedPrincipal(claims, grantedAuthorities);
