@@ -4,7 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.Database
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisGcpProjectService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -42,7 +42,7 @@ class NativeLogStreamEnrichmentProcessorTest {
     AuditloggTaskService auditloggTaskService;
 
     @Mock
-    NaisService naisService;
+    NaisGcpProjectService naisGcpProjectService;
 
     @InjectMocks
     NativeLogStreamEnrichmentProcessor nativeLogStreamEnrichmentProcessor;
@@ -114,11 +114,11 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         verify(exchange).setVariable(AUDITLOGG_TASK, auditloggTaskDTO);
         verifyNoMoreInteractions(exchange);
-        verifyNoInteractions(naisService);
+        verifyNoInteractions(naisGcpProjectService);
     }
 
     @Test
-    void exceptionCallingNaisService_exceptionPassesThrough() {
+    void exceptionCallingNaisGcpProjectService_exceptionPassesThrough() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getHeader(LOG_FILENAME, String.class)).thenReturn(FILENAME_WITH_EXTENSION);
 
@@ -128,7 +128,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
-        when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenThrow(new RuntimeException("Nais service error"));
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenThrow(new RuntimeException("Nais service error"));
 
         assertThrows(RuntimeException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -144,7 +144,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
-        when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn("");
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn("");
 
         assertThrows(InvalidLogStreamException.class, () -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
     }
@@ -160,7 +160,7 @@ class NativeLogStreamEnrichmentProcessorTest {
 
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAIS_TEAM);
 
-        when(naisService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn(GCP_PROJECT_ID);
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAIS_TEAM)).thenReturn(GCP_PROJECT_ID);
 
         assertDoesNotThrow(() -> nativeLogStreamEnrichmentProcessor.enrich(exchange));
 

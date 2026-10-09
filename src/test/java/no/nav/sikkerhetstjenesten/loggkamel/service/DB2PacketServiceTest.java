@@ -5,7 +5,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.packet.PacketPersistenceService;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisGcpProjectService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -58,7 +58,7 @@ class DB2PacketServiceTest {
     LoggkamelProxyService loggkamelProxyService;
 
     @Mock
-    NaisService naisService;
+    NaisGcpProjectService naisGcpProjectService;
 
     @Mock
     DB2DTOMapper db2DTOMapper;
@@ -91,7 +91,7 @@ class DB2PacketServiceTest {
     @Test
     void persistAuditloggLinesAsPacketsSeparatedByDate_groupsDTOsByDate() {
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
-        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
 
         List<DB2AuditloggLineDTO> auditloggLineDTOs = List.of(db2AuditloggLineDTO1,  db2AuditloggLineDTO2, db2AuditloggLineDTO3);
 
@@ -123,7 +123,7 @@ class DB2PacketServiceTest {
 
         when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
-        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
 
         List<DB2AuditloggLineDTO> packet1 = buildPacketWithFiveTrailingSharedTimestamps(dateTime1, dateTime2);
         when(loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(DB_NAME, date1AtStartOfDay, date3AtEndOfDay)).thenReturn(packet1);
@@ -168,7 +168,7 @@ class DB2PacketServiceTest {
         when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
         when(auditloggTaskDTO.getTeknologi()).thenReturn(TeknologiEnum.DB2);
-        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
         when(db2AuditloggLineDTO1.getMetricsTimestamp()).thenReturn(timestamp);
         when(db2DTOMapper.convertDB2DTOsToAuditloggLineMessages(logs, auditloggTaskDTO, GCP_ID))
                 .thenReturn(List.of(auditloggLineMessage));
@@ -190,7 +190,7 @@ class DB2PacketServiceTest {
 
         when(auditloggTaskDTO.getDbname()).thenReturn(DB_NAME);
         when(auditloggTaskDTO.getNaisteam()).thenReturn(NAISTEAM);
-        when(naisService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
+        when(naisGcpProjectService.getCurrentEnvGCPIDForTeam(NAISTEAM)).thenReturn(GCP_ID);
         when(loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(
                 DB_NAME, date.atStartOfDay(), date.atTime(LocalTime.MAX))).thenReturn(List.of());
 

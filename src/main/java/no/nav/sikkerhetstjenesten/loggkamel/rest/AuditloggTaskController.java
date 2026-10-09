@@ -4,12 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +32,12 @@ public class AuditloggTaskController {
     private static final Logger log = LoggerFactory.getLogger(AuditloggTaskController.class);
 
     private final AuditloggTaskService auditloggTaskService;
-    private final NaisService naisService;
+    private final NaisTeamMembershipService naisTeamMembershipService;
 
     @Autowired
-    public AuditloggTaskController(AuditloggTaskService auditloggTaskService, NaisService naisService) {
+    public AuditloggTaskController(AuditloggTaskService auditloggTaskService, NaisTeamMembershipService naisTeamMembershipService) {
         this.auditloggTaskService = auditloggTaskService;
-        this.naisService = naisService;
+        this.naisTeamMembershipService = naisTeamMembershipService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -72,8 +71,8 @@ public class AuditloggTaskController {
     }
 
     private List<String> findNaisteamsForPrincipal(OAuth2AuthenticatedPrincipal principal) {
-        String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);
-        List<String> naisteams = naisService.getAllNaisteamsForEmail(email);
+        String email = principal == null ? null : principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM);
+        List<String> naisteams = naisTeamMembershipService.getAllNaisteamsForEmail(email);
         log.info("Fant {} naisteam for innlogget bruker", naisteams.size());
         return naisteams;
     }

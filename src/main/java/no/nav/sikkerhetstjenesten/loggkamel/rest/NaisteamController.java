@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +26,12 @@ public class NaisteamController {
     private static final Logger log = LoggerFactory.getLogger(NaisteamController.class);
 
     private final AuditloggTaskService auditloggTaskService;
-    private final NaisService naisService;
+    private final NaisTeamMembershipService naisTeamMembershipService;
 
     @Autowired
-    public NaisteamController(AuditloggTaskService auditloggTaskService, NaisService naisService) {
+    public NaisteamController(AuditloggTaskService auditloggTaskService, NaisTeamMembershipService naisTeamMembershipService) {
         this.auditloggTaskService = auditloggTaskService;
-        this.naisService = naisService;
+        this.naisTeamMembershipService = naisTeamMembershipService;
     }
 
     @GetMapping("auditlogg/{naisTeam}")
@@ -71,8 +71,8 @@ public class NaisteamController {
     @SecurityRequirement(name = "bearerAuth")
     public List<String> findNaisteamsForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         log.info("Finding all naisteams for user whose token was passed in");
-        String email = principal == null ? null : principal.getAttribute(NaisService.EMAIL_CLAIM);
-        List<String> naisteams = naisService.getAllNaisteamsForEmail(email);
+        String email = principal == null ? null : principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM);
+        List<String> naisteams = naisTeamMembershipService.getAllNaisteamsForEmail(email);
         log.info("Fant {} naisteam for innlogget bruker", naisteams.size());
         return naisteams;
     }

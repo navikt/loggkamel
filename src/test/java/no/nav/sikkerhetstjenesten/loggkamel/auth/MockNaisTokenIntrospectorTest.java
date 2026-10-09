@@ -1,6 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
@@ -35,7 +35,7 @@ class MockNaisTokenIntrospectorTest {
     void anyTokenIsAccepted() {
         OAuth2AuthenticatedPrincipal principal = mockNaisTokenIntrospector.introspect(TOKEN);
 
-        assertEquals(MOCK_EMAIL, principal.getAttribute(NaisService.EMAIL_CLAIM));
+        assertEquals(MOCK_EMAIL, principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM));
         assertEquals(MOCK_SUBJECT, principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SUB));
         assertEquals(Boolean.TRUE, principal.getAttribute(OAuth2TokenIntrospectionClaimNames.ACTIVE));
         assertIterableEquals(grantedAuthorities, principal.getAuthorities());
