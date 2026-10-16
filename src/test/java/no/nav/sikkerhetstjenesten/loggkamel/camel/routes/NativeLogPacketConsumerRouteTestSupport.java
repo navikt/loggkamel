@@ -149,7 +149,7 @@ abstract class NativeLogPacketConsumerRouteTestSupport extends RouteTestSupport 
                 .fiksa(true)
                 .funnetLogger(true)
                 .discardLogs(false)
-                .backfill(BackfillStatus.FINISHED)
+                .backfill(BackfillStatus.BACKFILL_COMPLETED)
                 .build();
     }
 }
