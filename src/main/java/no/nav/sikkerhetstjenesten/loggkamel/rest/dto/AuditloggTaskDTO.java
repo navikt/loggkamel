@@ -42,7 +42,7 @@ import java.time.Instant;
                     "loggingEndringer": true,
                     "funnetLogger": true,
                     "discardLogs": false,
-                    "backfill": "finished"
+                    "backfill": "backfill-completed"
                 }
                 """,
         description = "funnetLogger = om loggkamel har sett logginnslag fra den databasen, fiksa = fått tilgang til å hente loggene til databasen"

@@ -95,41 +95,41 @@ class ScheduledDB2BackfillTest {
     void backfillPullsFromStartOfCurrentYearThroughYesterdayAndMarksTaskFinished() {
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
+                TeknologiEnum.DB2, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task1));
 
         backfill.backfillLogsForAllRequestedTasks(TODAY);
 
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
                 task1, START_OF_CURRENT_YEAR, YESTERDAY);
         verify(auditloggTaskService).setBackfillStatus(
-                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
     }
 
     @Test
     void backfillOnJanuaryFirstFinishesWithoutPulling() {
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
+                TeknologiEnum.DB2, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task1));
 
         backfill.backfillLogsForAllRequestedTasks(JANUARY_FIRST);
 
         verifyNoInteractions(db2PacketService);
         verify(auditloggTaskService).setBackfillStatus(
-                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
     }
 
     @Test
     void backfillOnJanuarySecondPullsJanuaryFirst() {
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1));
+                TeknologiEnum.DB2, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task1));
 
         backfill.backfillLogsForAllRequestedTasks(JANUARY_SECOND);
 
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
                 task1, JANUARY_FIRST, JANUARY_FIRST);
         verify(auditloggTaskService).setBackfillStatus(
-                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
     }
 
     @Test
@@ -137,7 +137,7 @@ class ScheduledDB2BackfillTest {
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(task2.getDbname()).thenReturn(DBNAME_2);
         when(auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.DB2, BackfillStatus.REQUESTED)).thenReturn(List.of(task1, task2));
+                TeknologiEnum.DB2, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task1, task2));
         doThrow(new RuntimeException("proxy unavailable"))
                 .when(db2PacketService)
                 .fetchLogsWithinDateRangeAndPersistAsPackets(
@@ -146,11 +146,11 @@ class ScheduledDB2BackfillTest {
         backfill.backfillLogsForAllRequestedTasks(TODAY);
 
         verify(auditloggTaskService, never()).setBackfillStatus(
-                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+                DBNAME_1, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
         verify(metrics).incrementPullFailure(DBNAME_1, TeknologiEnum.DB2);
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(
                 task2, START_OF_CURRENT_YEAR, YESTERDAY);
         verify(auditloggTaskService).setBackfillStatus(
-                DBNAME_2, TeknologiEnum.DB2, BackfillStatus.FINISHED);
+                DBNAME_2, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
     }
 }

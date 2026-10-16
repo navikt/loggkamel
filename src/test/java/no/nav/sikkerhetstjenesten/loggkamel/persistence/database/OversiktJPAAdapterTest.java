@@ -175,13 +175,13 @@ class OversiktJPAAdapterTest {
 
     @Test
     void findConfiguredTasksByTeknologiAndBackfill_mapsMatchingEntities() {
-        when(repository.findAllByTeknologiAndFiksaTrueAndBackfill(TEKNOLOGI, "requested"))
+        when(repository.findAllByTeknologiAndFiksaTrueAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED.getValue()))
                 .thenReturn(List.of(toSaveAuditloggTaskEntity));
         when(mapper.auditloggTaskEntityToDTO(toSaveAuditloggTaskEntity)).thenReturn(auditloggTaskDTO);
 
         assertEquals(
                 List.of(auditloggTaskDTO),
-                adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.REQUESTED));
+                adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
     }
 
 }
