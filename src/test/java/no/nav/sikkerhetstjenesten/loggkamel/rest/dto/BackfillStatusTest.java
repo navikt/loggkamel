@@ -3,6 +3,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest.dto;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,19 +15,43 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class BackfillStatusTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper jackson3Mapper = JsonMapper.builder().build();
 
-    @Test
-    void serializesAsLowerCaseValue() throws Exception {
-        assertEquals("\"requested\"", objectMapper.writeValueAsString(BackfillStatus.REQUESTED));
+    @ParameterizedTest
+    @CsvSource({
+            "BACKFILL_REQUESTED, backfill-requested",
+            "BACKFILL_COMPLETED, backfill-completed",
+            "COLD_STORAGE_REQUESTED, cold-storage-requested",
+            "COLD_STORAGE_COMPLETED, cold-storage-completed"
+    })
+    void serializesAndDeserializesAllowedValues(BackfillStatus status, String value) throws Exception {
+        assertEquals("\"" + value + "\"", objectMapper.writeValueAsString(status));
+        assertEquals(status, objectMapper.readValue("\"" + value + "\"", BackfillStatus.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"invalid_value", "false", "requested", "finished", "BACKFILL-REQUESTED", ""})
+    void rejectsUnsupportedValues(String value) {
+        assertThrows(JsonMappingException.class,
+                () -> objectMapper.readValue("\"" + value + "\"", BackfillStatus.class));
     }
 
     @Test
-    void deserializesAllowedValue() throws Exception {
-        assertEquals(BackfillStatus.FINISHED, objectMapper.readValue("\"finished\"", BackfillStatus.class));
+    void rejectsUnsupportedValueInRequestDto() {
+        String json = """
+                {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true,
+                 "endringerUtenKrav": false, "loggingLeseoperasjoner": false, "backfill": "false"}
+                """;
+        assertThrows(DatabindException.class, () -> jackson3Mapper.readValue(json, AuditloggTaskRequestDTO.class));
     }
 
     @Test
-    void rejectsUnsupportedValue() {
-        assertThrows(JsonMappingException.class, () -> objectMapper.readValue("\"invalid_value\"", BackfillStatus.class));
+    void acceptsAllowedValueInRequestDto() throws Exception {
+        String json = """
+                {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true,
+                 "endringerUtenKrav": false, "loggingLeseoperasjoner": false, "backfill": "cold-storage-requested"}
+                """;
+        assertEquals(BackfillStatus.COLD_STORAGE_REQUESTED,
+                jackson3Mapper.readValue(json, AuditloggTaskRequestDTO.class).getBackfill());
     }
 }

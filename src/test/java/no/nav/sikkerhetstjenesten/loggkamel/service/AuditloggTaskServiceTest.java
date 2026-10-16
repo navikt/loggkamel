@@ -333,12 +333,12 @@ class AuditloggTaskServiceTest {
         when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
         when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
         when(auditloggTaskDTO2.getDiscardLogs()).thenReturn(true);
-        when(adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.REQUESTED))
+        when(adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
         assertEquals(
                 List.of(auditloggTaskDTO1),
-                service.findActiveTasksByTeknologiAndBackfillStatus(TEKNOLOGI, BackfillStatus.REQUESTED));
+                service.findActiveTasksByTeknologiAndBackfillStatus(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
     }
 
 }

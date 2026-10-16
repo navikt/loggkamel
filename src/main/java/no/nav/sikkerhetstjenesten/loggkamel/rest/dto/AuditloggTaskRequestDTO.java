@@ -30,7 +30,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
                     "okonomi": true,
                     "endringerUtenKrav": false,
                     "loggingLeseoperasjoner": false,
-                    "backfill": "false"
+                    "backfill": "cold-storage-completed"
                 }
                 """
 )

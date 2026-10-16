@@ -81,10 +81,10 @@ public class AuditloggTaskEntity {
     @Column(name = "discard_logs", nullable = false)
     private Boolean discardLogs;
 
-    @Size(max = 9)
+    @Size(max = 22)
     @NotNull
-    @ColumnDefault("'false'")
-    @Column(name = "backfill", nullable = false, length = 9)
+    @ColumnDefault("'cold-storage-completed'")
+    @Column(name = "backfill", nullable = false, length = 22)
     private String backfill;
 
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended
