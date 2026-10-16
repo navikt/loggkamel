@@ -57,6 +57,9 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     @Value("${routing.packet.bucket}")
     private String packetConsumerUri;
 
+    @Value("${routing.error.redelivery-delay-ms:10000}")
+    private long dependencyRedeliveryDelayMs;
+
     private final Metrics metrics;
 
     public ErrorRouteConfiguration(Metrics metrics) {
@@ -93,7 +96,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
         configuration.onException(DependencyException.class)
                 .log(LoggingLevel.INFO, "Routing DependencyException to postgres invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename}")
                 .maximumRedeliveries(3)
-                .redeliveryDelay(10000)
+                .redeliveryDelay(dependencyRedeliveryDelayMs)
                 .handled(true)
                 .useOriginalBody()
                 .process(exchange -> metrics.incrementBackoutQueueMetrics(Metrics.Multiplicity.stream, TeknologiEnum.POSTGRESQL))
@@ -126,7 +129,7 @@ public class ErrorRouteConfiguration extends RouteConfigurationBuilder {
     private void configurePacket(RouteConfigurationDefinition configuration, Processor prepareBackout, String backoutEndpointUri, Processor confirmBackout) {
         configuration.onException(DependencyException.class)
                 .maximumRedeliveries(3)
-                .redeliveryDelay(10000)
+                .redeliveryDelay(dependencyRedeliveryDelayMs)
                 .handled(true)
                 .useOriginalBody()
                 .log(LoggingLevel.INFO, "Routing DependencyException to invalid-messages channel after retries: ${exception.message}, filename: ${header.LoggkamelFilename} line ${variable.PlaceInPacket}")
