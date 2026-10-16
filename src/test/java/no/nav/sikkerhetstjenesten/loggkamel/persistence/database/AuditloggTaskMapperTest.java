@@ -4,6 +4,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 
@@ -20,7 +22,7 @@ class AuditloggTaskMapperTest {
     private static final Boolean FIKSA = true;
     private static final Boolean FUNNET_LOGGER = true;
     private static final Boolean DISCARD_LOGS = true;
-    private static final BackfillStatus BACKFILL = BackfillStatus.REQUESTED;
+    private static final BackfillStatus BACKFILL = BackfillStatus.BACKFILL_REQUESTED;
 
     AuditloggTaskMapper mapper = new AuditloggTaskMapperImpl();
 
@@ -55,6 +57,26 @@ class AuditloggTaskMapperTest {
         AuditloggTaskDTO dto = mapper.auditloggTaskEntityToDTO(entity);
 
         assertEquals(createResponseDTO(true, false, true, true), dto);
+    }
+
+    @ParameterizedTest
+    @EnumSource(BackfillStatus.class)
+    void backfillStatusRoundTripsThroughEntityAndDTO(BackfillStatus status) {
+        AuditloggTaskRequestDTO requestDTO = AuditloggTaskRequestDTO.builder()
+                .naisteam(NAISTEAM)
+                .teknologi(TEKNOLOGI)
+                .dbname(DBNAME)
+                .endringerUtenKrav(true)
+                .okonomi(false)
+                .loggingLeseoperasjoner(true)
+                .backfill(status)
+                .build();
+
+        AuditloggTaskEntity entity = mapper.auditloggTaskRequestDTOToEntity(requestDTO);
+        assertEquals(status.getValue(), entity.getBackfill());
+
+        AuditloggTaskDTO dto = mapper.auditloggTaskEntityToDTO(entity);
+        assertEquals(status, dto.getBackfill());
     }
 
     private AuditloggTaskEntity createEntity(boolean endringerUtenKrav, boolean okonomi, boolean loggingLeseoperasjoner) {

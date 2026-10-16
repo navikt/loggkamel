@@ -6,9 +6,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 public enum BackfillStatus {
-    FALSE("false"),
-    REQUESTED("requested"),
-    FINISHED("finished");
+    BACKFILL_REQUESTED("backfill-requested"),
+    BACKFILL_COMPLETED("backfill-completed"),
+    COLD_STORAGE_REQUESTED("cold-storage-requested"),
+    COLD_STORAGE_COMPLETED("cold-storage-completed");
 
     private final String value;
 

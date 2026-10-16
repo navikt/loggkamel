@@ -69,7 +69,7 @@ public class ScheduledDB2Backfill {
         LocalDate yesterday = today.minusDays(1);
         List<AuditloggTaskDTO> requestedTasks =
                 auditloggTaskService.findActiveTasksByTeknologiAndBackfillStatus(
-                        TeknologiEnum.DB2, BackfillStatus.REQUESTED);
+                        TeknologiEnum.DB2, BackfillStatus.BACKFILL_REQUESTED);
 
         log.info("Starting scheduled DB2 backfill for {} requested tasks, startDate {}, endDate {}",
                 requestedTasks.size(), startOfYear, yesterday);
@@ -100,7 +100,7 @@ public class ScheduledDB2Backfill {
             auditloggTaskService.setBackfillStatus(
                     requestedTask.getDbname(),
                     TeknologiEnum.DB2,
-                    BackfillStatus.FINISHED);
+                    BackfillStatus.BACKFILL_COMPLETED);
             return true;
         } catch (RuntimeException e) {
             log.warn("Scheduled DB2 backfill failed, dbname {}, startDate {}, endDate {}; leaving backfill requested",
