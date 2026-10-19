@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 class NativeLogPacketConsumerRouteDb2Test extends NativeLogPacketConsumerRouteTestSupport {
 
-    private static final String T_IDENT = "T123456";
+    private static final String T_IDENT = "ABC123";
 
     @Override
     TeknologiEnum teknologi() {
