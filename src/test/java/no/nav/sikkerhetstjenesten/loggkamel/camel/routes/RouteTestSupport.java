@@ -3,6 +3,8 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.routes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.sikkerhetstjenesten.loggkamel.LoggkamelApp;
+import no.nav.sikkerhetstjenesten.loggkamel.testsupport.DockerAvailableCondition;
+import no.nav.sikkerhetstjenesten.loggkamel.testsupport.SharedPostgres;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
@@ -18,9 +20,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -36,21 +35,16 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Runs the real Camel routes (local variants) against a real Postgres. Only the outbound dependencies
+ * Runs the real Camel routes (local variants) against the shared Postgres container from {@link SharedPostgres}. Only the outbound dependencies
  * (entra-proxy and the auditlogg task service) are mocked. All files live in a per-class temp directory.
  */
 @SpringBootTest(classes = LoggkamelApp.class)
-@Testcontainers
 // Generally only runs in the pipeline, can also be run locally if the developer sets up docker
 @ExtendWith(DockerAvailableCondition.class)
 // Test using the local profile, skips GCP read/write operations and external service calls (mocks instead)
 @ActiveProfiles("local")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 abstract class RouteTestSupport {
-
-    // Matches the production Postgres version (see .nais/*.json)
-    @Container
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18-alpine");
 
     @TempDir
     static Path root;
@@ -86,9 +80,9 @@ abstract class RouteTestSupport {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("spring.datasource.url", SharedPostgres::jdbcUrl);
+        registry.add("spring.datasource.username", SharedPostgres::username);
+        registry.add("spring.datasource.password", SharedPostgres::password);
 
         // The local profile disables Flyway; the tests need the real schema
         registry.add("spring.flyway.enabled", () -> "true");
@@ -115,6 +109,7 @@ abstract class RouteTestSupport {
     void resetState() {
         Stream.of(consumerDir, packetDir, outputDir, streamBackoutDir, packetBackoutDir)
                 .forEach(RouteTestSupport::emptyDirectory);
+        //noinspection SqlWithoutWhere
         jdbcTemplate.update("DELETE FROM camel_messageprocessed");
     }
 
@@ -127,7 +122,7 @@ abstract class RouteTestSupport {
         dropFileAndAwaitRoute(routeId, directory, filename, content.getBytes(StandardCharsets.UTF_8));
     }
 
-    void dropFileAndAwaitRoute(String routeId, Path directory, String filename, byte[] content) throws IOException {
+    void dropFileAndAwaitRoute(String routeId, Path directory, String filename, byte[] content) {
         dropFilesAndAwaitRoute(routeId, 1, () -> dropFile(directory, filename, content));
     }
 
@@ -167,6 +162,7 @@ abstract class RouteTestSupport {
 
     private static void emptyDirectory(Path directory) {
         try (Stream<Path> paths = Files.walk(directory)) {
+            //noinspection ResultOfMethodCallIgnored
             paths.sorted(Comparator.reverseOrder())
                     .filter(path -> !path.equals(directory))
                     .forEach(path -> path.toFile().delete());
