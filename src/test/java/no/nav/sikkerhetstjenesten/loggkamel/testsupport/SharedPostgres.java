@@ -2,6 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.testsupport;
 
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -49,7 +50,8 @@ public final class SharedPostgres {
     }
 
     private static void executeAsAdmin(String sql) {
-        try (Statement statement = DriverManager.getConnection(jdbcUrl(), username(), password()).createStatement()) {
+        try (Connection connection = DriverManager.getConnection(jdbcUrl(), username(), password());
+             Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to run admin statement on shared test database", e);
