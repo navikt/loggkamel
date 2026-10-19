@@ -27,11 +27,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -124,6 +127,9 @@ abstract class RouteTestSupport {
 
     void dropFileAndAwaitRoute(String routeId, Path directory, String filename, byte[] content) {
         dropFilesAndAwaitRoute(routeId, 1, () -> dropFile(directory, filename, content));
+        // The route-done notification can arrive before the file consumer commits its deletion.
+        await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
+                assertFalse(Files.exists(directory.resolve(filename)), "source file should have been consumed"));
     }
 
     void dropFilesAndAwaitRoute(String routeId, int exchangeCount, ThrowingRunnable drop) {

@@ -1,5 +1,6 @@
 package no.nav.sikkerhetstjenesten.loggkamel.persistence.database;
 
+import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import no.nav.sikkerhetstjenesten.loggkamel.config.IdempotentRepositoryConfig;
 import no.nav.sikkerhetstjenesten.loggkamel.testsupport.DockerAvailableCondition;
 import no.nav.sikkerhetstjenesten.loggkamel.testsupport.SharedPostgres;
@@ -34,6 +35,7 @@ import javax.sql.DataSource;
         PullRerunJPAAdapter.class,
         AuditloggTaskMapperImpl.class,
         PullRerunRequiredMapperImpl.class,
+        CacheConfig.class,
         IdempotentRepositoryConfig.class
 })
 @ExtendWith(DockerAvailableCondition.class)

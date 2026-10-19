@@ -4,8 +4,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.testsupport.DockerAvailableCondition
 import no.nav.sikkerhetstjenesten.loggkamel.testsupport.SharedPostgres;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -22,15 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FlywayMigrationTest {
 
     private static final String DATABASE = "flyway_migration_test";
-    private static String url;
+    private String url;
 
-    @BeforeAll
-    static void createDatabase() {
+    @BeforeEach
+    void createDatabase() {
         url = SharedPostgres.createDatabase(DATABASE);
     }
 
-    @AfterAll
-    static void dropDatabase() {
+    @AfterEach
+    void dropDatabase() {
         SharedPostgres.dropDatabase(DATABASE);
     }
 
