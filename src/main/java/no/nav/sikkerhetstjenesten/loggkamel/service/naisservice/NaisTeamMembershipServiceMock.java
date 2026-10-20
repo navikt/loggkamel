@@ -17,6 +17,8 @@ public class NaisTeamMembershipServiceMock implements NaisTeamMembershipService 
 
     private static final Logger log = LoggerFactory.getLogger(NaisTeamMembershipServiceMock.class);
 
+    public static final List<String> MOCKED_NAISTEAMS = List.of("sikkerhetstjenesten", "other-team", "team-with-no-tasks");
+
     @PostConstruct
     void rejectNonDevelopmentCluster() {
         Cluster currentCluster = Cluster.currentCluster();
@@ -32,6 +34,6 @@ public class NaisTeamMembershipServiceMock implements NaisTeamMembershipService 
     @Override
     public List<String> getAllNaisteamsForEmail(String email) {
         NaisTeamMembershipService.requireEmail(email);
-        return List.of("sikkerhetstjenesten", "other-team", "team-with-no-tasks");
+        return MOCKED_NAISTEAMS;
     }
 }

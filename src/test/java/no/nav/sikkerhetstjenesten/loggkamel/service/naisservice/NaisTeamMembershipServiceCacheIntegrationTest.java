@@ -96,10 +96,8 @@ class NaisTeamMembershipServiceCacheIntegrationTest {
     }
 
     @Test
-    void invalidEmailStillUsesExistingValidation() {
+    void missingEmailStillUsesExistingValidation() {
         assertThrows(ForbiddenOperationException.class, () -> service.getAllNaisteamsForEmail(null));
-        assertThrows(ForbiddenOperationException.class, () -> service.getAllNaisteamsForEmail(""));
-        assertThrows(ForbiddenOperationException.class, () -> service.getAllNaisteamsForEmail(" "));
 
         verifyNoInteractions(client);
     }

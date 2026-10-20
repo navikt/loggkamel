@@ -89,9 +89,9 @@ class NaisTeamMembershipServiceImplTest {
     }
 
     @Test
-    void getAllNaisteamsForEmail_blankEmailThrowsForbiddenOperationException() {
-        assertThrows(ForbiddenOperationException.class, () -> naisTeamMembershipService.getAllNaisteamsForEmail(" "));
-
-        verifyNoInteractions(naisGraphqlClient);
+    void requireEmailOnlyRejectsNull() {
+        NaisTeamMembershipService.requireEmail("");
+        NaisTeamMembershipService.requireEmail(" ");
+        NaisTeamMembershipService.requireEmail(USER_EMAIL);
     }
 }

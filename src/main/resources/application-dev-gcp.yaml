@@ -37,7 +37,7 @@ routing:
 
 debug: false
 
-pull-rerun:
+auth:
   admin-teams:
     - sikkerhetstjenesten
 

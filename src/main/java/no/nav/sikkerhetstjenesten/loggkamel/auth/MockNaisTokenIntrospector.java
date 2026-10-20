@@ -3,13 +3,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.auth;
 import jakarta.annotation.PostConstruct;
 import no.nav.boot.conditionals.Cluster;
 import no.nav.boot.conditionals.EnvUtil;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
@@ -21,7 +19,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceMock.MOCKED_NAISTEAMS;
 
 @Component
 @Profile(EnvUtil.LOCAL)
@@ -34,7 +34,7 @@ public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
     static final Duration MOCK_TOKEN_LIFETIME = Duration.ofHours(1);
 
     static final List<GrantedAuthority> grantedAuthorities =
-            List.of(new SimpleGrantedAuthority("MOCK_AUTHENTICATION_LOCAL_DEVELOPMENT_ONLY"));
+            List.of(GRANTED_USER_AUTHORITY, GRANTED_ADMIN_AUTHORITY);
 
     @PostConstruct
     void rejectNonDevelopmentCluster() {
@@ -60,7 +60,8 @@ public class MockNaisTokenIntrospector implements OpaqueTokenIntrospector {
                 OAuth2TokenIntrospectionClaimNames.SUB, MOCK_SUBJECT,
                 OAuth2TokenIntrospectionClaimNames.IAT, issuedAt,
                 OAuth2TokenIntrospectionClaimNames.EXP, issuedAt.plus(MOCK_TOKEN_LIFETIME),
-                NaisTeamMembershipService.EMAIL_CLAIM, MOCK_EMAIL
+                EMAIL_CLAIM, MOCK_EMAIL,
+                NAISTEAMS_CLAIM, MOCKED_NAISTEAMS
         );
 
         return new DefaultOAuth2AuthenticatedPrincipal(claims, grantedAuthorities);
