@@ -20,6 +20,7 @@ public class CacheConfig {
     public static final String ENTRA_PROXY_BY_NAV_IDENT = "entraProxyByNavIdent";
     public static final String ENTRA_PROXY_BY_T_IDENT = "entraProxyByTIdent";
     public static final String NAIS_GCP_PROJECT_BY_TEAM = "naisGcpProjectByTeam";
+    public static final String NAIS_TEAMS_BY_EMAIL = "naisTeamsByEmail";
 
     @Bean
     public CacheManager cacheManager() {
@@ -27,7 +28,8 @@ public class CacheConfig {
         cacheManager.setCacheNames(List.of(
                 ENTRA_PROXY_BY_NAV_IDENT,
                 ENTRA_PROXY_BY_T_IDENT,
-                NAIS_GCP_PROJECT_BY_TEAM));
+                NAIS_GCP_PROJECT_BY_TEAM,
+                NAIS_TEAMS_BY_EMAIL));
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(15))
                 .recordStats()
@@ -37,4 +39,3 @@ public class CacheConfig {
     }
 
 }
-

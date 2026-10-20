@@ -2,9 +2,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.boot.conditionals.EnvUtil;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,8 @@ public class NaisTeamMembershipServiceImpl implements NaisTeamMembershipService 
     private HttpSyncGraphQlClient naisGraphqlClient;
 
     @Override
+    @Cacheable(cacheNames = CacheConfig.NAIS_TEAMS_BY_EMAIL, key = "#email",
+            condition = "#email != null && !#email.isBlank()", sync = true)
     public List<String> getAllNaisteamsForEmail(String email) {
         NaisTeamMembershipService.requireEmail(email);
 
