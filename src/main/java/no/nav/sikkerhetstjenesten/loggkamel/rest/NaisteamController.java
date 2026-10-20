@@ -10,6 +10,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.NAISTEAMS_CLAIM;
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.USER_AUTHORITY;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -65,6 +67,7 @@ public class NaisteamController {
         return auditloggTaskService.findAllNaisteamWithActiveAuditloggTasks();
     }
 
+    @Secured(USER_AUTHORITY)
     @GetMapping("mine")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle naisteam den innloggede brukeren er medlem av")
