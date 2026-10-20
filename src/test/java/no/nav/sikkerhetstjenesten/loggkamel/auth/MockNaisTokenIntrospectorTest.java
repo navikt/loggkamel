@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
@@ -8,11 +7,13 @@ import org.springframework.security.oauth2.server.resource.introspection.BadOpaq
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceMock.MOCKED_NAISTEAMS;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_EMAIL;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_SUBJECT;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_TOKEN_LIFETIME;
-import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.grantedAuthorities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,10 +36,11 @@ class MockNaisTokenIntrospectorTest {
     void anyTokenIsAccepted() {
         OAuth2AuthenticatedPrincipal principal = mockNaisTokenIntrospector.introspect(TOKEN);
 
-        assertEquals(MOCK_EMAIL, principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM));
+        assertEquals(MOCK_EMAIL, principal.getAttribute(NaisTokenIntrospector.EMAIL_CLAIM));
         assertEquals(MOCK_SUBJECT, principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SUB));
         assertEquals(Boolean.TRUE, principal.getAttribute(OAuth2TokenIntrospectionClaimNames.ACTIVE));
-        assertIterableEquals(grantedAuthorities, principal.getAuthorities());
+        assertIterableEquals(List.of(GRANTED_USER_AUTHORITY, GRANTED_ADMIN_AUTHORITY), principal.getAuthorities());
+        assertEquals(MOCKED_NAISTEAMS, principal.getAttribute(NAISTEAMS_CLAIM));
     }
 
     @Test

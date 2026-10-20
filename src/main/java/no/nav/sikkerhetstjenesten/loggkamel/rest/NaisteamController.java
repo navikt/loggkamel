@@ -3,19 +3,23 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.NAISTEAMS_CLAIM;
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.USER_AUTHORITY;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -26,12 +30,10 @@ public class NaisteamController {
     private static final Logger log = LoggerFactory.getLogger(NaisteamController.class);
 
     private final AuditloggTaskService auditloggTaskService;
-    private final NaisTeamMembershipService naisTeamMembershipService;
 
     @Autowired
-    public NaisteamController(AuditloggTaskService auditloggTaskService, NaisTeamMembershipService naisTeamMembershipService) {
+    public NaisteamController(AuditloggTaskService auditloggTaskService) {
         this.auditloggTaskService = auditloggTaskService;
-        this.naisTeamMembershipService = naisTeamMembershipService;
     }
 
     @GetMapping("auditlogg/{naisTeam}")
@@ -65,14 +67,13 @@ public class NaisteamController {
         return auditloggTaskService.findAllNaisteamWithActiveAuditloggTasks();
     }
 
+    @Secured(USER_AUTHORITY)
     @GetMapping("mine")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle naisteam den innloggede brukeren er medlem av")
     @SecurityRequirement(name = "bearerAuth")
     public List<String> findNaisteamsForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        log.info("Finding all naisteams for user whose token was passed in");
-        String email = principal == null ? null : principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM);
-        List<String> naisteams = naisTeamMembershipService.getAllNaisteamsForEmail(email);
+        List<String> naisteams = principal == null || principal.getAttribute(NAISTEAMS_CLAIM) == null ? Collections.emptyList() : principal.getAttribute(NaisTokenIntrospector.NAISTEAMS_CLAIM);
         log.info("Fant {} naisteam for innlogget bruker", naisteams.size());
         return naisteams;
     }

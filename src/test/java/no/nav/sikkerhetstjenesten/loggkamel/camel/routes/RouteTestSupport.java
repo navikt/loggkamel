@@ -105,7 +105,7 @@ abstract class RouteTestSupport {
         registry.add("scheduled.idempotent-repository.cleanup.log-packet-retention-minutes", () -> "5");
         registry.add("scheduled.db2.backfill.cron", () -> "-");
         registry.add("scheduled.db2.pull.cron", () -> "-");
-        registry.add("pull-rerun.admin-teams", () -> "testteam");
+        registry.add("auth.admin-teams", () -> "testteam");
     }
 
     @BeforeEach

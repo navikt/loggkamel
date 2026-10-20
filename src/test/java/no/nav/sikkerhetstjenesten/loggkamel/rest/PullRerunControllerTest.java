@@ -6,17 +6,26 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.PullRerunRequiredDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2PacketService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.PullRerunService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 
 import java.time.LocalDate;
 import java.util.List;
 
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.ADMIN_AUTHORITY;
+import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.USER_AUTHORITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,8 +38,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PullRerunControllerTest {
 
-    private static final String EMAIL = "user@nav.no";
-    private static final String SIKKERHETSTJENESTEN_NAISTEAM = "sikkerhetstjenesten";
     private static final Long RERUN_ID = 7L;
     private static final String DBNAME = "dbName";
     private static final LocalDate START_DATE = LocalDate.of(2026, 9, 12);
@@ -46,9 +53,6 @@ class PullRerunControllerTest {
     DB2PacketService db2PacketService;
 
     @Mock
-    NaisTeamMembershipService naisTeamMembershipService;
-
-    @Mock
     OAuth2AuthenticatedPrincipal principal;
 
     @Mock
@@ -61,17 +65,27 @@ class PullRerunControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService, naisTeamMembershipService, new PullRerunAdminProperties(List.of(SIKKERHETSTJENESTEN_NAISTEAM)));
+        ProxyFactory factory = new ProxyFactory(new PullRerunController(pullRerunService, auditloggTaskService, db2PacketService));
+        factory.setProxyTargetClass(true);
+        factory.addAdvisor(AuthorizationManagerBeforeMethodInterceptor.secured());
+        controller = (PullRerunController) factory.getProxy();
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     private void memberOfAdminTeam() {
-        when(principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM)).thenReturn(EMAIL);
-        when(naisTeamMembershipService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of(SIKKERHETSTJENESTEN_NAISTEAM));
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(principal, null,
+                        List.of(new SimpleGrantedAuthority(USER_AUTHORITY), new SimpleGrantedAuthority(ADMIN_AUTHORITY))));
     }
 
     private void notMemberOfAdminTeam() {
-        when(principal.getAttribute(NaisTeamMembershipService.EMAIL_CLAIM)).thenReturn(EMAIL);
-        when(naisTeamMembershipService.getAllNaisteamsForEmail(EMAIL)).thenReturn(List.of("team-a"));
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(principal, null,
+                        List.of(new SimpleGrantedAuthority(USER_AUTHORITY))));
     }
 
     @Test
@@ -88,7 +102,7 @@ class PullRerunControllerTest {
     void getUnresolvedReruns_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(ForbiddenOperationException.class, () -> controller.getUnresolvedReruns(principal));
+        assertThrows(AccessDeniedException.class, () -> controller.getUnresolvedReruns(principal));
 
         verifyNoInteractions(pullRerunService);
     }
@@ -118,7 +132,7 @@ class PullRerunControllerTest {
     void resolveFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(ForbiddenOperationException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
+        assertThrows(AccessDeniedException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
 
         verifyNoInteractions(pullRerunService);
     }
@@ -176,9 +190,20 @@ class PullRerunControllerTest {
     void rerunFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(ForbiddenOperationException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+        assertThrows(AccessDeniedException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
 
         verifyNoInteractions(pullRerunService);
         verifyNoInteractions(db2PacketService);
+    }
+
+    @Test
+    void unauthenticatedCallerCannotEnterAnyAdminMethod() {
+        SecurityContextHolder.clearContext();
+
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.getUnresolvedReruns(principal));
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+
+        verifyNoInteractions(pullRerunService, auditloggTaskService, db2PacketService);
     }
 }

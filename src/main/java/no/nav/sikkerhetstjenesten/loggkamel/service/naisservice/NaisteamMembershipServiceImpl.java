@@ -2,9 +2,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.service.naisservice;
 
 import no.nav.boot.conditionals.EnvUtil;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.NaisDependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.config.CacheConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,9 @@ import java.util.Objects;
 
 @Service
 @Profile({EnvUtil.PROD})
-public class NaisTeamMembershipServiceImpl implements NaisTeamMembershipService {
+public class NaisteamMembershipServiceImpl implements NaisteamMembershipService {
 
-    private static final Logger log = LoggerFactory.getLogger(NaisTeamMembershipServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(NaisteamMembershipServiceImpl.class);
 
     static final String USER = "user";
     static final String EMAIL = "email";
@@ -34,20 +36,22 @@ public class NaisTeamMembershipServiceImpl implements NaisTeamMembershipService 
             }
             """;
 
-    public record NaisUserTeamMemberships(NaisTeamConnection teams) {}
+    public record NaisUserTeamMemberships(NaisteamConnection teams) {}
 
-    public record NaisTeamConnection(List<NaisTeamNode> nodes) {}
+    public record NaisteamConnection(List<NaisteamNode> nodes) {}
 
-    public record NaisTeamNode(NaisTeam team) {}
+    public record NaisteamNode(Naisteam team) {}
 
-    public record NaisTeam(String slug) {}
+    public record Naisteam(String slug) {}
 
     @Autowired
     private HttpSyncGraphQlClient naisGraphqlClient;
 
     @Override
+    @Cacheable(cacheNames = CacheConfig.NAIS_TEAMS_BY_EMAIL, key = "#email",
+            condition = "#email != null && !#email.isBlank()", sync = true)
     public List<String> getAllNaisteamsForEmail(String email) {
-        NaisTeamMembershipService.requireEmail(email);
+        NaisteamMembershipService.requireEmail(email);
 
         NaisUserTeamMemberships memberships;
         try {

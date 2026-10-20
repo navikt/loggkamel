@@ -13,9 +13,11 @@ import java.util.Set;
 
 @Service
 @Profile({EnvUtil.LOCAL, EnvUtil.DEV, EnvUtil.TEST})
-public class NaisTeamMembershipServiceMock implements NaisTeamMembershipService {
+public class NaisteamMembershipServiceMock implements NaisteamMembershipService {
 
-    private static final Logger log = LoggerFactory.getLogger(NaisTeamMembershipServiceMock.class);
+    private static final Logger log = LoggerFactory.getLogger(NaisteamMembershipServiceMock.class);
+
+    public static final List<String> MOCKED_NAISTEAMS = List.of("sikkerhetstjenesten", "other-team", "team-with-no-tasks");
 
     @PostConstruct
     void rejectNonDevelopmentCluster() {
@@ -31,7 +33,7 @@ public class NaisTeamMembershipServiceMock implements NaisTeamMembershipService 
 
     @Override
     public List<String> getAllNaisteamsForEmail(String email) {
-        NaisTeamMembershipService.requireEmail(email);
-        return List.of("sikkerhetstjenesten", "other-team", "team-with-no-tasks");
+        NaisteamMembershipService.requireEmail(email);
+        return MOCKED_NAISTEAMS;
     }
 }
