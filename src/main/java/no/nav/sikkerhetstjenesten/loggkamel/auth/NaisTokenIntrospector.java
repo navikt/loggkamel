@@ -143,7 +143,7 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
             try {
                 memberOfNaisteams = naisteamMembershipService.getAllNaisteamsForEmail((String) claims.get(EMAIL_CLAIM));
             } catch (Exception e) {
-                throw new OAuth2IntrospectionException("Unable to find naisteams for user with email address " +  claims.get(EMAIL_CLAIM), e);
+                throw new OAuth2IntrospectionException("Unable to find naisteams for authenticated user", e);
             }
             grantedAuthorities.add(GRANTED_USER_AUTHORITY);
         }
