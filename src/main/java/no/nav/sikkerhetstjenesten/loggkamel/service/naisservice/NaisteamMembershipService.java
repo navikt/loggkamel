@@ -6,7 +6,7 @@ import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.EMAIL_CLAIM;
 
-public interface NaisTeamMembershipService {
+public interface NaisteamMembershipService {
 
     List<String> getAllNaisteamsForEmail(String email);
 

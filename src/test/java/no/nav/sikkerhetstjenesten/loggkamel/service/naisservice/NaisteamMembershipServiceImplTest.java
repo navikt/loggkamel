@@ -13,20 +13,20 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.EMAIL;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.NaisTeam;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.NaisTeamConnection;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.NaisTeamNode;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.NaisUserTeamMemberships;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.TEAM_MEMBERSHIPS_FOR_USER_QUERY;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.USER;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.EMAIL;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.Naisteam;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.NaisteamConnection;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.NaisteamNode;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.NaisUserTeamMemberships;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.TEAM_MEMBERSHIPS_FOR_USER_QUERY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NaisTeamMembershipServiceImplTest {
+class NaisteamMembershipServiceImplTest {
 
     private static final String NAIS_TEAM = "naisteam";
     private static final String USER_EMAIL = "user@nav.no";
@@ -44,7 +44,7 @@ class NaisTeamMembershipServiceImplTest {
     HttpSyncGraphQlClient naisGraphqlClient;
 
     @InjectMocks
-    NaisTeamMembershipServiceImpl naisTeamMembershipService;
+    NaisteamMembershipServiceImpl naisTeamMembershipService;
 
     @Test
     void getAllNaisteamsForEmail_graphQlExceptionConvertedToDependencyException() {
@@ -64,7 +64,7 @@ class NaisTeamMembershipServiceImplTest {
         when(requestSpec.retrieve(USER)).thenReturn(retrieveSpec);
         when(retrieveSpec.toEntity(NaisUserTeamMemberships.class)).thenReturn(naisUserTeamMembershipsMono);
         when(naisUserTeamMembershipsMono.block()).thenReturn(new NaisUserTeamMemberships(
-                new NaisTeamConnection(List.of(new NaisTeamNode(new NaisTeam(NAIS_TEAM))))
+                new NaisteamConnection(List.of(new NaisteamNode(new Naisteam(NAIS_TEAM))))
         ));
 
         assertEquals(List.of(NAIS_TEAM), naisTeamMembershipService.getAllNaisteamsForEmail(USER_EMAIL));
@@ -90,8 +90,8 @@ class NaisTeamMembershipServiceImplTest {
 
     @Test
     void requireEmailOnlyRejectsNull() {
-        NaisTeamMembershipService.requireEmail("");
-        NaisTeamMembershipService.requireEmail(" ");
-        NaisTeamMembershipService.requireEmail(USER_EMAIL);
+        NaisteamMembershipService.requireEmail("");
+        NaisteamMembershipService.requireEmail(" ");
+        NaisteamMembershipService.requireEmail(USER_EMAIL);
     }
 }

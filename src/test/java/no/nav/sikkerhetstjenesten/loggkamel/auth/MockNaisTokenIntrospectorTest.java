@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.*;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceMock.MOCKED_NAISTEAMS;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceMock.MOCKED_NAISTEAMS;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_EMAIL;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_SUBJECT;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.MockNaisTokenIntrospector.MOCK_TOKEN_LIFETIME;

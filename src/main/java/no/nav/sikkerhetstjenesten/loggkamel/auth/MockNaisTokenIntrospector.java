@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.*;
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceMock.MOCKED_NAISTEAMS;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceMock.MOCKED_NAISTEAMS;
 
 @Component
 @Profile(EnvUtil.LOCAL)

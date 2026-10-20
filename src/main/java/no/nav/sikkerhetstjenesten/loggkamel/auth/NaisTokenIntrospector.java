@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.AdminNaisteams;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipService;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
     public static final String NAISTEAMS_CLAIM = "naisteams";
 
     private final RestClient restClient;
-    private final NaisTeamMembershipService naisteamMembershipService;
+    private final NaisteamMembershipService naisteamMembershipService;
     private final List<String> adminNaisteams;
 
     @Value("${NAIS_TOKEN_INTROSPECTION_ENDPOINT:#{''}}")
@@ -87,7 +87,7 @@ public class NaisTokenIntrospector implements OpaqueTokenIntrospector {
     @Autowired
     public NaisTokenIntrospector(
             RestClient restClient,
-            NaisTeamMembershipService naisteamMembershipService,
+            NaisteamMembershipService naisteamMembershipService,
             AdminNaisteams adminProperties
     ) {
         this.restClient = restClient;

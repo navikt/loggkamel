@@ -19,21 +19,21 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipServiceImpl.*;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipServiceImpl.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringJUnitConfig(classes = {
         CacheConfig.class,
-        NaisTeamMembershipServiceCacheIntegrationTest.TestConfig.class
+        NaisteamMembershipServiceCacheIntegrationTest.TestConfig.class
 })
-class NaisTeamMembershipServiceCacheIntegrationTest {
+class NaisteamMembershipServiceCacheIntegrationTest {
 
     private static final String EMAIL_ADDRESS = "user@example.test";
     private static final String OTHER_EMAIL_ADDRESS = "other@example.test";
 
     @Autowired
-    NaisTeamMembershipService service;
+    NaisteamMembershipService service;
 
     @Autowired
     HttpSyncGraphQlClient client;
@@ -122,8 +122,8 @@ class NaisTeamMembershipServiceCacheIntegrationTest {
     }
 
     private NaisUserTeamMemberships membership(String... teams) {
-        return new NaisUserTeamMemberships(new NaisTeamConnection(
-                List.of(teams).stream().map(team -> new NaisTeamNode(new NaisTeam(team))).toList()));
+        return new NaisUserTeamMemberships(new NaisteamConnection(
+                List.of(teams).stream().map(team -> new NaisteamNode(new Naisteam(team))).toList()));
     }
 
     @Configuration
@@ -136,8 +136,8 @@ class NaisTeamMembershipServiceCacheIntegrationTest {
         }
 
         @Bean
-        NaisTeamMembershipService naisTeamMembershipService() {
-            return new NaisTeamMembershipServiceImpl();
+        NaisteamMembershipService naisTeamMembershipService() {
+            return new NaisteamMembershipServiceImpl();
         }
     }
 }

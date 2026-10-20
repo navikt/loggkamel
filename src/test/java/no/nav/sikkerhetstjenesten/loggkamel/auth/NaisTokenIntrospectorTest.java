@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.auth;
 
 import no.nav.sikkerhetstjenesten.loggkamel.rest.AdminNaisteams;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
-import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisTeamMembershipService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.NaisteamMembershipService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +49,7 @@ class NaisTokenIntrospectorTest {
     private static final String OTHER_ADMIN_TEAM = "other-admin-team";
 
     @Mock
-    private NaisTeamMembershipService membershipService;
+    private NaisteamMembershipService membershipService;
 
     @Mock
     private RestClient restClient;
