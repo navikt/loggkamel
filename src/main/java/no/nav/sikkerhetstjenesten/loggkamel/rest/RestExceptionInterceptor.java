@@ -3,6 +3,11 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskNotFoundException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.InvalidAuditloggTaskStateException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageArchiveException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStoragePaginationException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageProxyException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +67,39 @@ public class RestExceptionInterceptor {
         return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
     }
 
+    @ExceptionHandler(AuditloggTaskNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAuditloggTaskNotFoundException(
+            AuditloggTaskNotFoundException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
+    }
+
+    @ExceptionHandler(InvalidAuditloggTaskStateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAuditloggTaskStateException(
+            InvalidAuditloggTaskStateException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
+    }
+
+    @ExceptionHandler(ColdStoragePaginationException.class)
+    public ResponseEntity<ErrorResponse> handleColdStoragePaginationException(
+            ColdStoragePaginationException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
+    }
+
+    @ExceptionHandler(ColdStorageArchiveException.class)
+    public ResponseEntity<ErrorResponse> handleColdStorageArchiveException(
+            ColdStorageArchiveException exception, HttpServletRequest request) {
+        log.error("Cold-storage archive generation failed for path {}", request.getRequestURI());
+        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ColdStorageProxyException.class)
+    public ResponseEntity<ErrorResponse> handleColdStorageProxyException(
+            ColdStorageProxyException exception, HttpServletRequest request) {
+        log.error("Cold-storage DB2 proxy request failed for path {} ({})",
+                request.getRequestURI(), exception.getCause().getClass().getSimpleName());
+        return errorResponse(HttpStatus.BAD_GATEWAY, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(DependencyException.class)
     public ResponseEntity<ErrorResponse> handleDependencyException(DependencyException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
@@ -73,16 +111,15 @@ public class RestExceptionInterceptor {
         } else {
             log.warn("REST request failed for path {} with status {}", request.getRequestURI(), httpStatus.value(), exception);
         }
-        ErrorResponse errorResponse = new ErrorResponse(
-                httpStatus.value(),
-                exception.getMessage(),
-                request.getRequestURI(),
-                Instant.now()
-        );
+        return errorResponse(httpStatus, exception.getMessage(), request);
+    }
+
+    private ResponseEntity<ErrorResponse> errorResponse(
+            HttpStatus httpStatus, String message, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(httpStatus.value(), message, request.getRequestURI(), Instant.now());
         return ResponseEntity.status(httpStatus).body(errorResponse);
     }
 
     public record ErrorResponse(int errorCode, String message, String path, Instant timestamp) {
     }
 }
-

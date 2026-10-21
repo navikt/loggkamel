@@ -32,7 +32,7 @@ import java.util.List;
                 }
             ]
         }""", description = "en gruppering av AuditloggTaskDTO, gruppert på naisteam")
-public class NaisTeamDTO {
+public class NaisteamDTO {
 
     @NonNull
     String naisteam;

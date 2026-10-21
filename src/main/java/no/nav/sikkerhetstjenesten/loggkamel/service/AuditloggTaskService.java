@@ -6,11 +6,14 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class AuditloggTaskService {
@@ -55,19 +58,19 @@ public class AuditloggTaskService {
         return adapter.getTasksRegisteredToNaisteam(naisteam);
     }
 
-    public List<NaisTeamDTO> getAllTasksGroupedByNaisteam() {
+    public List<NaisteamDTO> getAllTasksGroupedByNaisteam() {
         return adapter.findAllDistinctNaisteam().stream()
                 .map(naisteam ->
-                        NaisTeamDTO.builder()
+                        NaisteamDTO.builder()
                                 .naisteam(naisteam)
                                 .tasksForTeam(adapter.getTasksRegisteredToNaisteam(naisteam))
                                 .build()).toList();
     }
 
-    public List<NaisTeamDTO> getTasksGroupedByNaisteam(List<String> naisteams) {
+    public List<NaisteamDTO> getTasksGroupedByNaisteam(List<String> naisteams) {
         return naisteams.stream()
                 .map(naisteam ->
-                        NaisTeamDTO.builder()
+                        NaisteamDTO.builder()
                                 .naisteam(naisteam)
                                 .tasksForTeam(adapter.getTasksRegisteredToNaisteam(naisteam))
                                 .build())
@@ -95,6 +98,70 @@ public class AuditloggTaskService {
     public void setBackfillStatus(
             String dbname, TeknologiEnum teknologi, BackfillStatus backfillStatus) {
         adapter.setBackfillStatus(dbname, teknologi, backfillStatus);
+    }
+
+    public List<NaisteamDTO> findRequestedBackfillTasksGroupedByNaisteam() {
+        Map<String, List<AuditloggTaskDTO>> naisteamToTasksItOwns = new LinkedHashMap<>();
+
+        List<AuditloggTaskDTO> allTasksInRequestedState = adapter.findTasksByBackfillStatuses(List.of(
+                BackfillStatus.BACKFILL_REQUESTED,
+                BackfillStatus.COLD_STORAGE_REQUESTED));
+        allTasksInRequestedState
+                .forEach(task -> naisteamToTasksItOwns
+                        .computeIfAbsent(task.getNaisteam() == null ? "unassigned" : task.getNaisteam(), ignored -> new ArrayList<>())
+                        .add(task));
+
+        return naisteamToTasksItOwns.entrySet().stream()
+                .map(entry -> NaisteamDTO.builder()
+                        .naisteam(entry.getKey())
+                        .tasksForTeam(entry.getValue())
+                        .build())
+                .toList();
+    }
+
+    public void completeRequestedTask(String dbname, TeknologiEnum teknologi) {
+        AuditloggTaskDTO task = adapter.findByDbnameAndTeknologi(dbname, teknologi);
+        if (task == null) {
+            throw new AuditloggTaskNotFoundException(
+                    "No auditlogg task exists for database " + dbname + " and technology " + teknologi);
+        }
+        if (task.getBackfill() == null) {
+            throw invalidRequestedStatus(dbname, teknologi, null);
+        }
+
+        BackfillStatus completedStatus = switch (teknologi) {
+            case DB2 -> {
+                requireRequestedStatus(task.getBackfill(), dbname, teknologi, BackfillStatus.COLD_STORAGE_REQUESTED);
+                yield BackfillStatus.COLD_STORAGE_COMPLETED;
+            }
+            case POSTGRESQL -> switch (task.getBackfill()) {
+                case COLD_STORAGE_REQUESTED -> BackfillStatus.COLD_STORAGE_COMPLETED;
+                case BACKFILL_REQUESTED -> BackfillStatus.BACKFILL_COMPLETED;
+                default -> throw invalidRequestedStatus(dbname, teknologi, task.getBackfill());
+            };
+            default -> throw new InvalidAuditloggTaskStateException(
+                    "Completing backfill requests is not supported for technology " + teknologi);
+        };
+
+        adapter.setBackfillStatus(dbname, teknologi, completedStatus);
+    }
+
+    private static void requireRequestedStatus(
+            BackfillStatus currentStatus,
+            String dbname,
+            TeknologiEnum teknoloji,
+            BackfillStatus requiredStatus
+    ) {
+        if (currentStatus != requiredStatus) {
+            throw invalidRequestedStatus(dbname, teknoloji, currentStatus);
+        }
+    }
+
+    private static InvalidAuditloggTaskStateException invalidRequestedStatus(
+            String dbname, TeknologiEnum teknoloji, BackfillStatus currentStatus) {
+        return new InvalidAuditloggTaskStateException(
+                "Task for database " + dbname + " and technology " + teknoloji
+                        + " is not in a completable requested state (current state: " + currentStatus + ")");
     }
 
     private boolean taskHasAnActiveForwardingCategory(AuditloggTaskDTO task) {

@@ -6,7 +6,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -182,7 +182,7 @@ class AuditloggTaskServiceTest {
     void getAllTasksGroupedByNaisteam_noRegisteredTasks() {
         when(adapter.findAllDistinctNaisteam()).thenReturn(Collections.emptyList());
 
-        List<NaisTeamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
+        List<NaisteamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
 
         assertEquals(Collections.emptyList(), tasksGroupedByTeam);
     }
@@ -193,14 +193,14 @@ class AuditloggTaskServiceTest {
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_2)).thenReturn(List.of(auditloggTaskDTO2));
 
-        List<NaisTeamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
+        List<NaisteamDTO> tasksGroupedByTeam =  service.getAllTasksGroupedByNaisteam();
 
-        NaisTeamDTO naisTeamDTOForNaisTeam1 = NaisTeamDTO.builder()
+        NaisteamDTO naisTeamDTOForNaisTeam1 = NaisteamDTO.builder()
                 .naisteam(NAISTEAM_1)
                 .tasksForTeam(List.of(auditloggTaskDTO1))
                 .build();
 
-        NaisTeamDTO naisTeamDTOForNaisTeam2 = NaisTeamDTO.builder()
+        NaisteamDTO naisTeamDTOForNaisTeam2 = NaisteamDTO.builder()
                 .naisteam(NAISTEAM_2)
                 .tasksForTeam(List.of(auditloggTaskDTO2))
                 .build();
@@ -220,11 +220,11 @@ class AuditloggTaskServiceTest {
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_2)).thenReturn(List.of(auditloggTaskDTO2));
 
-        List<NaisTeamDTO> tasksGroupedByTeam = service.getTasksGroupedByNaisteam(List.of(NAISTEAM_1, NAISTEAM_2));
+        List<NaisteamDTO> tasksGroupedByTeam = service.getTasksGroupedByNaisteam(List.of(NAISTEAM_1, NAISTEAM_2));
 
         assertEquals(List.of(
-                NaisTeamDTO.builder().naisteam(NAISTEAM_1).tasksForTeam(List.of(auditloggTaskDTO1)).build(),
-                NaisTeamDTO.builder().naisteam(NAISTEAM_2).tasksForTeam(List.of(auditloggTaskDTO2)).build()
+                NaisteamDTO.builder().naisteam(NAISTEAM_1).tasksForTeam(List.of(auditloggTaskDTO1)).build(),
+                NaisteamDTO.builder().naisteam(NAISTEAM_2).tasksForTeam(List.of(auditloggTaskDTO2)).build()
         ), tasksGroupedByTeam);
     }
 

@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,7 +49,7 @@ public class PullRerunController {
     @GetMapping("rerun-required")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle loggpuller som har feilet og krever manuell rekjøring")
-    public List<PullRerunRequiredDTO> getUnresolvedReruns(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+    public List<PullRerunRequiredDTO> getUnresolvedReruns() {
         return pullRerunService.findAllUnresolvedReruns();
     }
 
@@ -59,7 +57,7 @@ public class PullRerunController {
     @PostMapping("resolve/{id}")
     @ResponseStatus(NO_CONTENT)
     @Operation(summary = "Markerer en feilet loggpull som løst manuelt, uten å kjøre den på nytt")
-    public void resolveFailedPull(@PathVariable Long id, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+    public void resolveFailedPull(@PathVariable Long id) {
         pullRerunService.findUnresolvedRerunById(id);
         pullRerunService.markRerunResolved(id);
     }
@@ -68,7 +66,7 @@ public class PullRerunController {
     @PostMapping("rerun/{id}")
     @ResponseStatus(NO_CONTENT)
     @Operation(summary = "Kjører på nytt en feilet loggpull, og markerer den som løst hvis rekjøringen lykkes")
-    public void rerunFailedPull(@PathVariable Long id, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+    public void rerunFailedPull(@PathVariable Long id) {
         PullRerunRequiredDTO rerun = pullRerunService.findUnresolvedRerunById(id);
         requireSupportedTeknologi(rerun.getTeknologi());
 

@@ -8,6 +8,8 @@ import java.util.List;
 interface OversiktRepository extends JpaRepository<AuditloggTaskEntity, Long> {
     AuditloggTaskEntity findByDbnameAndTeknologi(String dbname, TeknologiEnum teknologi);
 
+    List<AuditloggTaskEntity> findAllByBackfillIn(List<String> backfillStatuses);
+
     List<AuditloggTaskEntity> findAllTasksByNaisteam(String naisteam);
 
     @Query("SELECT DISTINCT e.naisteam FROM AuditloggTaskEntity e WHERE e.naisteam IS NOT NULL")
