@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class NaisteamController {
     @GetMapping("auditlogg/by-team")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle overførings-tasks, samlet på naisteam")
-    public List<NaisTeamDTO> getAuditloggTasksGroupedByNaisTeam() {
+    public List<NaisteamDTO> getAuditloggTasksGroupedByNaisTeam() {
         return auditloggTaskService.getAllTasksGroupedByNaisteam();
     }
 

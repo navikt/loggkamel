@@ -69,9 +69,10 @@ public class DB2PacketService {
         while(pulledPacketSize >= MAX_DB2_PACKET_SIZE) {
             logsStartDateTime = logsPulledForDateRange.getLast().getMetricsTimestamp();
 
-            LocalDateTime finalLogsStartDateTime = logsStartDateTime;
+            // Grab the subset of logs we just persisted with the latest date, since those will also be included in the next response we fetch
+            LocalDateTime lastLogsStartDateTime = logsStartDateTime;
             Set<DB2AuditloggLineDTO> logsAlreadyPersisted = logsPulledForDateRange.stream()
-                    .filter(db2AuditloggLineDTO -> finalLogsStartDateTime.isEqual(db2AuditloggLineDTO.getMetricsTimestamp())).collect(Collectors.toSet());
+                    .filter(db2AuditloggLineDTO -> lastLogsStartDateTime.isEqual(db2AuditloggLineDTO.getMetricsTimestamp())).collect(Collectors.toSet());
 
             logsPulledForDateRange = loggkamelProxyService.getDB2AuditloggLinesForDatabaseInDateRange(dbName, logsStartDateTime, logsEndDateTime);
             pulledPacketSize = logsPulledForDateRange.size();

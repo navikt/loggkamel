@@ -93,7 +93,7 @@ class PullRerunControllerTest {
         memberOfAdminTeam();
         when(pullRerunService.findAllUnresolvedReruns()).thenReturn(List.of(rerun));
 
-        List<PullRerunRequiredDTO> result = controller.getUnresolvedReruns(principal);
+        List<PullRerunRequiredDTO> result = controller.getUnresolvedReruns();
 
         assertEquals(List.of(rerun), result);
     }
@@ -102,7 +102,7 @@ class PullRerunControllerTest {
     void getUnresolvedReruns_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(AccessDeniedException.class, () -> controller.getUnresolvedReruns(principal));
+        assertThrows(AccessDeniedException.class, controller::getUnresolvedReruns);
 
         verifyNoInteractions(pullRerunService);
     }
@@ -112,7 +112,7 @@ class PullRerunControllerTest {
         memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
 
-        controller.resolveFailedPull(RERUN_ID, principal);
+        controller.resolveFailedPull(RERUN_ID);
 
         verify(pullRerunService).markRerunResolved(RERUN_ID);
         verifyNoInteractions(db2PacketService);
@@ -123,7 +123,7 @@ class PullRerunControllerTest {
         memberOfAdminTeam();
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenThrow(new PullRerunEntryNotFoundException("not found"));
 
-        assertThrows(PullRerunEntryNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
+        assertThrows(PullRerunEntryNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID));
 
         verify(pullRerunService, never()).markRerunResolved(any());
     }
@@ -132,7 +132,7 @@ class PullRerunControllerTest {
     void resolveFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(AccessDeniedException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
+        assertThrows(AccessDeniedException.class, () -> controller.resolveFailedPull(RERUN_ID));
 
         verifyNoInteractions(pullRerunService);
     }
@@ -147,7 +147,7 @@ class PullRerunControllerTest {
         when(rerun.getPullEndDate()).thenReturn(END_DATE);
         when(auditloggTaskService.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(auditloggTask);
 
-        controller.rerunFailedPull(RERUN_ID, principal);
+        controller.rerunFailedPull(RERUN_ID);
 
         verify(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(auditloggTask, START_DATE, END_DATE);
         verify(pullRerunService).markRerunResolved(RERUN_ID);
@@ -167,7 +167,7 @@ class PullRerunControllerTest {
         RuntimeException pullFailure = new RuntimeException("proxy unavailable");
         doThrow(pullFailure).when(db2PacketService).fetchLogsWithinDateRangeAndPersistAsPackets(auditloggTask, START_DATE, END_DATE);
 
-        RuntimeException thrown = assertThrows(RuntimeException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> controller.rerunFailedPull(RERUN_ID));
 
         assertEquals(pullFailure, thrown);
         verify(pullRerunService).registerFailedPull(DBNAME, TeknologiEnum.DB2, START_DATE, END_DATE, pullFailure);
@@ -180,7 +180,7 @@ class PullRerunControllerTest {
         when(pullRerunService.findUnresolvedRerunById(RERUN_ID)).thenReturn(rerun);
         when(rerun.getTeknologi()).thenReturn(TeknologiEnum.ORACLE);
 
-        assertThrows(UnsupportedPullTeknologiException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+        assertThrows(UnsupportedPullTeknologiException.class, () -> controller.rerunFailedPull(RERUN_ID));
 
         verifyNoInteractions(db2PacketService);
         verify(pullRerunService, never()).markRerunResolved(any());
@@ -190,7 +190,7 @@ class PullRerunControllerTest {
     void rerunFailedPull_throwsForbiddenWhenCallerIsNotInAdminTeam() {
         notMemberOfAdminTeam();
 
-        assertThrows(AccessDeniedException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+        assertThrows(AccessDeniedException.class, () -> controller.rerunFailedPull(RERUN_ID));
 
         verifyNoInteractions(pullRerunService);
         verifyNoInteractions(db2PacketService);
@@ -200,9 +200,9 @@ class PullRerunControllerTest {
     void unauthenticatedCallerCannotEnterAnyAdminMethod() {
         SecurityContextHolder.clearContext();
 
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.getUnresolvedReruns(principal));
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID, principal));
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.rerunFailedPull(RERUN_ID, principal));
+        assertThrows(AuthenticationCredentialsNotFoundException.class, controller::getUnresolvedReruns);
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.resolveFailedPull(RERUN_ID));
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> controller.rerunFailedPull(RERUN_ID));
 
         verifyNoInteractions(pullRerunService, auditloggTaskService, db2PacketService);
     }

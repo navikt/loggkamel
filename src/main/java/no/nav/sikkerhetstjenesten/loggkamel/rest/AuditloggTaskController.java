@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ public class AuditloggTaskController {
     @GetMapping("mine")
     @ResponseStatus(OK)
     @Operation(summary = "Finner alle overførings-tasks for naisteamene den innloggede brukeren er medlem av")
-    public List<NaisTeamDTO> getAuditloggTasksForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+    public List<NaisteamDTO> getAuditloggTasksForCurrentUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         log.info("Getting auditlogg tasks for the naisteams of the user whose token was passed in");
         return auditloggTaskService.getTasksGroupedByNaisteam(findNaisteamsForPrincipal(principal));
     }

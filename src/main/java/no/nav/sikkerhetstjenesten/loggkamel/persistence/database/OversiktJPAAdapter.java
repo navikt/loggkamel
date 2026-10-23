@@ -81,6 +81,12 @@ public class OversiktJPAAdapter {
                 .toList();
     }
 
+    public List<AuditloggTaskDTO> findTasksByBackfillStatuses(List<BackfillStatus> backfillStatuses) {
+        return repository.findAllByBackfillIn(backfillStatuses.stream().map(BackfillStatus::getValue).toList()).stream()
+                .map(mapper::auditloggTaskEntityToDTO)
+                .toList();
+    }
+
     public void setBackfillStatus(String dbname, TeknologiEnum teknologi, BackfillStatus backfillStatus) {
         AuditloggTaskEntity task = repository.findByDbnameAndTeknologi(dbname, teknologi);
         task.setBackfill(backfillStatus.getValue());

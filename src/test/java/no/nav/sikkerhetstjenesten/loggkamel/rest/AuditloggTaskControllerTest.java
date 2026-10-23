@@ -4,7 +4,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdap
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
-import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisTeamDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +83,7 @@ class AuditloggTaskControllerTest {
     void mineUsesPrincipalTeams() {
         authenticate(USER_AUTHORITY);
         when(principal.getAttribute(NAISTEAMS_CLAIM)).thenReturn(TEAMS);
-        List<NaisTeamDTO> groupedTasks = List.of(mock(NaisTeamDTO.class));
+        List<NaisteamDTO> groupedTasks = List.of(mock(NaisteamDTO.class));
         when(service.getTasksGroupedByNaisteam(TEAMS)).thenReturn(groupedTasks);
 
         assertSame(groupedTasks, controller.getAuditloggTasksForCurrentUser(principal));
