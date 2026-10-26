@@ -1,3 +1,5 @@
+db2-admin-tidents: '{}'
+
 spring:
   cache:
     type: caffeine

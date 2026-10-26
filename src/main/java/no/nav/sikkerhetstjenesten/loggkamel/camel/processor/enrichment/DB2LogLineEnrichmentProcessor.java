@@ -21,6 +21,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidDB2L
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.util.DB2AdminUsernameToTIdentConverter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.apache.camel.Exchange;
@@ -40,11 +41,14 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
     private static final Logger secureLogger = LoggerFactory.getLogger("secureLog");
 
     private final ObjectMapper objectMapper;
+    private final DB2AdminUsernameToTIdentConverter db2AdminUsernameToTIdentConverter;
 
     @Autowired
-    public DB2LogLineEnrichmentProcessor(Metrics metrics, EntraProxyService entraProxyService,  ObjectMapper objectMapper, Validator validator) {
+    public DB2LogLineEnrichmentProcessor(Metrics metrics, EntraProxyService entraProxyService, ObjectMapper objectMapper,
+                                        Validator validator, DB2AdminUsernameToTIdentConverter db2AdminUsernameToTIdentConverter) {
         super(metrics, entraProxyService, validator);
         this.objectMapper = objectMapper;
+        this.db2AdminUsernameToTIdentConverter = db2AdminUsernameToTIdentConverter;
     }
 
     public void enrich(Exchange exchange) {
@@ -100,18 +104,20 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
             pgCommand = "UNKNOWN";
         }
 
+        String lookupTIdent = db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(bodyAsDTO.getAuthId());
+
         EnrichedAuditlogg enrichedAuditlogg = EnrichedAuditlogg.builder()
                 .originalMessage(auditloggLineMessage.getBody())
                 .sqlStatement(bodyAsDTO.getSqlQuery())
                 .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault()))
-                .navIdent(bodyAsDTO.getAuthId())
+                .tIdent(lookupTIdent)
+                .epost(getAnsattEpostFromTIdent(lookupTIdent))
                 .dbName(bodyAsDTO.getDatabaseName())
                 .pgAuditClass(pgAuditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION) // Hardcoded to session as it most closely matches the logging done by DB2 SYSTOOLS
                 .pgCommand(pgCommand)
                 .build();
 
-        enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(enrichedAuditlogg.getNavIdent()));
         validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
     }

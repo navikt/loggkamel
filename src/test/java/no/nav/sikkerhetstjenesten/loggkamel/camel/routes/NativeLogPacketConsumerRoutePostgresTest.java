@@ -47,6 +47,11 @@ class NativeLogPacketConsumerRoutePostgresTest extends NativeLogPacketConsumerRo
     }
 
     @Override
+    String expectedTIdent() {
+        return null;
+    }
+
+    @Override
     List<String> expectedAuditClasses() {
         return List.of("READ", "WRITE");
     }

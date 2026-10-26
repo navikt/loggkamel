@@ -11,6 +11,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessageHeader;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
+import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.util.DB2AdminUsernameToTIdentConverter;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
@@ -73,17 +74,25 @@ class DB2LogLineEnrichmentProcessorTest {
     @Mock
     ObjectMapper objectMapper;
 
-    @InjectMocks
+    @Mock
+    DB2AdminUsernameToTIdentConverter db2AdminUsernameToTIdentConverter;
+
     DB2LogLineEnrichmentProcessor processor;
 
     @BeforeEach
     void setUp() {
+        processor = new DB2LogLineEnrichmentProcessor(metrics, entraProxyService, objectMapper, validator,
+                db2AdminUsernameToTIdentConverter);
+    }
+
+    private void stubExchange() {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(AuditloggLineMessage.class)).thenReturn(auditloggLineMessage);
     }
 
     @Test
     void enrich_messageBodyMissing() {
+        stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn("");
 
         assertThrows(InvalidDB2LogPacketException.class, () -> processor.enrich(exchange));
@@ -91,23 +100,27 @@ class DB2LogLineEnrichmentProcessorTest {
 
     @Test
     void enrich_exceptionMappingLogToDB2DTO() throws JsonProcessingException {
+        stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
-        when(objectMapper.readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class)).thenThrow(new JsonProcessingException("blah"){});
+        Mockito.doThrow(new JsonProcessingException("blah"){}).when(objectMapper)
+                .readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class);
 
         assertThrows(InvalidDB2LogPacketException.class, () -> processor.enrich(exchange));
     }
 
     @Test
     void enrich_exceptionParsingQueryAsSQLStatement() throws JsonProcessingException {
+        stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
         when(auditloggLineMessageHeader.getPlaceInPacket()).thenReturn(1);
-        when(objectMapper.readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class)).thenReturn(db2AuditloggLineDTO);
+        Mockito.doReturn(db2AuditloggLineDTO).when(objectMapper).readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class);
         when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
         when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
         when(db2AuditloggLineDTO.getDatabaseName()).thenReturn(DB_NAME);
+        when(db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(T_IDENT)).thenReturn(T_IDENT);
         when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
@@ -127,13 +140,15 @@ class DB2LogLineEnrichmentProcessorTest {
 
     @Test
     void enrich_defaultSQLStatementType() throws JsonProcessingException {
+        stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
-        when(objectMapper.readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class)).thenReturn(db2AuditloggLineDTO);
+        Mockito.doReturn(db2AuditloggLineDTO).when(objectMapper).readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class);
         when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
         when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
         when(db2AuditloggLineDTO.getDatabaseName()).thenReturn(DB_NAME);
+        when(db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(T_IDENT)).thenReturn(T_IDENT);
         when(entraProxyService.getAnsattFraTIdent(T_IDENT)).thenReturn(entraProxyAnsatt);
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
@@ -157,7 +172,7 @@ class DB2LogLineEnrichmentProcessorTest {
                 .originalMessage(DB2_AUDITLOGG_AS_STRING)
                 .sqlStatement(SQL_QUERY)
                 .logTime(LOG_DATE_TIME.atZone(ZoneId.systemDefault()))
-                .navIdent(T_IDENT)
+                .tIdent(T_IDENT)
                 .dbName(DB_NAME)
                 .pgAuditClass(auditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION)

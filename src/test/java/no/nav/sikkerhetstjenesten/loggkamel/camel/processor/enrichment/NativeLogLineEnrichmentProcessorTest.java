@@ -1,7 +1,9 @@
 package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.EntraProxyDependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogPacketException;
@@ -11,9 +13,12 @@ import no.nav.sikkerhetstjenesten.loggkamel.client.dto.EntraProxyAnsatt;
 import no.nav.sikkerhetstjenesten.loggkamel.service.EntraProxyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Set;
 
@@ -120,6 +125,44 @@ class NativeLogLineEnrichmentProcessorTest {
         when(validator.validate(enrichedAuditlogg)).thenReturn(Collections.emptySet());
 
         nativeLogLineEnrichmentProcessor.validateEnrichedAuditlogg(enrichedAuditlogg);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "navIdent, NULL, true",
+            "NULL, tIdent, true",
+            "navIdent, tIdent, true",
+            "NULL, NULL, false"
+    }, nullValues = "NULL")
+    void validateEnrichedAuditlogg_requiresAtLeastOneIdentity(String navIdent, String tIdent, boolean valid) {
+        EnrichedAuditlogg auditlogg = EnrichedAuditlogg.builder()
+                .logTime(ZonedDateTime.now())
+                .navIdent(navIdent)
+                .tIdent(tIdent)
+                .dbName("database")
+                .auditType(EnrichedAuditlogg.AuditType.SESSION)
+                .pgAuditClass(EnrichedAuditlogg.AuditClass.READ)
+                .sqlStatement("SELECT 1")
+                .build();
+
+        try (var validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            var violations = validatorFactory.getValidator().validate(auditlogg);
+
+            assertEquals(valid, violations.isEmpty());
+            if (!valid) {
+                assertEquals(1, violations.size());
+            }
+        }
+    }
+
+    @Test
+    void serializeEnrichedAuditlogg_excludesIdentityValidationProperty() {
+        EnrichedAuditlogg auditlogg = EnrichedAuditlogg.builder().tIdent(T_IDENT).build();
+
+        var json = new ObjectMapper().valueToTree(auditlogg);
+
+        assertEquals(T_IDENT, json.get("tIdent").asText());
+        assertFalse(json.has("identityPresent"));
     }
 
 }
