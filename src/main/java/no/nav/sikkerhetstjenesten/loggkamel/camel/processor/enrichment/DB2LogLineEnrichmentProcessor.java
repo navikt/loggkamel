@@ -104,19 +104,20 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
             pgCommand = "UNKNOWN";
         }
 
+        String lookupTIdent = db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(bodyAsDTO.getAuthId());
+
         EnrichedAuditlogg enrichedAuditlogg = EnrichedAuditlogg.builder()
                 .originalMessage(auditloggLineMessage.getBody())
                 .sqlStatement(bodyAsDTO.getSqlQuery())
                 .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault()))
-                .tIdent(bodyAsDTO.getAuthId())
+                .tIdent(lookupTIdent)
+                .epost(getAnsattEpostFromTIdent(lookupTIdent))
                 .dbName(bodyAsDTO.getDatabaseName())
                 .pgAuditClass(pgAuditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION) // Hardcoded to session as it most closely matches the logging done by DB2 SYSTOOLS
                 .pgCommand(pgCommand)
                 .build();
 
-        String lookupTIdent = db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(enrichedAuditlogg.getTIdent());
-        enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(lookupTIdent));
         validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
     }
