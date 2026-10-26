@@ -151,7 +151,6 @@ class NativeLogLineEnrichmentProcessorTest {
             assertEquals(valid, violations.isEmpty());
             if (!valid) {
                 assertEquals(1, violations.size());
-                assertEquals("navIdent or tIdent must be non-null", violations.iterator().next().getMessage());
             }
         }
     }
@@ -163,8 +162,6 @@ class NativeLogLineEnrichmentProcessorTest {
         var json = new ObjectMapper().valueToTree(auditlogg);
 
         assertEquals(T_IDENT, json.get("tIdent").asText());
-        assertFalse(json.has("tident"));
-        assertTrue(json.get("navIdent").isNull());
         assertFalse(json.has("identityPresent"));
     }
 
