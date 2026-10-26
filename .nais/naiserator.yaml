@@ -92,3 +92,4 @@ spec:
       value: '{{db.poolsize}}'
   envFrom:
     - secret: loggkamel-unleash-api-token
+    - secret: db2-admin-tidents
