@@ -40,6 +40,8 @@ abstract class NativeLogPacketConsumerRouteTestSupport extends RouteTestSupport 
 
     abstract String expectedNavIdent();
 
+    abstract String expectedTIdent();
+
     abstract List<String> expectedAuditClasses();
 
     @BeforeEach
@@ -56,7 +58,8 @@ abstract class NativeLogPacketConsumerRouteTestSupport extends RouteTestSupport 
         assertEquals(outputFilenames(logLineBodies().size()), regularFileNames(outputDir));
         for (int i = 0; i < logLineBodies().size(); i++) {
             JsonNode line = readJson(outputDir.resolve(outputFilenames(logLineBodies().size()).get(i)));
-            assertEquals(expectedNavIdent(), line.get("navIdent").asText());
+            assertEquals(expectedNavIdent(), line.get("navIdent").asText(null));
+            assertEquals(expectedTIdent(), line.get("tIdent").asText(null));
             assertEquals(EPOST, line.get("epost").asText());
             assertEquals("testdb", line.get("dbName").asText().toLowerCase());
             assertEquals(expectedAuditClasses().get(i), line.get("pgAuditClass").asText());

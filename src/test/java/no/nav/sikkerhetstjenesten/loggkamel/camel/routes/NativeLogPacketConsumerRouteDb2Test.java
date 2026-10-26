@@ -43,6 +43,11 @@ class NativeLogPacketConsumerRouteDb2Test extends NativeLogPacketConsumerRouteTe
 
     @Override
     String expectedNavIdent() {
+        return null;
+    }
+
+    @Override
+    String expectedTIdent() {
         return T_IDENT;
     }
 
