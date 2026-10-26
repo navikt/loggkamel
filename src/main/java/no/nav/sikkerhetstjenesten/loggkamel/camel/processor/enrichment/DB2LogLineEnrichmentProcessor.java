@@ -104,14 +104,14 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                 .originalMessage(auditloggLineMessage.getBody())
                 .sqlStatement(bodyAsDTO.getSqlQuery())
                 .logTime(bodyAsDTO.getMetricsTimestamp().atZone(ZoneId.systemDefault()))
-                .navIdent(bodyAsDTO.getAuthId())
+                .tIdent(bodyAsDTO.getAuthId())
                 .dbName(bodyAsDTO.getDatabaseName())
                 .pgAuditClass(pgAuditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION) // Hardcoded to session as it most closely matches the logging done by DB2 SYSTOOLS
                 .pgCommand(pgCommand)
                 .build();
 
-        enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(enrichedAuditlogg.getNavIdent()));
+        enrichedAuditlogg.setEpost(getAnsattEpostFromTIdent(enrichedAuditlogg.getTIdent()));
         validateEnrichedAuditlogg(enrichedAuditlogg);
         exchange.getMessage().setBody(enrichedAuditlogg);
     }

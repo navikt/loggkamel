@@ -157,7 +157,7 @@ class DB2LogLineEnrichmentProcessorTest {
                 .originalMessage(DB2_AUDITLOGG_AS_STRING)
                 .sqlStatement(SQL_QUERY)
                 .logTime(LOG_DATE_TIME.atZone(ZoneId.systemDefault()))
-                .navIdent(T_IDENT)
+                .tIdent(T_IDENT)
                 .dbName(DB_NAME)
                 .pgAuditClass(auditClass)
                 .auditType(EnrichedAuditlogg.AuditType.SESSION)
