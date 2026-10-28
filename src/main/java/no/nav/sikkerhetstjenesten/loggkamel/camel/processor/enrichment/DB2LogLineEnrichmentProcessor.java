@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
-import java.util.StringTokenizer;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.camel.LoggkamelHeaders.LOG_FILENAME;
 
@@ -96,12 +95,17 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
                     exchange.getMessage().getHeader(LOG_FILENAME, String.class), auditloggLineMessage.getHeader().getPlaceInPacket(), e);
             metrics.incrementDB2Issue(Metrics.DB2IssueType.unparsable);
 
-            log.info("DB2 statement which we failed to parse begins with: {}", getFirstWordsOfString(bodyAsDTO.getSqlQuery()));
             secureLogger.info("Unparsable DB2 statement is: {}", bodyAsDTO.getSqlQuery());
 
-            // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
-            pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
-            pgCommand = "UNKNOWN";
+            // If the unparseable statement begins with "select", we know it is not a modification. Anything else, can't be sure
+            if (bodyAsDTO.getSqlQuery().toLowerCase().startsWith("select")) {
+                pgAuditClass = EnrichedAuditlogg.AuditClass.READ;
+                pgCommand = "SELECT";
+            } else {
+                // For sql statements that we cannot parse, treat them as endringer (the type that must get logged for økonomisystemer)
+                pgAuditClass = EnrichedAuditlogg.AuditClass.WRITE;
+                pgCommand = "UNKNOWN";
+            }
         }
 
         String lookupTIdent = db2AdminUsernameToTIdentConverter.replaceWithTIdentIfIsAdminAuthId(bodyAsDTO.getAuthId());
@@ -122,19 +126,4 @@ public class DB2LogLineEnrichmentProcessor extends NativeLogLineEnrichmentProces
         exchange.getMessage().setBody(enrichedAuditlogg);
     }
 
-    private String getFirstWordsOfString(String input) {
-        if (input == null || input.isEmpty()) {
-            return "";
-        }
-
-        StringTokenizer tokenizer = new StringTokenizer(input);
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 3 && tokenizer.hasMoreTokens(); i++) {
-            if (i > 0) sb.append(" ");
-            sb.append(tokenizer.nextToken());
-        }
-
-        return sb.toString();
-    }
 }

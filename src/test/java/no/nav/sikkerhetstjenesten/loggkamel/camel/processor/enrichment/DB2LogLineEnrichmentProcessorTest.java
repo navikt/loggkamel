@@ -20,6 +20,8 @@ import org.apache.camel.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.when;
 class DB2LogLineEnrichmentProcessorTest {
 
     private static final String DB2_AUDITLOGG_AS_STRING = "structured json representing a db2 auditlogg object";
-    private static final String SQL_QUERY = "sql query goes here";
+    private static final String GENERIC_SQL_STATEMENT = "sql query goes here";
 
     private static final LocalDateTime LOG_DATE_TIME = LocalDateTime.of(2001, 1, 1, 2, 3, 4);
     private static final String T_IDENT = "tIdent";
@@ -108,14 +110,18 @@ class DB2LogLineEnrichmentProcessorTest {
         assertThrows(InvalidDB2LogPacketException.class, () -> processor.enrich(exchange));
     }
 
-    @Test
-    void enrich_exceptionParsingQueryAsSQLStatement() throws JsonProcessingException {
+    @ParameterizedTest
+    @CsvSource(value = {
+            "generic sql, WRITE, UNKNOWN",
+            "select * from blah where blah, READ, SELECT"
+    })
+    void enrich_exceptionParsingQueryAsSQLStatement(String sqlStatement, EnrichedAuditlogg.AuditClass auditClass, String pgCommand) throws JsonProcessingException {
         stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
         when(auditloggLineMessage.getHeader()).thenReturn(auditloggLineMessageHeader);
         when(auditloggLineMessageHeader.getPlaceInPacket()).thenReturn(1);
         Mockito.doReturn(db2AuditloggLineDTO).when(objectMapper).readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class);
-        when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
+        when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(sqlStatement);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
         when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
@@ -125,14 +131,14 @@ class DB2LogLineEnrichmentProcessorTest {
         when(entraProxyAnsatt.getEpost()).thenReturn(EPOST);
 
         try (MockedStatic<CCJSqlParserUtil> ccjSqlParserUtil = Mockito.mockStatic(CCJSqlParserUtil.class)) {
-            ccjSqlParserUtil.when(() -> CCJSqlParserUtil.parse(SQL_QUERY)).thenThrow(new JSQLParserException("blah"));
+            ccjSqlParserUtil.when(() -> CCJSqlParserUtil.parse(sqlStatement)).thenThrow(new JSQLParserException("blah"));
 
             processor.enrich(exchange);
 
             verify(message).setBody(enrichedAuditloggCaptor.capture());
 
             EnrichedAuditlogg capturedEnrichedAuditlogg = enrichedAuditloggCaptor.getValue();
-            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.WRITE, "UNKNOWN");
+            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(sqlStatement, auditClass, pgCommand);
 
             assertEquals(expectedEnrichedAuditlogg, capturedEnrichedAuditlogg);
         }
@@ -143,7 +149,7 @@ class DB2LogLineEnrichmentProcessorTest {
         stubExchange();
         when(auditloggLineMessage.getBody()).thenReturn(DB2_AUDITLOGG_AS_STRING);
         Mockito.doReturn(db2AuditloggLineDTO).when(objectMapper).readValue(DB2_AUDITLOGG_AS_STRING, DB2AuditloggLineDTO.class);
-        when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(SQL_QUERY);
+        when(db2AuditloggLineDTO.getSqlQuery()).thenReturn(GENERIC_SQL_STATEMENT);
 
         when(db2AuditloggLineDTO.getMetricsTimestamp()).thenReturn(LOG_DATE_TIME);
         when(db2AuditloggLineDTO.getAuthId()).thenReturn(T_IDENT);
@@ -154,23 +160,23 @@ class DB2LogLineEnrichmentProcessorTest {
 
         try (MockedStatic<CCJSqlParserUtil> ccjSqlParserUtil = Mockito.mockStatic(CCJSqlParserUtil.class)) {
             Comment unexpectedStatementType = Mockito.mock(Comment.class);
-            ccjSqlParserUtil.when(() -> CCJSqlParserUtil.parse(SQL_QUERY)).thenReturn(unexpectedStatementType);
+            ccjSqlParserUtil.when(() -> CCJSqlParserUtil.parse(GENERIC_SQL_STATEMENT)).thenReturn(unexpectedStatementType);
 
             processor.enrich(exchange);
 
             verify(message).setBody(enrichedAuditloggCaptor.capture());
 
             EnrichedAuditlogg capturedEnrichedAuditlogg = enrichedAuditloggCaptor.getValue();
-            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass.WRITE, "COMMENT");
+            EnrichedAuditlogg expectedEnrichedAuditlogg = buildExpectedEnrichedAuditlogg(GENERIC_SQL_STATEMENT, EnrichedAuditlogg.AuditClass.WRITE, "COMMENT");
 
             assertEquals(expectedEnrichedAuditlogg, capturedEnrichedAuditlogg);
         }
     }
 
-    private EnrichedAuditlogg buildExpectedEnrichedAuditlogg(EnrichedAuditlogg.AuditClass auditClass, String pgCommand) {
+    private EnrichedAuditlogg buildExpectedEnrichedAuditlogg(String sqlStatement, EnrichedAuditlogg.AuditClass auditClass, String pgCommand) {
         return EnrichedAuditlogg.builder()
                 .originalMessage(DB2_AUDITLOGG_AS_STRING)
-                .sqlStatement(SQL_QUERY)
+                .sqlStatement(sqlStatement)
                 .logTime(LOG_DATE_TIME.atZone(ZoneId.systemDefault()))
                 .tIdent(T_IDENT)
                 .dbName(DB_NAME)
