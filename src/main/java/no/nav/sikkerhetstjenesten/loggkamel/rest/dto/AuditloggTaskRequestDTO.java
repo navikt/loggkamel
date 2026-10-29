@@ -52,7 +52,7 @@ public class AuditloggTaskRequestDTO {
 
     @NonNull
     @Builder.Default
-    @Schema(defaultValue = "false", description = "Forward database changes because of arkivforskrift")
+    @Schema(defaultValue = "false")
     Boolean arkivforskrift = false;
 
     @NonNull
