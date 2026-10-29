@@ -6,7 +6,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +28,7 @@ class AuditloggTaskMapperTest {
     AuditloggTaskMapper mapper = new AuditloggTaskMapperImpl();
 
     @Test
-    void dtoToEntity() {
+    void entityConstructorAndBuilderApplyDefaults() {
         for (AuditloggTaskEntity defaults : List.of(new AuditloggTaskEntity(), AuditloggTaskEntity.builder().build())) {
             assertEquals(false, defaults.getOkonomi());
             assertEquals(false, defaults.getArkivforskrift());
@@ -43,21 +42,16 @@ class AuditloggTaskMapperTest {
             assertNull(defaults.getCreated());
             assertNull(defaults.getUpdated());
         }
+    }
 
+    @Test
+    void dtoToEntity() {
         AuditloggTaskRequestDTO dto = createRequestDTO(false, false, true, true);
         AuditloggTaskEntity mappedEntity = mapper.auditloggTaskRequestDTOToEntity(dto);
 
-        AuditloggTaskEntity expectedEntity = createEntity(false, false, true);
-        expectedEntity.setArkivforskrift(true);
-        // null the fields that the mapper ignores
-        expectedEntity.setId(null);
-        expectedEntity.setCreated(null);
-        expectedEntity.setUpdated(null);
+        AuditloggTaskEntity expectedEntity = createEntity(false, false, true, true);
 
         // compare fields directly because entity equals() only compares id
-        assertEquals(expectedEntity.getId(), mappedEntity.getId());
-        assertEquals(expectedEntity.getCreated(), mappedEntity.getCreated());
-        assertEquals(expectedEntity.getUpdated(), mappedEntity.getUpdated());
         assertEquals(expectedEntity.getNaisteam(), mappedEntity.getNaisteam());
         assertEquals(expectedEntity.getTeknologi(), mappedEntity.getTeknologi());
         assertEquals(expectedEntity.getDbname(), mappedEntity.getDbname());
@@ -66,23 +60,15 @@ class AuditloggTaskMapperTest {
         assertEquals(expectedEntity.getEndringerUtenKrav(), mappedEntity.getEndringerUtenKrav());
         assertEquals(expectedEntity.getLoggingLeseoperasjoner(), mappedEntity.getLoggingLeseoperasjoner());
         assertEquals(expectedEntity.getBackfill(), mappedEntity.getBackfill());
-        assertEquals(false, mappedEntity.getFiksa());
+        assertFalse(mappedEntity.getFiksa());
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "false, false, false, false",
-            "true, false, false, true",
-            "false, true, false, true",
-            "false, false, true, true",
-            "false, true, true, true"
-    })
-    void entityToDTO(boolean endringerUtenKrav, boolean okonomi, boolean arkivforskrift, boolean loggingEndringer) {
-        AuditloggTaskEntity entity = createEntity(endringerUtenKrav, okonomi, true);
-        entity.setArkivforskrift(arkivforskrift);
+    @Test
+    void entityToDTO() {
+        AuditloggTaskEntity entity = createEntity(false, false, true, true);
         AuditloggTaskDTO dto = mapper.auditloggTaskEntityToDTO(entity);
 
-        assertEquals(createResponseDTO(endringerUtenKrav, okonomi, arkivforskrift, true, loggingEndringer), dto);
+        assertEquals(createResponseDTO(false, false, true, true, true), dto);
     }
 
     @ParameterizedTest
@@ -106,7 +92,7 @@ class AuditloggTaskMapperTest {
         assertEquals(status, dto.getBackfill());
     }
 
-    private AuditloggTaskEntity createEntity(boolean endringerUtenKrav, boolean okonomi, boolean loggingLeseoperasjoner) {
+    private AuditloggTaskEntity createEntity(boolean endringerUtenKrav, boolean okonomi, boolean arkivforskrift, boolean loggingLeseoperasjoner) {
         return AuditloggTaskEntity.builder()
                 .id(ID)
                 .created(CREATED)
@@ -116,6 +102,7 @@ class AuditloggTaskMapperTest {
                 .dbname(DBNAME)
                 .endringerUtenKrav(endringerUtenKrav)
                 .okonomi(okonomi)
+                .arkivforskrift(arkivforskrift)
                 .loggingLeseoperasjoner(loggingLeseoperasjoner)
                 .fiksa(FIKSA)
                 .funnetLogger(FUNNET_LOGGER)
