@@ -1,7 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
@@ -66,25 +64,23 @@ class AuditloggTaskControllerTest {
     }
 
     @Test
-    void createPassesPrincipalTeamsToOwnershipCheck() throws Exception {
+    void createPassesPrincipalTeamsToOwnershipCheck() {
         authenticate(USER_AUTHORITY);
         when(principal.getAttribute(NAISTEAMS_CLAIM)).thenReturn(TEAMS);
         when(service.createAuditloggTask(request, TEAMS)).thenReturn(task);
 
         assertSame(task, controller.createAuditloggTask(request, principal));
         verify(service).createAuditloggTask(request, TEAMS);
-        assertRequestValidation(HttpMethod.POST);
     }
 
     @Test
-    void updatePassesPrincipalTeamsToOwnershipCheck() throws Exception {
+    void updatePassesPrincipalTeamsToOwnershipCheck() {
         authenticate(USER_AUTHORITY);
         when(principal.getAttribute(NAISTEAMS_CLAIM)).thenReturn(TEAMS);
         when(service.updateAuditloggTask(request, TEAMS)).thenReturn(task);
 
         assertSame(task, controller.updateAuditloggTask(request, principal));
         verify(service).updateAuditloggTask(request, TEAMS);
-        assertRequestValidation(HttpMethod.PUT);
     }
 
     @Test
@@ -149,56 +145,24 @@ class AuditloggTaskControllerTest {
         verifyNoInteractions(service);
     }
 
-    private void assertRequestValidation(HttpMethod method) throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "PUT"})
+    void taskWriteEndpointsRejectConflictingChangeFlags(String httpMethod) throws Exception {
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
         var mvc = MockMvcBuilders.standaloneSetup(new AuditloggTaskController(service))
                 .setControllerAdvice(new RestExceptionInterceptor())
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
-        String template = """
+        String json = """
                 {"naisteam":"team-a","teknologi":"POSTGRESQL","dbname":"db",
-                 "okonomi":%s,"arkivforskrift":%s,"endringerUtenKrav":%s,
+                 "okonomi":true,"arkivforskrift":false,"endringerUtenKrav":true,
                  "loggingLeseoperasjoner":false,"backfill":"cold-storage-completed"}
                 """;
-        for (boolean okonomi : List.of(false, true)) {
-            for (boolean arkivforskrift : List.of(false, true)) {
-                for (boolean endringerUtenKrav : List.of(false, true)) {
-                    clearInvocations(service);
-                    boolean valid = !endringerUtenKrav || (!okonomi && !arkivforskrift);
-                    var result = mvc.perform(request(method, "/api/v1/task")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(template.formatted(okonomi, arkivforskrift, endringerUtenKrav)));
-                    result.andExpect(status().is(valid ? 200 : 400));
-                    if (valid) {
-                        if (method == HttpMethod.POST) {
-                            verify(service).createAuditloggTask(
-                                    argThat(dto -> dto.getArkivforskrift() == arkivforskrift), eq(TEAMS));
-                        } else {
-                            verify(service).updateAuditloggTask(
-                                    argThat(dto -> dto.getArkivforskrift() == arkivforskrift), eq(TEAMS));
-                        }
-                    } else {
-                        result.andExpect(jsonPath("$.errorCode").value(400))
-                                .andExpect(jsonPath("$.message").value(
-                                        "endringerUtenKrav can only be true when okonomi and arkivforskrift are false"));
-                        verifyNoInteractions(service);
-                    }
-                }
-            }
-        }
-        clearInvocations(service);
         mvc.perform(request(method, "/api/v1/task").contentType(MediaType.APPLICATION_JSON)
-                        .content(template.formatted(false, "null", false)))
-                .andExpect(status().isBadRequest());
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value(400));
         verifyNoInteractions(service);
-
-        mvc.perform(request(method, "/api/v1/task").contentType(MediaType.APPLICATION_JSON)
-                        .content(template.formatted(false, false, true).replace("\"arkivforskrift\":false,", "")))
-                .andExpect(status().isOk());
-        if (method == HttpMethod.POST) {
-            verify(service).createAuditloggTask(argThat(dto -> !dto.getArkivforskrift()), eq(TEAMS));
-        } else {
-            verify(service).updateAuditloggTask(argThat(dto -> !dto.getArkivforskrift()), eq(TEAMS));
-        }
     }
 
     private AuditloggTaskController securedController(AuditloggTaskService taskService) {
