@@ -146,6 +146,7 @@ abstract class NativeLogPacketConsumerRouteTestSupport extends RouteTestSupport 
                 .teknologi(teknologi())
                 .dbname("testdb")
                 .okonomi(false)
+                .arkivforskrift(false)
                 .endringerUtenKrav(false)
                 .loggingLeseoperasjoner(true)
                 .loggingEndringer(true)

@@ -63,8 +63,7 @@ public class AuditloggTaskDTO {
     Boolean okonomi;
 
     @NonNull
-    @Builder.Default
-    Boolean arkivforskrift = false;
+    Boolean arkivforskrift;
     
     @NonNull
     Boolean endringerUtenKrav;
