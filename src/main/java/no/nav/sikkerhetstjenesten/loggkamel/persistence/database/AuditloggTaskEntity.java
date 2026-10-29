@@ -36,9 +36,11 @@ public class AuditloggTaskEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ColumnDefault("NOW()")
     @Column(name = "created", nullable = false, insertable = false, updatable = false)
     private Instant created;
 
+    @ColumnDefault("NOW()")
     @Column(name = "updated", nullable = false, insertable = false, updatable = false)
     private Instant updated;
 
@@ -47,7 +49,7 @@ public class AuditloggTaskEntity {
     private String naisteam;
 
     @NotNull
-    @Column(name = "teknologi")
+    @Column(name = "teknologi", nullable = false)
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
     private TeknologiEnum teknologi;
@@ -57,35 +59,54 @@ public class AuditloggTaskEntity {
     @Column(name = "dbname", nullable = false, length = 100)
     private String dbname;
 
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
-    @Column(name = "okonomi")
-    private Boolean okonomi;
+    @Column(name = "okonomi", nullable = false)
+    private Boolean okonomi = false;
 
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
-    @Column(name = "endringer_uten_krav")
-    private Boolean endringerUtenKrav;
+    @Column(name = "arkivforskrift", nullable = false)
+    private Boolean arkivforskrift = false;
 
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
-    @Column(name = "logging_leseoperasjoner")
-    private Boolean loggingLeseoperasjoner;
+    @Column(name = "endringer_uten_krav", nullable = false)
+    private Boolean endringerUtenKrav = false;
 
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
-    @Column(name = "fiksa")
-    private Boolean fiksa;
+    @Column(name = "logging_leseoperasjoner", nullable = false)
+    private Boolean loggingLeseoperasjoner = false;
 
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
-    @Column(name = "funnet_logger")
-    private Boolean funnetLogger;
+    @Column(name = "fiksa", nullable = false)
+    private Boolean fiksa = false;
 
+    @NotNull
+    @Builder.Default
+    @ColumnDefault("false")
+    @Column(name = "funnet_logger", nullable = false)
+    private Boolean funnetLogger = false;
+
+    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
     @Column(name = "discard_logs", nullable = false)
-    private Boolean discardLogs;
+    private Boolean discardLogs = false;
 
     @Size(max = 22)
     @NotNull
-    @ColumnDefault("'cold-storage-completed'")
+    @Builder.Default
+    @ColumnDefault("'backfill-completed'")
     @Column(name = "backfill", nullable = false, length = 22)
-    private String backfill;
+    private String backfill = "backfill-completed";
 
     // Recommended equals and hashcode implementations for hibernate entities, use of lombok generated methods not recommended
     @Override

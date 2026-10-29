@@ -7,6 +7,8 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -46,22 +48,46 @@ class OversiktPostgresTest extends PostgresRepositoryTestBase {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
-    @Test
-    void adapterCreatesTaskAndTranslatesDuplicateToForbiddenOperation() {
+    @ParameterizedTest
+    @CsvSource({
+            "false, false, false, true",
+            "true, false, false, true",
+            "false, true, false, true",
+            "true, true, false, true",
+            "false, false, true, true",
+            "true, false, true, false",
+            "false, true, true, false",
+            "true, true, true, false"
+    })
+    void adapterCreatesTaskAndTranslatesDuplicateToForbiddenOperation(
+            boolean okonomi, boolean arkivforskrift, boolean endringerUtenKrav, boolean valid) {
         AuditloggTaskRequestDTO request = AuditloggTaskRequestDTO.builder()
                 .naisteam("testteam")
                 .teknologi(TeknologiEnum.POSTGRESQL)
                 .dbname("db-a")
-                .okonomi(true)
-                .endringerUtenKrav(false)
+                .okonomi(okonomi)
+                .arkivforskrift(arkivforskrift)
+                .endringerUtenKrav(endringerUtenKrav)
                 .loggingLeseoperasjoner(false)
                 .backfill(BackfillStatus.COLD_STORAGE_COMPLETED)
                 .build();
 
+        if (!valid) {
+            assertThatThrownBy(() -> adapter.createAuditloggTask(request))
+                    .isInstanceOf(DataIntegrityViolationException.class)
+                    .hasMessageContaining("oversikt_endringer_uten_krav_valid");
+            return;
+        }
+
         AuditloggTaskDTO created = adapter.createAuditloggTask(request);
 
         assertThat(created.getDbname()).isEqualTo("db-a");
+        assertThat(created.getNaisteam()).isEqualTo("testteam");
         assertThat(created.getTeknologi()).isEqualTo(TeknologiEnum.POSTGRESQL);
+        assertThat(created.getArkivforskrift()).isEqualTo(arkivforskrift);
+        assertThat(created.getLoggingEndringer()).isEqualTo(okonomi || arkivforskrift || endringerUtenKrav);
+        assertThat(adapter.findByDbnameAndTeknologi("db-a", TeknologiEnum.POSTGRESQL).getArkivforskrift())
+                .isEqualTo(arkivforskrift);
         assertThatThrownBy(() -> adapter.createAuditloggTask(request)).isInstanceOf(ForbiddenOperationException.class);
     }
 
@@ -104,6 +130,20 @@ class OversiktPostgresTest extends PostgresRepositoryTestBase {
         assertThat(reloaded.getFunnetLogger()).isTrue();
     }
 
+    @Test
+    void adapterUpdatesArkivforskriftAndEnablesChangeLogging() {
+        repository.saveAndFlush(task("db-a", TeknologiEnum.POSTGRESQL).build());
+
+        AuditloggTaskDTO updated = adapter.updateAuditloggTask(AuditloggTaskRequestDTO.builder()
+                .naisteam("testteam").teknologi(TeknologiEnum.POSTGRESQL).dbname("db-a")
+                .okonomi(false).arkivforskrift(true).endringerUtenKrav(false)
+                .loggingLeseoperasjoner(false).backfill(BackfillStatus.COLD_STORAGE_REQUESTED).build());
+        assertThat(updated.getArkivforskrift()).isTrue();
+        assertThat(updated.getLoggingEndringer()).isTrue();
+        assertThat(repository.findByDbnameAndTeknologi("db-a", TeknologiEnum.POSTGRESQL).getArkivforskrift())
+                .isTrue();
+    }
+
     @ParameterizedTest
     @EnumSource(BackfillStatus.class)
     void databaseAcceptsEveryBackfillStatusTheApplicationDefines(BackfillStatus status) {
@@ -129,10 +169,20 @@ class OversiktPostgresTest extends PostgresRepositoryTestBase {
         assertThat(repository.findByDbnameAndTeknologi("db-b", TeknologiEnum.POSTGRESQL).getNaisteam()).isNull();
     }
 
-    @Test
-    void discardedTasksCannotHaveForwardingTypes() {
+    @ParameterizedTest
+    @ValueSource(strings = {"okonomi", "arkivforskrift", "endringerUtenKrav", "loggingLeseoperasjoner"})
+    void discardedTasksCannotHaveForwardingTypes(String flag) {
+        AuditloggTaskEntity entity = task("db-a", TeknologiEnum.POSTGRESQL)
+                .naisteam(null).discardLogs(true).build();
+        switch (flag) {
+            case "okonomi" -> entity.setOkonomi(true);
+            case "arkivforskrift" -> entity.setArkivforskrift(true);
+            case "endringerUtenKrav" -> entity.setEndringerUtenKrav(true);
+            case "loggingLeseoperasjoner" -> entity.setLoggingLeseoperasjoner(true);
+            default -> throw new IllegalArgumentException(flag);
+        }
         assertThatThrownBy(() -> repository.saveAndFlush(
-                task("db-a", TeknologiEnum.POSTGRESQL).naisteam(null).discardLogs(true).okonomi(true).build()))
+                entity))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

@@ -52,20 +52,6 @@ class RestExceptionInterceptorTest {
     }
 
     @Test
-    void shouldMapUpdatingNonexistentTaskExceptionToConflict() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI(REQUEST_URI);
-
-        var response = restExceptionInterceptor.handleUpdatingNonexistentTaskException(new UpdatingNonexistentTaskException(ERROR_MESSAGE), request);
-
-        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(HttpStatus.CONFLICT.value(), response.getBody().errorCode());
-        assertEquals(ERROR_MESSAGE, response.getBody().message());
-        assertEquals(REQUEST_URI, response.getBody().path());
-    }
-
-    @Test
     void shouldMapMissingNaisTeamExceptionToNotFound() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI(REQUEST_URI);

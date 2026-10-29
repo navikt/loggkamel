@@ -23,10 +23,9 @@ public abstract class AuditloggTaskMapper {
     @Mapping(target = "fiksa", source = "teknologi", qualifiedByName = "setFiksaByTeknologi")
     public abstract AuditloggTaskEntity auditloggTaskRequestDTOToEntity(AuditloggTaskRequestDTO dto);
 
-    //TODO: Move the logic mapping database flags to reads or modifications into its own class, logic doesn't belong in the mapper
     @Named("loggingEndringer")
     public boolean loggingEndringer(AuditloggTaskEntity entity) {
-        return entity.getOkonomi() || entity.getEndringerUtenKrav();
+        return entity.getOkonomi() || entity.getArkivforskrift() || entity.getEndringerUtenKrav();
     }
 
     @Named("setFiksaByTeknologi")

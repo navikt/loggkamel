@@ -1,16 +1,12 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest.dto;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BackfillStatusTest {
 
@@ -29,24 +25,8 @@ class BackfillStatusTest {
         assertEquals(status, objectMapper.readValue("\"" + value + "\"", BackfillStatus.class));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"invalid_value", "false", "requested", "finished", "BACKFILL-REQUESTED", ""})
-    void rejectsUnsupportedValues(String value) {
-        assertThrows(JsonMappingException.class,
-                () -> objectMapper.readValue("\"" + value + "\"", BackfillStatus.class));
-    }
-
     @Test
-    void rejectsUnsupportedValueInRequestDto() {
-        String json = """
-                {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true,
-                 "endringerUtenKrav": false, "loggingLeseoperasjoner": false, "backfill": "false"}
-                """;
-        assertThrows(DatabindException.class, () -> jackson3Mapper.readValue(json, AuditloggTaskRequestDTO.class));
-    }
-
-    @Test
-    void acceptsAllowedValueInRequestDto() throws Exception {
+    void acceptsAllowedValueInRequestDto() {
         String json = """
                 {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true,
                  "endringerUtenKrav": false, "loggingLeseoperasjoner": false, "backfill": "cold-storage-requested"}

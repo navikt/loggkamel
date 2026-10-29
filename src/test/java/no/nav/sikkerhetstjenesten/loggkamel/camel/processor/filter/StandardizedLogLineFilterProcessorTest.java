@@ -4,6 +4,9 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.LogLineOp
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.EnrichedAuditlogg;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.LogLineOperationTypes;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.AuditloggTaskEntity;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.AuditloggTaskMapperImpl;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.jupiter.api.Test;
@@ -79,7 +82,13 @@ class StandardizedLogLineFilterProcessorTest {
     void shouldLineActionTypeBeLoggedForThisTask_passesIfBothIsWriteAndForwardingWrites() {
         setupShouldLineActionTypeBeLoggedForThisTask();
 
-        when(auditloggTaskDTO.getLoggingEndringer()).thenReturn(true);
+        AuditloggTaskDTO archiveOnlyTask = new AuditloggTaskMapperImpl().auditloggTaskEntityToDTO(
+                AuditloggTaskEntity.builder()
+                        .teknologi(TeknologiEnum.POSTGRESQL).dbname("archive-only")
+                        .okonomi(false).arkivforskrift(true).endringerUtenKrav(false)
+                        .loggingLeseoperasjoner(false).fiksa(true).funnetLogger(false).discardLogs(false)
+                        .backfill("cold-storage-completed").build());
+        when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(archiveOnlyTask);
         when(logLineOperationTypes.isModification()).thenReturn(true);
 
         assertTrue(standardizedLogLineFilterProcessor.shouldLineActionTypeBeLoggedForThisTask(exchange));
