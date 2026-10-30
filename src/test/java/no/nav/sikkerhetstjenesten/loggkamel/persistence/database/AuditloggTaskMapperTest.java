@@ -80,6 +80,7 @@ class AuditloggTaskMapperTest {
                 .dbname(DBNAME)
                 .endringerUtenKrav(true)
                 .okonomi(false)
+                .arkivforskrift(false)
                 .loggingLeseoperasjoner(true)
                 .backfill(status)
                 .build();
