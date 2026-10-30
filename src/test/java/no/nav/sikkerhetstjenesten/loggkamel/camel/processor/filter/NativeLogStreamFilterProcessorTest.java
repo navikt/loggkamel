@@ -2,11 +2,15 @@ package no.nav.sikkerhetstjenesten.loggkamel.camel.processor.filter;
 
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.AuditloggTaskEntity;
+import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.AuditloggTaskMapperImpl;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -74,10 +78,21 @@ class NativeLogStreamFilterProcessorTest {
         assertFalse(nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }
 
-    @Test
-    void logGroupPassesFilter() {
-        when(auditloggTaskDTO.getFiksa()).thenReturn(true);
-        when(auditloggTaskDTO.getLoggingLeseoperasjoner()).thenReturn(true);
+    @ParameterizedTest
+    @CsvSource({
+            "true, false, false, false",
+            "false, true, false, false",
+            "false, false, true, false",
+            "false, false, false, true"
+    })
+    void auditloggTaskWithRequestedLogTypesPassesFilter(boolean reads, boolean okonomi, boolean arkivforskrift, boolean endringerUtenKrav) {
+        AuditloggTaskDTO task = new AuditloggTaskMapperImpl().auditloggTaskEntityToDTO(
+                AuditloggTaskEntity.builder()
+                        .teknologi(TeknologiEnum.POSTGRESQL).dbname(DB_NAME)
+                        .okonomi(okonomi).arkivforskrift(arkivforskrift).endringerUtenKrav(endringerUtenKrav)
+                        .loggingLeseoperasjoner(reads).fiksa(true).funnetLogger(false).discardLogs(false)
+                        .backfill("cold-storage-completed").build());
+        when(exchange.getVariable(AUDITLOGG_TASK, AuditloggTaskDTO.class)).thenReturn(task);
 
         assertTrue(nativeLogStreamFilterProcessor.doesAuditloggTaskRequireForwardingLogs(exchange));
     }

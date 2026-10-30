@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -47,7 +48,7 @@ public class AuditloggTaskController {
     @ResponseStatus(OK)
     @Operation(summary = "Registrer en ny overførings-task")
     public AuditloggTaskDTO createAuditloggTask(
-            @RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO,
+            @Valid @RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO,
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal
     ) {
         log.debug("Creating auditlogg task: {}", auditloggTaskRequestDTO);
@@ -59,7 +60,7 @@ public class AuditloggTaskController {
     @ResponseStatus(OK)
     @Operation(summary = "Oppdater en overførings-task")
     public AuditloggTaskDTO updateAuditloggTask(
-            @RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO,
+            @Valid @RequestBody AuditloggTaskRequestDTO auditloggTaskRequestDTO,
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal
     ) {
         log.debug("Updating auditlogg task: {}", auditloggTaskRequestDTO);

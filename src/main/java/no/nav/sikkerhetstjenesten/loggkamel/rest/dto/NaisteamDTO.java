@@ -22,13 +22,16 @@ import java.util.List;
                     "teknologi": "POSTGRESQL",
                     "dbname": "not-a-real-db",
                     "okonomi": false,
-                    "arkivlov": false,
+                    "arkivforskrift": false,
+                    "endringerUtenKrav": false,
                     "loggingLeseoperasjoner": false,
                     "fiksa": true,
                     "created": "2026-07-31T08:39:42.750377Z",
                     "updated": "2026-07-31T08:39:42.750377Z",
                     "loggingEndringer": false,
-                    "funnetLogger": false
+                    "funnetLogger": false,
+                    "discardLogs": false,
+                    "backfill": "cold-storage-completed"
                 }
             ]
         }""", description = "en gruppering av AuditloggTaskDTO, gruppert på naisteam")

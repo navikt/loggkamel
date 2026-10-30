@@ -18,6 +18,7 @@ import java.time.Instant;
                 "teknologi",
                 "dbname",
                 "okonomi",
+                "arkivforskrift",
                 "loggingLeseoperasjoner",
                 "endringerUtenKrav",
                 "fiksa",
@@ -34,7 +35,8 @@ import java.time.Instant;
                     "teknologi": "POSTGRESQL",
                     "dbname": "sikkerhets-test",
                     "okonomi": true,
-                    "endringerUtenKrav": true,
+                    "arkivforskrift": false,
+                    "endringerUtenKrav": false,
                     "loggingLeseoperasjoner": true,
                     "fiksa": true,
                     "created": "2026-04-13T14:07:02.863834Z",
@@ -59,6 +61,9 @@ public class AuditloggTaskDTO {
     
     @NonNull
     Boolean okonomi;
+
+    @NonNull
+    Boolean arkivforskrift;
     
     @NonNull
     Boolean endringerUtenKrav;

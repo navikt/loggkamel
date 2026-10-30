@@ -124,6 +124,7 @@ class PostgresLogStreamConsumerRouteTest extends RouteTestSupport {
                 .teknologi(TeknologiEnum.POSTGRESQL)
                 .dbname(DBNAME)
                 .okonomi(false)
+                .arkivforskrift(false)
                 .endringerUtenKrav(false)
                 .loggingLeseoperasjoner(true)
                 .loggingEndringer(true)

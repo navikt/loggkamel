@@ -10,7 +10,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,12 +54,26 @@ class OversiktJPAAdapterTest {
     @InjectMocks
     OversiktJPAAdapter adapter;
 
-    @Test
-    void createAuditloggTask_forbiddenOperationExceptionOnDataIntegrityViolation() {
+    @ParameterizedTest
+    @CsvSource({
+            "23505, oversikt_dbname_teknologi_unique, true",
+            "23505, other_unique_constraint, false",
+            "23514, oversikt_endringer_uten_krav_valid, false",
+            "23514, oversikt_dbname_teknologi_unique, false",
+            "23502, arkivforskrift, false"
+    })
+    void createAuditloggTask_translatesOnlyTaskIdentityDuplicates(String sqlState, String constraint, boolean duplicate) {
         when(mapper.auditloggTaskRequestDTOToEntity(auditloggTaskRequestDTO)).thenReturn(toSaveAuditloggTaskEntity);
-        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(DataIntegrityViolationException.class);
+        var exception = new DataIntegrityViolationException("Integrity violation",
+                new ConstraintViolationException("Constraint violation", new SQLException("Rejected", sqlState), constraint));
+        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(exception);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.createAuditloggTask(auditloggTaskRequestDTO));
+        if (duplicate) {
+            assertThrows(ForbiddenOperationException.class, () -> adapter.createAuditloggTask(auditloggTaskRequestDTO));
+        } else {
+            assertSame(exception, assertThrows(DataIntegrityViolationException.class,
+                    () -> adapter.createAuditloggTask(auditloggTaskRequestDTO)));
+        }
     }
 
     @Test
@@ -77,16 +95,18 @@ class OversiktJPAAdapterTest {
     }
 
     @Test
-    void updateAuditloggTask_forbiddenOperationExceptionOnDataIntegrityViolation() {
+    void updateAuditloggTask_preservesUnclassifiedDataIntegrityViolation() {
         when(auditloggTaskRequestDTO.getDbname()).thenReturn(DBNAME);
         when(auditloggTaskRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
         when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggTaskEntity);
         when(toSaveAuditloggTaskEntity.getId()).thenReturn(ID);
 
         when(mapper.auditloggTaskRequestDTOToEntity(auditloggTaskRequestDTO)).thenReturn(toSaveAuditloggTaskEntity);
-        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(DataIntegrityViolationException.class);
+        var exception = new DataIntegrityViolationException("Integrity violation");
+        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(exception);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.updateAuditloggTask(auditloggTaskRequestDTO));
+        assertSame(exception, assertThrows(DataIntegrityViolationException.class,
+                () -> adapter.updateAuditloggTask(auditloggTaskRequestDTO)));
     }
 
     @Test
@@ -126,11 +146,11 @@ class OversiktJPAAdapterTest {
     }
 
     @Test
-    void registerLogsReceivedForAuditloggTask_forbiddenOperationExceptionOnDataIntegrityViolation() {
+    void registerLogsReceivedForAuditloggTask_preservesUnclassifiedDataIntegrityViolation() {
         when(repository.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(toSaveAuditloggTaskEntity);
         when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(DataIntegrityViolationException.class);
 
-        assertThrows(ForbiddenOperationException.class, () -> adapter.registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI));
+        assertThrows(DataIntegrityViolationException.class, () -> adapter.registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI));
     }
 
     @Test

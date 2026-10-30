@@ -99,6 +99,7 @@ class AuditloggBackfillTaskServiceTest {
                 .teknologi(technology)
                 .backfill(status)
                 .okonomi(false)
+                .arkivforskrift(false)
                 .endringerUtenKrav(false)
                 .loggingLeseoperasjoner(false)
                 .fiksa(true)

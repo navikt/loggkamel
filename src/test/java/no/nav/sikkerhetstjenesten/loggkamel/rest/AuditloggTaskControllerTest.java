@@ -1,7 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest;
 
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdapter;
-import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskRequestDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
@@ -22,6 +20,10 @@ import org.springframework.security.authorization.method.AuthorizationManagerBef
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +31,8 @@ import java.util.List;
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuditloggTaskControllerTest {
@@ -138,6 +142,26 @@ class AuditloggTaskControllerTest {
         assertThrows(AuthenticationCredentialsNotFoundException.class,
                 () -> controller.getAuditloggTasksForCurrentUser(principal));
 
+        verifyNoInteractions(service);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "PUT"})
+    void taskWriteEndpointsRejectConflictingChangeFlags(String httpMethod) throws Exception {
+        HttpMethod method = HttpMethod.valueOf(httpMethod);
+        var mvc = MockMvcBuilders.standaloneSetup(new AuditloggTaskController(service))
+                .setControllerAdvice(new RestExceptionInterceptor())
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .build();
+        String json = """
+                {"naisteam":"team-a","teknologi":"POSTGRESQL","dbname":"db",
+                 "okonomi":true,"arkivforskrift":false,"endringerUtenKrav":true,
+                 "loggingLeseoperasjoner":false,"backfill":"cold-storage-completed"}
+                """;
+        mvc.perform(request(method, "/api/v1/task").contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value(400));
         verifyNoInteractions(service);
     }
 

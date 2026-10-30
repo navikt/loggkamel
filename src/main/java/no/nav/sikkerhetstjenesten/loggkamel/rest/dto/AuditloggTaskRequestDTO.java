@@ -1,6 +1,8 @@
 package no.nav.sikkerhetstjenesten.loggkamel.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +30,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
                     "teknologi": "POSTGRESQL",
                     "dbname": "db-to-arkiv",
                     "okonomi": true,
+                    "arkivforskrift": false,
                     "endringerUtenKrav": false,
                     "loggingLeseoperasjoner": false,
                     "backfill": "cold-storage-completed"
@@ -48,6 +51,12 @@ public class AuditloggTaskRequestDTO {
     Boolean okonomi;
 
     @NonNull
+    @Builder.Default
+    @Schema(defaultValue = "false")
+    Boolean arkivforskrift = false;
+
+    @NonNull
+    @Schema(description = "Can only be true when okonomi and arkivforskrift are false")
     Boolean endringerUtenKrav;
 
     @NonNull
@@ -55,4 +64,11 @@ public class AuditloggTaskRequestDTO {
 
     @NonNull
     BackfillStatus backfill;
+
+    @AssertTrue(message = "endringerUtenKrav can only be true when okonomi and arkivforskrift are false")
+    @JsonIgnore
+    @Schema(hidden = true)
+    public boolean isChangeLoggingConfigurationValid() {
+        return !endringerUtenKrav || (!okonomi && !arkivforskrift);
+    }
 }

@@ -14,11 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Hidden
 @RestControllerAdvice(basePackages = "no.nav.sikkerhetstjenesten.loggkamel")
@@ -32,34 +34,41 @@ public class RestExceptionInterceptor {
             HttpStatus.GATEWAY_TIMEOUT
     );
 
+    // Request parsing and validation
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.BAD_REQUEST, exception, request);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception, HttpServletRequest request) {
+        String message = exception.getBindingResult().getAllErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        log.warn("REST validation failed for path {}", request.getRequestURI());
+        return errorResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+
+
+    // Access and operation restrictions
     @ExceptionHandler(ForbiddenOperationException.class)
     public ResponseEntity<ErrorResponse> handleForbiddenOperationException(ForbiddenOperationException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.FORBIDDEN, exception, request);
     }
 
-    @ExceptionHandler(UpdatingNonexistentTaskException.class)
-    public ResponseEntity<ErrorResponse> handleUpdatingNonexistentTaskException(UpdatingNonexistentTaskException exception, HttpServletRequest request) {
-        return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
-    }
-
-    @ExceptionHandler(PullRerunEntryNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handlePullRerunEntryNotFoundException(PullRerunEntryNotFoundException exception, HttpServletRequest request) {
-        return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
-    }
-
-    @ExceptionHandler(PullRerunAlreadyResolvedException.class)
-    public ResponseEntity<ErrorResponse> handlePullRerunAlreadyResolvedException(PullRerunAlreadyResolvedException exception, HttpServletRequest request) {
-        return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
-    }
-
     @ExceptionHandler(UnsupportedPullTeknologiException.class)
     public ResponseEntity<ErrorResponse> handleUnsupportedPullTeknologiException(UnsupportedPullTeknologiException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.NOT_IMPLEMENTED, exception, request);
+    }
+
+
+
+    // Missing resources
+    @ExceptionHandler(PullRerunEntryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePullRerunEntryNotFoundException(PullRerunEntryNotFoundException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
     }
 
     @ExceptionHandler(MissingNaisTeamException.class)
@@ -73,23 +82,32 @@ public class RestExceptionInterceptor {
         return mapToErrorResponse(HttpStatus.NOT_FOUND, exception, request);
     }
 
+
+
+    // State conflicts
+    @ExceptionHandler(PullRerunAlreadyResolvedException.class)
+    public ResponseEntity<ErrorResponse> handlePullRerunAlreadyResolvedException(PullRerunAlreadyResolvedException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
+    }
+
     @ExceptionHandler(InvalidAuditloggTaskStateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidAuditloggTaskStateException(
             InvalidAuditloggTaskStateException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.CONFLICT, exception, request);
     }
 
+
+
+    // Dependency and upstream failures
+    @ExceptionHandler(DependencyException.class)
+    public ResponseEntity<ErrorResponse> handleDependencyException(DependencyException exception, HttpServletRequest request) {
+        return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
+    }
+
     @ExceptionHandler(ColdStoragePaginationException.class)
     public ResponseEntity<ErrorResponse> handleColdStoragePaginationException(
             ColdStoragePaginationException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
-    }
-
-    @ExceptionHandler(ColdStorageArchiveException.class)
-    public ResponseEntity<ErrorResponse> handleColdStorageArchiveException(
-            ColdStorageArchiveException exception, HttpServletRequest request) {
-        log.error("Cold-storage archive generation failed for path {}", request.getRequestURI());
-        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), request);
     }
 
     @ExceptionHandler(ColdStorageProxyException.class)
@@ -100,10 +118,17 @@ public class RestExceptionInterceptor {
         return errorResponse(HttpStatus.BAD_GATEWAY, exception.getMessage(), request);
     }
 
-    @ExceptionHandler(DependencyException.class)
-    public ResponseEntity<ErrorResponse> handleDependencyException(DependencyException exception, HttpServletRequest request) {
-        return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
+
+
+    // Archive generation failures
+    @ExceptionHandler(ColdStorageArchiveException.class)
+    public ResponseEntity<ErrorResponse> handleColdStorageArchiveException(
+            ColdStorageArchiveException exception, HttpServletRequest request) {
+        log.error("Cold-storage archive generation failed for path {}", request.getRequestURI());
+        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), request);
     }
+
+
 
     private ResponseEntity<ErrorResponse> mapToErrorResponse(HttpStatus httpStatus, Exception exception, HttpServletRequest request) {
         if (httpStatus.is5xxServerError() && !UPSTREAM_FAULT_STATUSES.contains(httpStatus)) {
