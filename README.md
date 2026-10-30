@@ -21,7 +21,8 @@ In order for Loggkamel to transfer/archive audit logs from an on-prem database t
 * A corresponding AuditloggTask must be configured via the frontend, at [loggkamel-frontend](https://github.com/navikt/loggkamel-frontend)
 * The AuditloggTask must have at least one of the applicable flags be true:
   * okonomi for [økonomireglementet 4.3.6](https://www.regjeringen.no/globalassets/upload/fin/vedlegg/okstyring/reglement_for_okonomistyring_i_staten.pdf),
-  * endringerUtenKrav for [arkivforskrifta §5](https://lovdata.no/nav/forskrift/2025-12-17-2647/) or if changes are desired for other reasons, and/or
+  * arkivforskrift for [arkivforskrifta §5](https://lovdata.no/nav/forskrift/2025-12-17-2647/)
+  * endringerUtenKrav if changes are desired for other reasons, and/or
   * loggingLeseoperasjoner if SELECT logs needs to be archived for e.g. personvernshensyn.
 * The flag "fiksa" asserts whether all configuration needed is completed
   * Postgres and DB2 tasks will have this flag set to "true" by default, since no additional configuration is needed from project owners
