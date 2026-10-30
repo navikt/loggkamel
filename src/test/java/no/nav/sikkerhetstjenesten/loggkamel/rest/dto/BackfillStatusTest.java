@@ -28,7 +28,7 @@ class BackfillStatusTest {
     @Test
     void acceptsAllowedValueInRequestDto() {
         String json = """
-                {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true,
+                {"naisteam": "t", "teknologi": "POSTGRESQL", "dbname": "db", "okonomi": true, "arkivforskrift": true,
                  "endringerUtenKrav": false, "loggingLeseoperasjoner": false, "backfill": "cold-storage-requested"}
                 """;
         assertEquals(BackfillStatus.COLD_STORAGE_REQUESTED,
