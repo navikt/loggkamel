@@ -20,6 +20,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
                 "teknologi",
                 "dbname",
                 "okonomi",
+                "arkivforskrift",
                 "loggingLeseoperasjoner",
                 "endringerUtenKrav",
                 "backfill"
@@ -51,9 +52,7 @@ public class AuditloggTaskRequestDTO {
     Boolean okonomi;
 
     @NonNull
-    @Builder.Default
-    @Schema(defaultValue = "false")
-    Boolean arkivforskrift = false;
+    Boolean arkivforskrift;
 
     @NonNull
     @Schema(description = "Can only be true when okonomi and arkivforskrift are false")
