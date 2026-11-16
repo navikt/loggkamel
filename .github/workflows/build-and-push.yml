@@ -42,6 +42,8 @@ jobs:
           byosbom: target/classes/META-INF/sbom/application.cdx.json
       - name: Generate and submit dependency graph
         uses: advanced-security/maven-dependency-submission-action@a64327a7329c9939cf675e458452febe1894a70c
+        with:
+          ignore-maven-wrapper: true
       - name: Scan docker image for secrets
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
