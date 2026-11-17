@@ -38,6 +38,7 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Review this pin once google-cloud-logging includes Guava 33.7.2-jre or newer. -->
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
