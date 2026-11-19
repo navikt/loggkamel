@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service.scheduled;
 
 import io.getunleash.Unleash;
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
+@ConditionalOnGCP
 public class DailyDB2LogPuller {
 
     private static final Logger log = LoggerFactory.getLogger(DailyDB2LogPuller.class);
