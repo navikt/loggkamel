@@ -49,22 +49,6 @@ class AuditloggTaskServiceTest {
     AuditloggTaskService service;
 
     @Test
-    void setBackfillStatus_delegatesToAdapter() {
-        service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-
-        verify(adapter).setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-    }
-
-    @Test
-    void setBackfillStatus_exceptionPassesThrough() {
-        doThrow(RuntimeException.class).when(adapter)
-                .setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-
-        assertThrows(RuntimeException.class,
-                () -> service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED));
-    }
-
-    @Test
     void createAuditloggTask_successful() {
         when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
         when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO1);
@@ -355,6 +339,22 @@ class AuditloggTaskServiceTest {
         assertEquals(
                 List.of(auditloggTaskDTO1),
                 service.findActiveTasksByTeknologiAndBackfillStatus(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
+    }
+
+    @Test
+    void setBackfillStatus_delegatesToAdapter() {
+        service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        verify(adapter).setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+    }
+
+    @Test
+    void setBackfillStatus_exceptionPassesThrough() {
+        doThrow(RuntimeException.class).when(adapter)
+                .setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        assertThrows(RuntimeException.class,
+                () -> service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED));
     }
 
 }

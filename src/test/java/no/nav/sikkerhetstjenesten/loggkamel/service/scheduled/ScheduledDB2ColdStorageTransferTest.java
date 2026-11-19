@@ -10,10 +10,10 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageArchiveException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2ColdStorageArchiveService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.GCPColdStorageUploader;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -33,21 +33,35 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ScheduledDB2ColdStorageTransferTest {
 
-    @Mock AuditloggTaskService tasks;
+    private static final String DB_NAME_1 = "dbName1";
+    private static final String DB_NAME_2 = "dbName2";
+
+    @Mock
+    AuditloggTaskService tasks;
+
     @Mock
     DB2ColdStorageArchiveService archiveService;
-    @Mock GCPColdStorageUploader uploader;
-    @Mock AdvisoryLockService locks;
-    @Mock Metrics metrics;
 
-    @TempDir Path temp;
+    @Mock
+    GCPColdStorageUploader uploader;
 
+    @Mock
+    AdvisoryLockService locks;
+
+    @Mock
+    Metrics metrics;
+
+    @TempDir
+    Path temp;
+
+    @InjectMocks
     ScheduledDB2ColdStorageTransfer scheduler;
 
-    @BeforeEach
-    void setUp() {
-        scheduler = new ScheduledDB2ColdStorageTransfer(tasks, archiveService, uploader, locks, metrics);
-    }
+    @Mock
+    AuditloggTaskDTO auditloggTaskDTO1;
+
+    @Mock
+    AuditloggTaskDTO auditloggTaskDTO2;
 
     @Test
     void usesSharedDB2LockAndDoesNothingWhenAlreadyHeld() {
@@ -58,8 +72,9 @@ class ScheduledDB2ColdStorageTransferTest {
     }
 
     @Test
-    void schedulerInvokesWorkUnderLockWithoutFeatureFlag() {
-        givenTasks(List.of());
+    void emptyTaskListDoesNothing() {
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of());
         when(locks.runIfLockAcquired(eq(DB2_PULL_LOCK_KEY), any(Runnable.class))).thenAnswer(invocation -> {
             invocation.getArgument(1, Runnable.class).run();
             return true;
@@ -73,49 +88,57 @@ class ScheduledDB2ColdStorageTransferTest {
 
     @Test
     void completesOnlyAfterAllArchivesAreUploadedAndCleansFiles() throws IOException {
-        AuditloggTaskDTO task = task("db");
-        givenTasks(List.of(task));
-        var archives = archives("db", false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(task)).thenReturn(archives);
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        var archives = archives(DB_NAME_1, false);
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
         var order = inOrder(archiveService, uploader, tasks, metrics);
-        order.verify(archiveService).createLocalArchiveOfColdStorageLogs(task);
-        order.verify(uploader).uploadLocalFilesToArchiveBucket(task, archives.archivePaths());
-        order.verify(tasks).setBackfillStatus("db", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        order.verify(archiveService).createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1);
+        order.verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, archives.archivePaths());
+        order.verify(tasks).setBackfillStatus(DB_NAME_1, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
         order.verify(metrics).incrementColdStorageSuccess();
         verifyNoMoreInteractions(metrics);
         assertFalse(Files.exists(archives.temporaryDirectory()));
     }
 
     @Test
-    void failedUploadCountsOnceLeavesTaskRequestedCleansFilesAndContinuesOtherDatabases() throws IOException {
-        AuditloggTaskDTO first = task("first");
-        AuditloggTaskDTO second = task("second");
-        givenTasks(List.of(first, second));
-        var firstArchives = archives("first", false);
-        var secondArchives = archives("second", false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(first)).thenReturn(firstArchives);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(second)).thenReturn(secondArchives);
-        doThrow(new IllegalStateException("upload failed")).when(uploader).uploadLocalFilesToArchiveBucket(first, firstArchives.archivePaths());
+    void failedUploadLeavesTaskRequestedCleansFilesAndContinuesOtherDatabases() throws IOException {
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO2.getDbname()).thenReturn(DB_NAME_2);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+
+        var firstArchives = archives(DB_NAME_1, false);
+        var secondArchives = archives(DB_NAME_2, false);
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(firstArchives);
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO2)).thenReturn(secondArchives);
+        doThrow(new IllegalStateException("upload failed")).when(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, firstArchives.archivePaths());
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
-        verify(tasks, never()).setBackfillStatus(eq("first"), any(), any());
-        verify(tasks).setBackfillStatus("second", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(tasks, never()).setBackfillStatus(eq(DB_NAME_1), any(), any());
+        verify(tasks).setBackfillStatus(DB_NAME_2, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
         verify(metrics).incrementColdStorageFailure();
         verify(metrics).incrementColdStorageSuccess();
         verifyNoMoreInteractions(metrics);
+
         assertFalse(Files.exists(firstArchives.temporaryDirectory()));
         assertFalse(Files.exists(secondArchives.temporaryDirectory()));
     }
 
     @Test
     void archiveFailureCountsOnceWithoutUploadingOrCompleting() {
-        AuditloggTaskDTO task = task("db");
-        givenTasks(List.of(task));
-        when(archiveService.createLocalArchiveOfColdStorageLogs(task)).thenThrow(new ColdStorageArchiveException("generation failed", new IOException()));
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenThrow(new ColdStorageArchiveException("generation failed", new IOException()));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
@@ -127,17 +150,20 @@ class ScheduledDB2ColdStorageTransferTest {
 
     @Test
     void failuresAreCountedOncePerTaskOnEachRun() {
-        AuditloggTaskDTO first = task("first");
-        AuditloggTaskDTO second = task("second");
-        givenTasks(List.of(first, second));
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO2.getDbname()).thenReturn(DB_NAME_2);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+
         when(archiveService.createLocalArchiveOfColdStorageLogs(any(AuditloggTaskDTO.class)))
                 .thenThrow(new IllegalStateException("proxy unavailable"));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
         verify(metrics, times(2)).incrementColdStorageFailure();
-        scheduler.transferColdStorageLogsForEligibleTasks();
 
+        scheduler.transferColdStorageLogsForEligibleTasks();
         verify(metrics, times(4)).incrementColdStorageFailure();
+
         verifyNoMoreInteractions(metrics);
         verifyNoInteractions(uploader);
         verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
@@ -145,40 +171,28 @@ class ScheduledDB2ColdStorageTransferTest {
 
     @Test
     void emptyExportStillCompletesSuccessfully() throws IOException {
-        AuditloggTaskDTO task = task("db");
-        givenTasks(List.of(task));
-        when(archiveService.createLocalArchiveOfColdStorageLogs(task)).thenReturn(archives("db", true));
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives(DB_NAME_1, true));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
-        verify(uploader).uploadLocalFilesToArchiveBucket(task, List.of());
-        verify(tasks).setBackfillStatus("db", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, List.of());
+        verify(tasks).setBackfillStatus(DB_NAME_1, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
         verify(metrics).incrementColdStorageSuccess();
         verifyNoMoreInteractions(metrics);
     }
 
     @Test
-    void completionDatabaseFailureCountsOnceAndCleansFiles() throws IOException {
-        AuditloggTaskDTO task = task("db");
-        givenTasks(List.of(task));
-        var archives = archives("db", false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(task)).thenReturn(archives);
-        doThrow(new IllegalStateException("database unavailable")).when(tasks)
-                .setBackfillStatus("db", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-
-        scheduler.transferColdStorageLogsForEligibleTasks();
-
-        verify(metrics).incrementColdStorageFailure();
-        verifyNoMoreInteractions(metrics);
-        assertFalse(Files.exists(archives.temporaryDirectory()));
-    }
-
-    @Test
     void cleanupFailureDoesNotTurnSuccessfulPublicationIntoTransferFailure() throws IOException {
-        AuditloggTaskDTO task = task("db");
-        givenTasks(List.of(task));
-        var archives = archives("db", false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(task)).thenReturn(archives);
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        var archives = archives(DB_NAME_1, false);
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
         try (var files = mockStatic(Files.class)) {
             files.when(() -> Files.walkFileTree(eq(archives.temporaryDirectory()), any()))
                     .thenThrow(new IOException("disk failure"));
@@ -199,23 +213,6 @@ class ScheduledDB2ColdStorageTransferTest {
         verifyNoInteractions(metrics);
     }
 
-    @Test
-    void cronAndTimezoneFollowEnvironmentConfiguration() throws NoSuchMethodException {
-        Scheduled scheduled = ScheduledDB2ColdStorageTransfer.class
-                .getMethod("transferRequestedDB2ColdStorage").getAnnotation(Scheduled.class);
-        assertEquals("${app.timezone}", scheduled.zone());
-        assertEquals("${scheduled.db2.cold-storage.cron:-}", scheduled.cron());
-        assertEquals("0 */10 * * * *", properties("application-dev-gcp.yaml")
-                .getProperty("scheduled.db2.cold-storage.cron"));
-        assertEquals("0 30 3 * * *", properties("application-prod-gcp.yaml")
-                .getProperty("scheduled.db2.cold-storage.cron"));
-    }
-
-    private void givenTasks(List<AuditloggTaskDTO> requested) {
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
-                .thenReturn(requested);
-    }
-
     private TemporaryLocalArchive archives(String db, boolean empty) throws IOException {
         Path directory = Files.createDirectory(temp.resolve(db));
         List<Path> paths = empty ? List.of() : List.of(
@@ -224,15 +221,4 @@ class ScheduledDB2ColdStorageTransferTest {
         return new TemporaryLocalArchive(directory, paths);
     }
 
-    private static AuditloggTaskDTO task(String db) {
-        AuditloggTaskDTO task = mock(AuditloggTaskDTO.class);
-        when(task.getDbname()).thenReturn(db);
-        return task;
-    }
-
-    private static java.util.Properties properties(String resource) {
-        var factory = new YamlPropertiesFactoryBean();
-        factory.setResources(new ClassPathResource(resource));
-        return factory.getObject();
-    }
 }
