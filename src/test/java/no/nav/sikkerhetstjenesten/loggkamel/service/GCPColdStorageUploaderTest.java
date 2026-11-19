@@ -48,7 +48,7 @@ class GCPColdStorageUploaderTest {
 
     @Test
     void uploadsDirectlyToExactMonthlyPathsUsingCreateOnlyPrecondition() throws IOException {
-        uploader.upload(task("sikkerhetstjenesten"), List.of(JANUARY, FEBRUARY));
+        uploader.uploadLocalFilesToArchiveBucket(task("sikkerhetstjenesten"), List.of(JANUARY, FEBRUARY));
 
         ArgumentCaptor<BlobInfo> objects = ArgumentCaptor.forClass(BlobInfo.class);
         verify(storage).createFrom(objects.capture(), eq(JANUARY), eq(Storage.BlobWriteOption.doesNotExist()));
@@ -67,7 +67,7 @@ class GCPColdStorageUploaderTest {
         when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
                 .thenThrow(new StorageException(412, "conditionNotMet"));
 
-        uploader.upload(task("team"), List.of(JANUARY, FEBRUARY));
+        uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY));
 
         verify(storage).createFrom(any(BlobInfo.class), eq(FEBRUARY), eq(Storage.BlobWriteOption.doesNotExist()));
         verifyNoMoreInteractions(storage);
@@ -83,7 +83,7 @@ class GCPColdStorageUploaderTest {
                 .thenThrow(failure);
 
         assertSame(failure, assertThrows(StorageException.class,
-                () -> uploader.upload(task("team"), List.of(JANUARY, FEBRUARY, MARCH))));
+                () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY, MARCH))));
 
         verify(storage).createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class));
         verify(storage).createFrom(any(BlobInfo.class), eq(FEBRUARY), any(Storage.BlobWriteOption.class));
@@ -96,7 +96,7 @@ class GCPColdStorageUploaderTest {
                 .thenThrow(new IOException("read failed"));
 
         assertThrows(ColdStorageArchiveException.class,
-                () -> uploader.upload(task("team"), List.of(JANUARY, FEBRUARY)));
+                () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
 
         verify(storage).createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class));
         verifyNoMoreInteractions(storage);
@@ -112,7 +112,7 @@ class GCPColdStorageUploaderTest {
             when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
                     .thenThrow(new StorageException(403, "Permission 'storage.objects.create' denied on resource"));
 
-            assertThrows(StorageException.class, () -> uploader.upload(task("team"), List.of(JANUARY, FEBRUARY)));
+            assertThrows(StorageException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
 
             assertTrue(appender.list.stream().anyMatch(event -> event.getLevel() == Level.WARN
                     && event.getFormattedMessage().contains("403")
@@ -134,8 +134,8 @@ class GCPColdStorageUploaderTest {
                 .thenThrow(new StorageException(503, "unavailable"))
                 .thenReturn(null);
 
-        assertThrows(StorageException.class, () -> uploader.upload(task("team"), List.of(JANUARY, FEBRUARY)));
-        assertDoesNotThrow(() -> uploader.upload(task("team"), List.of(JANUARY, FEBRUARY)));
+        assertThrows(StorageException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
+        assertDoesNotThrow(() -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
         verify(storage, times(2)).createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class));
         verify(storage, times(2)).createFrom(any(BlobInfo.class), eq(FEBRUARY), any(Storage.BlobWriteOption.class));
         verifyNoMoreInteractions(storage);
@@ -146,7 +146,7 @@ class GCPColdStorageUploaderTest {
         uploader = new GCPColdStorageUploader(new DB2ColdStorageProperties("project", "bucket", "dev-gcp"),
                 () -> { throw new AssertionError("Empty exports must not construct a storage client"); });
 
-        uploader.upload(task("team"), List.of());
+        uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of());
         verifyNoInteractions(storage);
     }
 
@@ -156,7 +156,7 @@ class GCPColdStorageUploaderTest {
                 new DB2ColdStorageProperties("CONFIGURED_DEV_PROJECT", "CONFIGURED_DEV_BUCKET", "custom/env"),
                 () -> storage);
 
-        uploader.upload(task("team/other"), List.of(JANUARY));
+        uploader.uploadLocalFilesToArchiveBucket(task("team/other"), List.of(JANUARY));
 
         var object = ArgumentCaptor.forClass(BlobInfo.class);
         verify(storage).createFrom(object.capture(), eq(JANUARY), eq(Storage.BlobWriteOption.doesNotExist()));
@@ -167,13 +167,13 @@ class GCPColdStorageUploaderTest {
     @ParameterizedTest
     @ValueSource(strings = {"", " "})
     void blankOwningTeamCannotCreateObjects(String team) {
-        assertThrows(IllegalArgumentException.class, () -> uploader.upload(task(team), List.of(JANUARY)));
+        assertThrows(IllegalArgumentException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task(team), List.of(JANUARY)));
         verifyNoInteractions(storage);
     }
 
     @Test
     void missingOwningTeamCannotCreateObjects() {
-        assertThrows(IllegalArgumentException.class, () -> uploader.upload(task(null), List.of(JANUARY)));
+        assertThrows(IllegalArgumentException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task(null), List.of(JANUARY)));
         verifyNoInteractions(storage);
     }
 

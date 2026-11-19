@@ -39,7 +39,7 @@ public class GCPColdStorageUploader {
         this.storageFactory = storageFactory;
     }
 
-    public void upload(AuditloggTaskDTO task, List<Path> archivePaths) {
+    public void uploadLocalFilesToArchiveBucket(AuditloggTaskDTO task, List<Path> archivePaths) {
         String owningTeam = task.getNaisteam();
         if (owningTeam == null || owningTeam.isBlank()) {
             throw new IllegalArgumentException("Cold-storage owning team must not be blank");

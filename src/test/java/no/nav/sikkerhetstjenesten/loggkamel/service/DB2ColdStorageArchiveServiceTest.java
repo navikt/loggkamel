@@ -44,7 +44,7 @@ class DB2ColdStorageArchiveServiceTest {
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(january, february));
 
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertEquals(List.of(
                     "202601-loggkamel-audit_db.zip",
                     "202602-loggkamel-audit_db.zip"),
@@ -76,7 +76,7 @@ class DB2ColdStorageArchiveServiceTest {
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(line(LocalDateTime.of(2027, 1, 1, 0, 15), "select 2027")));
 
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertEquals(List.of("202701-loggkamel-audit_db.zip"),
                     archives.archivePaths().stream().map(path -> path.getFileName().toString()).toList());
             verify(proxyService).getDB2AuditloggLinesForDatabaseInDateRange(
@@ -96,7 +96,7 @@ class DB2ColdStorageArchiveServiceTest {
                         line(LocalDateTime.of(2026, 3, 2, 0, 0), "select march")),
                         List.of());
 
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertEquals(List.of(
                     "202601-loggkamel-audit_db.zip",
                     "202603-loggkamel-audit_db.zip"),
@@ -105,7 +105,7 @@ class DB2ColdStorageArchiveServiceTest {
 
         when(proxyService.getDB2AuditloggLinesForDatabaseInDateRange(
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(List.of());
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertTrue(archives.archivePaths().isEmpty());
             assertThrows(UnsupportedOperationException.class, () -> archives.archivePaths().add(Path.of("x")));
         }
@@ -115,7 +115,7 @@ class DB2ColdStorageArchiveServiceTest {
     void returnsSuccessfulEmptyArchivesWithoutFetchingWhenEndPrecedesFixedStart() throws Exception {
         AuditloggTaskDTO task = task(Instant.parse("2025-12-31T22:00:00Z"), DB_NAME);
 
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertTrue(archives.archivePaths().isEmpty());
             verifyNoInteractions(proxyService);
         }
@@ -134,7 +134,7 @@ class DB2ColdStorageArchiveServiceTest {
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(firstPage, List.of(overlapping, march));
 
-        try (TemporaryLocalArchive archives = service.createArchives(task)) {
+        try (TemporaryLocalArchive archives = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertEquals(2, archives.archivePaths().size());
             List<ZipEntryData> januaryEntries = readZip(Files.readAllBytes(archives.archivePaths().getFirst()));
             assertEquals(1_000, new ObjectMapper().readTree(januaryEntries.getFirst().contents()).size());
@@ -155,7 +155,7 @@ class DB2ColdStorageArchiveServiceTest {
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(fullPage);
         long before = countTemporaryDirectories();
 
-        assertThrows(ColdStoragePaginationException.class, () -> service.createArchives(task));
+        assertThrows(ColdStoragePaginationException.class, () -> service.createLocalArchiveOfColdStorageLogs(task));
         assertEquals(before, countTemporaryDirectories());
     }
 
@@ -172,7 +172,7 @@ class DB2ColdStorageArchiveServiceTest {
                 .thenThrow(new RuntimeException("proxy failure"));
         long before = countTemporaryDirectories();
 
-        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> service.createArchives(task));
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> service.createLocalArchiveOfColdStorageLogs(task));
 
         assertEquals("Unable to fetch DB2 audit logs for monthly cold storage", failure.getMessage());
         assertEquals(before, countTemporaryDirectories());
@@ -181,13 +181,13 @@ class DB2ColdStorageArchiveServiceTest {
     @Test
     void rejectsMissingUpdatedTimestampAndNonDb2OrWrongBackfillTasks() {
         assertThrows(InvalidAuditloggTaskStateException.class,
-                () -> service.createArchives(task(null, DB_NAME)));
+                () -> service.createLocalArchiveOfColdStorageLogs(task(null, DB_NAME)));
         assertThrows(InvalidAuditloggTaskStateException.class,
-                () -> service.createArchives(task(
+                () -> service.createLocalArchiveOfColdStorageLogs(task(
                         Instant.parse("2026-02-01T00:00:00Z"), DB_NAME, TeknologiEnum.POSTGRESQL,
                         BackfillStatus.COLD_STORAGE_REQUESTED)));
         assertThrows(InvalidAuditloggTaskStateException.class,
-                () -> service.createArchives(task(
+                () -> service.createLocalArchiveOfColdStorageLogs(task(
                         Instant.parse("2026-02-01T00:00:00Z"), DB_NAME, TeknologiEnum.DB2,
                         BackfillStatus.BACKFILL_REQUESTED)));
         verifyNoInteractions(proxyService);

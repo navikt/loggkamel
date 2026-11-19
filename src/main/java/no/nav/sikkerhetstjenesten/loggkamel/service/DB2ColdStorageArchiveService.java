@@ -51,7 +51,7 @@ public class DB2ColdStorageArchiveService {
         this.appZoneId = appZoneId;
     }
 
-    public TemporaryLocalArchive createArchives(AuditloggTaskDTO task) {
+    public TemporaryLocalArchive createLocalArchiveOfColdStorageLogs(AuditloggTaskDTO task) {
         validateTaskIsDB2AndRequestsColdStorage(task);
         String dbName = task.getDbname();
 
@@ -120,26 +120,27 @@ public class DB2ColdStorageArchiveService {
 
             LocalDateTime lastTimestampInCurrentPage = page.getLast().getMetricsTimestamp();
             LocalDateTime currentCursor = firstTimestampInCurrentPage;
-            List<DB2AuditloggLineDTO> newLines = page.stream()
+            List<DB2AuditloggLineDTO> newLogLines = page.stream()
                     .filter(line -> !line.getMetricsTimestamp().isEqual(currentCursor) || !logLinesSeenInPreviousPage.contains(line))
                     .toList();
-            if (page.size() >= MAX_DB2_PACKET_SIZE && lastTimestampInCurrentPage.isEqual(firstTimestampInCurrentPage) && newLines.isEmpty()) {
+            if (page.size() >= MAX_DB2_PACKET_SIZE && lastTimestampInCurrentPage.isEqual(firstTimestampInCurrentPage) && newLogLines.isEmpty()) {
                 throw new ColdStoragePaginationException(
                         "DB2 pagination did not advance because the result page repeated the same audit lines");
             }
 
-            writer.writeLines(newLines);
+            writer.writeLinesSplitByMonth(newLogLines);
 
-            firstTimestampInCurrentPage = lastTimestampInCurrentPage;
             logLinesSeenInPreviousPage.clear();
             for (DB2AuditloggLineDTO line : page) {
-                if (line.getMetricsTimestamp().isEqual(firstTimestampInCurrentPage)) {
+                if (line.getMetricsTimestamp().isEqual(lastTimestampInCurrentPage)) {
                     logLinesSeenInPreviousPage.add(line);
                 }
             }
+            firstTimestampInCurrentPage = lastTimestampInCurrentPage;
+
 
             // If loggkamel-proxy returned a packet under the maximum packet size (before we filter already-seen lines)
-            // then there are no more logs in this range
+            // then there are no more logs in this range and we can exit the loop
             if (page.size() < MAX_DB2_PACKET_SIZE) {
                 return;
             }
@@ -157,7 +158,7 @@ public class DB2ColdStorageArchiveService {
         private final ObjectMapper objectMapper;
         private final Map<YearMonth, Path> archivePathsForEachMonth;
         private final Map<YearMonth, ZipOutputStream> outputZipStreamsByMonth = new HashMap<>();
-        private final Map<YearMonth, Integer> packetsProcessedPerMonth = new HashMap<>();
+        private final Map<YearMonth, Integer> packetsProcessedEachMonth = new HashMap<>();
 
         private MonthlyArchiveWriter(
                 Path temporaryDirectory,
@@ -171,15 +172,15 @@ public class DB2ColdStorageArchiveService {
             this.archivePathsForEachMonth = archivePathsForEachMonth;
         }
 
-        private void writeLines(List<DB2AuditloggLineDTO> lines) throws IOException {
+        private void writeLinesSplitByMonth(List<DB2AuditloggLineDTO> lines) throws IOException {
             Map<YearMonth, List<DB2AuditloggLineDTO>> linesByMonth = new TreeMap<>();
             for (DB2AuditloggLineDTO line : lines) {
-                YearMonth month = YearMonth.from(line.getMetricsTimestamp());
-                linesByMonth.computeIfAbsent(month, ignored -> new ArrayList<>()).add(line);
+                YearMonth monthThisLineWasLogged = YearMonth.from(line.getMetricsTimestamp());
+                linesByMonth.computeIfAbsent(monthThisLineWasLogged, ignored -> new ArrayList<>()).add(line);
             }
 
-            for (Map.Entry<YearMonth, List<DB2AuditloggLineDTO>> monthAndAssociatedLines : linesByMonth.entrySet()) {
-                YearMonth monthBeingProcessed = monthAndAssociatedLines.getKey();
+            for (Map.Entry<YearMonth, List<DB2AuditloggLineDTO>> monthAndLinesLoggedThatMonth : linesByMonth.entrySet()) {
+                YearMonth monthBeingProcessed = monthAndLinesLoggedThatMonth.getKey();
                 ZipOutputStream zipFileStreamForMonthBeingProcessed = outputZipStreamsByMonth.get(monthBeingProcessed);
                 if (zipFileStreamForMonthBeingProcessed == null) {
                     Path archivePath = temporaryDirectory.resolve(monthBeingProcessed.format(MONTH_FORMAT)
@@ -189,13 +190,14 @@ public class DB2ColdStorageArchiveService {
                     archivePathsForEachMonth.put(monthBeingProcessed, archivePath);
                 }
 
-                int packetNumber = packetsProcessedPerMonth.merge(monthBeingProcessed, 1, Integer::sum);
+                int packetNumberForThisMonth = packetsProcessedEachMonth.merge(monthBeingProcessed, 1, Integer::sum);
                 String packetFilename = monthBeingProcessed.format(MONTH_FORMAT) + "-loggkamel-" + dbName
-                        + "-" + packetNumber + ".json";
+                        + "-" + packetNumberForThisMonth + ".json";
                 zipFileStreamForMonthBeingProcessed.putNextEntry(new ZipEntry(packetFilename));
+                var linesBeingAddedToArchiveForThisMonth = monthAndLinesLoggedThatMonth.getValue();
                 objectMapper.writer()
                         .without(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-                        .writeValue(zipFileStreamForMonthBeingProcessed, monthAndAssociatedLines.getValue());
+                        .writeValue(zipFileStreamForMonthBeingProcessed, linesBeingAddedToArchiveForThisMonth);
                 zipFileStreamForMonthBeingProcessed.closeEntry();
             }
         }

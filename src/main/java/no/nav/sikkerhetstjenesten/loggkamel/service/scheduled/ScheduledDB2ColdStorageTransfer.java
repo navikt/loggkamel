@@ -65,10 +65,10 @@ public class ScheduledDB2ColdStorageTransfer {
     private void transferColdStorageLogsForGivenTask(AuditloggTaskDTO task) {
         String stage = "archive generation";
         int archivesGeneratedCount;
-        try (var archives = archiveService.createArchives(task)) {
+        try (var archives = archiveService.createLocalArchiveOfColdStorageLogs(task)) {
             archivesGeneratedCount = archives.archivePaths().size();
             stage = "upload";
-            uploader.upload(task, archives.archivePaths());
+            uploader.uploadLocalFilesToArchiveBucket(task, archives.archivePaths());
             stage = "task completion";
             auditloggTaskService.setBackfillStatus(
                     task.getDbname(), TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
@@ -79,7 +79,7 @@ public class ScheduledDB2ColdStorageTransfer {
             return;
         }
         metrics.incrementColdStorageSuccess();
-        log.info("Completed scheduled DB2 cold-storage transfer, database {}, monthly archives {}",
+        log.info("Completed scheduled DB2 cold-storage transfer, databaseName {}, monthly archive files generated {}",
                 task.getDbname(), archivesGeneratedCount);
     }
 }
