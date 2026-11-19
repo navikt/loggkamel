@@ -104,7 +104,7 @@ Applikasjonen er satt opp til a bruke en PostgreSQL proxy i `local`-profilen, de
 Start your local database proxy with:
 
 ```zsh
-nais cloudsql proxy --team sikkerhetstjenesten --environment dev-gcp --reason "debugging" loggkamel
+nais cloudsql proxy --team sikkerhetstjenesten --environment dev-gcp --reason "local development" loggkamel
 ```
 
 ### Log file input and output
