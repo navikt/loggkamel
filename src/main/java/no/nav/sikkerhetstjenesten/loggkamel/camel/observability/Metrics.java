@@ -15,6 +15,8 @@ public class Metrics {
     private static final String UNKNOWN_NAV_IDENT_METRIC = LOGGKAMEL_APP_PREFIX + "unknown";
     private static final String DB2_STATEMENT_ISSUE_TYPE_METRIC = LOGGKAMEL_APP_PREFIX + "statement.issue";
     private static final String PULL_FAILURE_METRIC = LOGGKAMEL_APP_PREFIX + "pull.failure";
+    private static final String COLD_STORAGE_SUCCESS_METRIC = LOGGKAMEL_APP_PREFIX + "cold.storage.success";
+    private static final String COLD_STORAGE_FAILURE_METRIC = LOGGKAMEL_APP_PREFIX + "cold.storage.failure";
 
     private static final String MULTIPLICITY_LABEL = "multiplicity";
     private static final String TEKNOLOGI_LABEL = "teknologi";
@@ -49,6 +51,8 @@ public class Metrics {
         }
 
         meterRegistry.counter(UNKNOWN_NAV_IDENT_METRIC);
+        meterRegistry.counter(COLD_STORAGE_SUCCESS_METRIC);
+        meterRegistry.counter(COLD_STORAGE_FAILURE_METRIC);
 
         for (DB2IssueType db2IssueType : DB2IssueType.values()) {
             meterRegistry.counter(DB2_STATEMENT_ISSUE_TYPE_METRIC, DB2_ISSUE_TYPE_LABEL, db2IssueType.name());
@@ -90,6 +94,14 @@ public class Metrics {
                 TEKNOLOGI_LABEL, teknologi.name().toLowerCase(),
                 DATABASE_LABEL, databaseName
         );
+    }
+
+    public void incrementColdStorageSuccess() {
+        meterRegistry.counter(COLD_STORAGE_SUCCESS_METRIC).increment();
+    }
+
+    public void incrementColdStorageFailure() {
+        meterRegistry.counter(COLD_STORAGE_FAILURE_METRIC).increment();
     }
 
 }
