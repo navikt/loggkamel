@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.packet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
@@ -10,6 +10,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.Audit
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class GCPPacketPersistenceService implements PacketPersistenceService {
     private final Storage loggkamelProjectStorage;
 
     @Autowired
-    public GCPPacketPersistenceService(ObjectMapper objectMapper, Storage storage) {
+    public GCPPacketPersistenceService(ObjectMapper objectMapper, @Qualifier("serviceLocalGcpStorage") Storage storage) {
         this.objectMapper = objectMapper;
         this.loggkamelProjectStorage = storage;
     }
@@ -52,11 +53,10 @@ public class GCPPacketPersistenceService implements PacketPersistenceService {
         }
         byte[] auditloggLineMessagesAsBytes = auditloggLineMessagesAsString.getBytes(UTF_8);
 
-        Bucket bucketForNativePackets = loggkamelProjectStorage.get(nativePacketBucketName);
-        if (bucketForNativePackets == null) {
-            throw new InvalidLogStreamException("GCP bucket not found: " + nativePacketBucketName);
-        }
-        bucketForNativePackets.create(filename, auditloggLineMessagesAsBytes, APPLICATION_JSON_VALUE);
+        BlobInfo blobInfo = BlobInfo.newBuilder(nativePacketBucketName, filename)
+                .setContentType(APPLICATION_JSON_VALUE)
+                .build();
+        loggkamelProjectStorage.create(blobInfo, auditloggLineMessagesAsBytes);
 
         log.info("Successfully uploaded DB2 packet with filename {}",  filename);
     }

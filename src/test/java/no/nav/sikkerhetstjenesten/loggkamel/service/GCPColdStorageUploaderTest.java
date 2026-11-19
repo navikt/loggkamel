@@ -43,7 +43,7 @@ class GCPColdStorageUploaderTest {
     @BeforeEach
     void setUp() {
         uploader = new GCPColdStorageUploader(
-                new DB2ColdStorageProperties("example-gcp-project", "example-bucket", "prod-gcp"), () -> storage);
+                new DB2ColdStorageProperties("example-gcp-project", "example-bucket", "prod-gcp"), storage);
     }
 
     @Test
@@ -142,10 +142,7 @@ class GCPColdStorageUploaderTest {
     }
 
     @Test
-    void emptyExportDoesNotConstructAStorageClient() {
-        uploader = new GCPColdStorageUploader(new DB2ColdStorageProperties("project", "bucket", "dev-gcp"),
-                () -> { throw new AssertionError("Empty exports must not construct a storage client"); });
-
+    void emptyExportDoesNotUseStorageClient() {
         uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of());
         verifyNoInteractions(storage);
     }
@@ -154,7 +151,7 @@ class GCPColdStorageUploaderTest {
     void placeholderNamesAndPathComponentsAreNotRejectedLocally() throws IOException {
         uploader = new GCPColdStorageUploader(
                 new DB2ColdStorageProperties("CONFIGURED_DEV_PROJECT", "CONFIGURED_DEV_BUCKET", "custom/env"),
-                () -> storage);
+                storage);
 
         uploader.uploadLocalFilesToArchiveBucket(task("team/other"), List.of(JANUARY));
 

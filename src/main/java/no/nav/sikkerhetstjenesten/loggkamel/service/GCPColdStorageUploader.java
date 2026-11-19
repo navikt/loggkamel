@@ -4,39 +4,32 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
-import com.google.cloud.storage.StorageOptions;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.config.DB2ColdStorageProperties;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Supplier;
 
 @Component
 @ConditionalOnGCP
-@EnableConfigurationProperties(DB2ColdStorageProperties.class)
 public class GCPColdStorageUploader {
 
     private static final Logger log = LoggerFactory.getLogger(GCPColdStorageUploader.class);
 
     private final DB2ColdStorageProperties properties;
-    private final Supplier<Storage> storageFactory;
+    private final Storage storage;
 
-    @Autowired
-    public GCPColdStorageUploader(DB2ColdStorageProperties properties) {
-        this(properties, () -> StorageOptions.newBuilder().setProjectId(properties.projectId()).build().getService());
-    }
-
-    GCPColdStorageUploader(DB2ColdStorageProperties properties, Supplier<Storage> storageFactory) {
+    public GCPColdStorageUploader(
+            DB2ColdStorageProperties properties, @Lazy @Qualifier("coldStorage") Storage storage) {
         this.properties = properties;
-        this.storageFactory = storageFactory;
+        this.storage = storage;
     }
 
     public void uploadLocalFilesToArchiveBucket(AuditloggTaskDTO task, List<Path> archivePaths) {
@@ -48,7 +41,6 @@ public class GCPColdStorageUploader {
             return;
         }
 
-        Storage storage = storageFactory.get();
         String bucketName = properties.bucketName();
         String prefix = owningTeam + "-" + properties.environment() + "/";
         for (Path archivePath : archivePaths) {
