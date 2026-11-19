@@ -41,26 +41,26 @@ public class GCPColdStorageUploader {
             return;
         }
 
-        String bucketName = properties.bucketName();
-        String prefix = owningTeam + "-" + properties.environment() + "/";
+        String archiveBucketName = properties.bucketName();
+        String teamDirectoryInArchiveBucket = owningTeam + "-" + properties.environment() + "/";
         for (Path archivePath : archivePaths) {
-            String objectName = prefix + archivePath.getFileName();
-            BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(bucketName, objectName))
+            String fileNameToUpload = teamDirectoryInArchiveBucket + archivePath.getFileName();
+            BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(archiveBucketName, fileNameToUpload))
                     .setContentType("application/zip")
                     .build();
             try {
                 storage.createFrom(blobInfo, archivePath, Storage.BlobWriteOption.doesNotExist());
                 log.info("Uploaded DB2 cold-storage archive, database {}, bucket {}, object {}",
-                        task.getDbname(), bucketName, objectName);
+                        task.getDbname(), archiveBucketName, fileNameToUpload);
             } catch (StorageException exception) {
                 if (exception.getCode() == 412) {
                     // Existing archives are deliberately accepted without read access or content verification.
                     log.info("DB2 cold-storage archive already exists; leaving unchanged without verification, database {}, bucket {}, object {}",
-                            task.getDbname(), bucketName, objectName);
+                            task.getDbname(), archiveBucketName, fileNameToUpload);
                     continue;
                 }
                 log.warn("DB2 cold-storage upload failed, database {}, project {}, bucket {}, object {}, status {}, reason {}, details {}",
-                        task.getDbname(), properties.projectId(), bucketName, objectName,
+                        task.getDbname(), properties.projectId(), archiveBucketName, fileNameToUpload,
                         exception.getCode(), exception.getReason(), exception.getMessage());
                 throw exception;
             } catch (IOException exception) {

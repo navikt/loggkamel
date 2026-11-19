@@ -54,24 +54,6 @@ class OversiktJPAAdapterTest {
     @InjectMocks
     OversiktJPAAdapter adapter;
 
-    @Test
-    void setBackfillStatus_updatesOnlyRequestedStatusOnExistingTask() {
-        when(repository.findByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(toSaveAuditloggTaskEntity);
-
-        adapter.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-
-        verify(toSaveAuditloggTaskEntity).setBackfill("cold-storage-completed");
-        verify(repository).save(toSaveAuditloggTaskEntity);
-    }
-
-    @Test
-    void setBackfillStatus_saveFailurePassesThrough() {
-        when(repository.findByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(toSaveAuditloggTaskEntity);
-        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(DataIntegrityViolationException.class);
-
-        assertThrows(DataIntegrityViolationException.class,
-                () -> adapter.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED));
-    }
 
     @ParameterizedTest
     @CsvSource({
@@ -221,6 +203,25 @@ class OversiktJPAAdapterTest {
         assertEquals(
                 List.of(auditloggTaskDTO),
                 adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
+    }
+
+    @Test
+    void setBackfillStatus_updatesOnlyRequestedStatusOnExistingTask() {
+        when(repository.findByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(toSaveAuditloggTaskEntity);
+
+        adapter.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        verify(toSaveAuditloggTaskEntity).setBackfill("cold-storage-completed");
+        verify(repository).save(toSaveAuditloggTaskEntity);
+    }
+
+    @Test
+    void setBackfillStatus_saveFailurePassesThrough() {
+        when(repository.findByDbnameAndTeknologi(DBNAME, TeknologiEnum.DB2)).thenReturn(toSaveAuditloggTaskEntity);
+        when(repository.save(toSaveAuditloggTaskEntity)).thenThrow(DataIntegrityViolationException.class);
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> adapter.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED));
     }
 
 }
