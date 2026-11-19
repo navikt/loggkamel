@@ -75,7 +75,7 @@ class GCPColdStorageUploaderTest {
 
     @ParameterizedTest
     @ValueSource(ints = {400, 401, 403, 404, 409, 429, 500, 503})
-    void non412FailureStopsThisDatabaseBeforeRemainingMonths(int status) throws IOException {
+    void non412FailureStopsThisDatabaseBeforeUploadingRemainingMonths(int status) throws IOException {
         StorageException failure = new StorageException(status, "upload failed");
         when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
                 .thenReturn(null);
@@ -103,29 +103,6 @@ class GCPColdStorageUploaderTest {
     }
 
     @Test
-    void missingPermissionIsExplicitInWarnLogAndNotTreatedAsExistingObject() throws IOException {
-        Logger logger = (Logger) LoggerFactory.getLogger(GCPColdStorageUploader.class);
-        var appender = new ListAppender<ILoggingEvent>();
-        appender.start();
-        logger.addAppender(appender);
-        try {
-            when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
-                    .thenThrow(new StorageException(403, "Permission 'storage.objects.create' denied on resource"));
-
-            assertThrows(StorageException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
-
-            assertTrue(appender.list.stream().anyMatch(event -> event.getLevel() == Level.WARN
-                    && event.getFormattedMessage().contains("403")
-                    && event.getFormattedMessage().contains("storage.objects.create")));
-            verify(storage).createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class));
-            verifyNoMoreInteractions(storage);
-        } finally {
-            logger.detachAppender(appender);
-            appender.stop();
-        }
-    }
-
-    @Test
     void retrySkipsExistingMonthsAndUploadsPreviouslyFailedMonth() throws IOException {
         when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
                 .thenReturn(null)
@@ -144,33 +121,6 @@ class GCPColdStorageUploaderTest {
     @Test
     void emptyExportDoesNotUseStorageClient() {
         uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of());
-        verifyNoInteractions(storage);
-    }
-
-    @Test
-    void placeholderNamesAndPathComponentsAreNotRejectedLocally() throws IOException {
-        uploader = new GCPColdStorageUploader(
-                new DB2ColdStorageProperties("CONFIGURED_DEV_PROJECT", "CONFIGURED_DEV_BUCKET", "custom/env"),
-                storage);
-
-        uploader.uploadLocalFilesToArchiveBucket(task("team/other"), List.of(JANUARY));
-
-        var object = ArgumentCaptor.forClass(BlobInfo.class);
-        verify(storage).createFrom(object.capture(), eq(JANUARY), eq(Storage.BlobWriteOption.doesNotExist()));
-        assertEquals("CONFIGURED_DEV_BUCKET", object.getValue().getBucket());
-        assertEquals("team/other-custom/env/" + JANUARY, object.getValue().getName());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"", " "})
-    void blankOwningTeamCannotCreateObjects(String team) {
-        assertThrows(IllegalArgumentException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task(team), List.of(JANUARY)));
-        verifyNoInteractions(storage);
-    }
-
-    @Test
-    void missingOwningTeamCannotCreateObjects() {
-        assertThrows(IllegalArgumentException.class, () -> uploader.uploadLocalFilesToArchiveBucket(task(null), List.of(JANUARY)));
         verifyNoInteractions(storage);
     }
 

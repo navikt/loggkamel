@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,9 +18,7 @@ public record TemporaryLocalArchive(Path temporaryDirectory, List<Path> archiveP
 
     public TemporaryLocalArchive {
         Objects.requireNonNull(temporaryDirectory, "temporaryDirectory");
-        archivePaths = List.copyOf(archivePaths).stream()
-                .sorted(Comparator.comparing(path -> path.getFileName().toString()))
-                .toList();
+        archivePaths = List.copyOf(archivePaths);
     }
 
     @Override
