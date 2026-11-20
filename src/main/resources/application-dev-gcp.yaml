@@ -51,3 +51,11 @@ scheduled:
       cron: "0 0 3 * * *"
     pull:
       cron: "0 0 8 * * *"
+    cold-storage:
+      cron: "0 */10 * * * *"
+
+cold-storage:
+  db2:
+    project-id: "tilgangsmaskin-dev-gcp"
+    bucket-name: "loggkamel-arkiv-transfer-test"
+    environment: "dev-gcp"

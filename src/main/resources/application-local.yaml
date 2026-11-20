@@ -59,11 +59,6 @@ scheduled:
     cleanup:
       postgres-retention-minutes: 5
       log-packet-retention-minutes: 5
-  db2:
-    backfill:
-      cron: "-"
-    pull:
-      cron: "-"
 
 auth:
   admin-teams:
