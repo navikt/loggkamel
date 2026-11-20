@@ -5,9 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.dependency.DependencyException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskNotFoundException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.InvalidAuditloggTaskStateException;
-import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageArchiveException;
-import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStoragePaginationException;
-import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageProxyException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.naisservice.MissingNaisTeamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,32 +100,6 @@ public class RestExceptionInterceptor {
     public ResponseEntity<ErrorResponse> handleDependencyException(DependencyException exception, HttpServletRequest request) {
         return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
     }
-
-    @ExceptionHandler(ColdStoragePaginationException.class)
-    public ResponseEntity<ErrorResponse> handleColdStoragePaginationException(
-            ColdStoragePaginationException exception, HttpServletRequest request) {
-        return mapToErrorResponse(HttpStatus.BAD_GATEWAY, exception, request);
-    }
-
-    @ExceptionHandler(ColdStorageProxyException.class)
-    public ResponseEntity<ErrorResponse> handleColdStorageProxyException(
-            ColdStorageProxyException exception, HttpServletRequest request) {
-        log.error("Cold-storage DB2 proxy request failed for path {} ({})",
-                request.getRequestURI(), exception.getCause().getClass().getSimpleName());
-        return errorResponse(HttpStatus.BAD_GATEWAY, exception.getMessage(), request);
-    }
-
-
-
-    // Archive generation failures
-    @ExceptionHandler(ColdStorageArchiveException.class)
-    public ResponseEntity<ErrorResponse> handleColdStorageArchiveException(
-            ColdStorageArchiveException exception, HttpServletRequest request) {
-        log.error("Cold-storage archive generation failed for path {}", request.getRequestURI());
-        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), request);
-    }
-
-
 
     private ResponseEntity<ErrorResponse> mapToErrorResponse(HttpStatus httpStatus, Exception exception, HttpServletRequest request) {
         if (httpStatus.is5xxServerError() && !UPSTREAM_FAULT_STATUSES.contains(httpStatus)) {

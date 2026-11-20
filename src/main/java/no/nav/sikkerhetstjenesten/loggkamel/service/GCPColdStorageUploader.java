@@ -64,7 +64,7 @@ public class GCPColdStorageUploader {
                         exception.getCode(), exception.getReason(), exception.getMessage());
                 throw exception;
             } catch (IOException exception) {
-                throw new ColdStorageArchiveException("Unable to read a monthly cold-storage archive for upload", exception);
+                throw new IllegalStateException("Unable to read a monthly cold-storage archive for upload", exception);
             }
         }
     }

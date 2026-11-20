@@ -152,7 +152,8 @@ class DB2ColdStorageArchiveServiceTest {
                 eq(DB_NAME), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(fullPage);
         long before = countTemporaryDirectories();
 
-        assertThrows(ColdStoragePaginationException.class, () -> service.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO));
+        assertThrows(DB2ColdStorageArchiveService.ColdStoragePaginationException.class,
+                () -> service.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO));
         assertEquals(before, countTemporaryDirectories());
     }
 
