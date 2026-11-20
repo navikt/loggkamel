@@ -6,7 +6,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AdvisoryLockService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageArchiveException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.DB2ColdStorageArchiveService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.GCPColdStorageUploader;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
@@ -16,9 +15,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -138,7 +134,8 @@ class ScheduledDB2ColdStorageTransferTest {
         when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenThrow(new ColdStorageArchiveException("generation failed", new IOException()));
+        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenThrow(new IllegalStateException("generation failed", new IOException()));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 

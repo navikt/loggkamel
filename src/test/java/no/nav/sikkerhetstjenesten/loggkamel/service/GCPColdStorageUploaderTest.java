@@ -92,11 +92,13 @@ class GCPColdStorageUploaderTest {
 
     @Test
     void localReadFailureAlsoStopsRemainingMonths() throws IOException {
+        IOException failure = new IOException("read failed");
         when(storage.createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class)))
-                .thenThrow(new IOException("read failed"));
+                .thenThrow(failure);
 
-        assertThrows(ColdStorageArchiveException.class,
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> uploader.uploadLocalFilesToArchiveBucket(task("team"), List.of(JANUARY, FEBRUARY)));
+        assertSame(failure, exception.getCause());
 
         verify(storage).createFrom(any(BlobInfo.class), eq(JANUARY), any(Storage.BlobWriteOption.class));
         verifyNoMoreInteractions(storage);

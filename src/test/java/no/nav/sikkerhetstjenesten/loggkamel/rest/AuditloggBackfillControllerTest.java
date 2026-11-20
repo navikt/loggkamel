@@ -3,12 +3,9 @@ package no.nav.sikkerhetstjenesten.loggkamel.rest;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.ColdStorageArchive;
-import no.nav.sikkerhetstjenesten.loggkamel.service.DB2ColdStorageExportService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.aop.framework.ProxyFactory;
@@ -20,11 +17,7 @@ import org.springframework.security.authorization.method.AuthorizationManagerBef
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import static no.nav.sikkerhetstjenesten.loggkamel.auth.NaisTokenIntrospector.ADMIN_AUTHORITY;
@@ -41,16 +34,10 @@ class AuditloggBackfillControllerTest {
     AuditloggTaskService auditloggTaskService;
 
     @Mock
-    DB2ColdStorageExportService coldStorageExportService;
-
-    @Mock
     OAuth2AuthenticatedPrincipal principal;
 
-    @TempDir
-    Path temporaryDirectory;
-
     private AuditloggBackfillController controller() {
-        ProxyFactory factory = new ProxyFactory(new AuditloggBackfillController(auditloggTaskService, coldStorageExportService));
+        ProxyFactory factory = new ProxyFactory(new AuditloggBackfillController(auditloggTaskService));
         factory.setProxyTargetClass(true);
         factory.addAdvisor(AuthorizationManagerBeforeMethodInterceptor.secured());
         return (AuditloggBackfillController) factory.getProxy();
@@ -80,37 +67,14 @@ class AuditloggBackfillControllerTest {
     }
 
     @Test
-    void downloadDB2ColdStorageExportStreamsArchiveAndCleansTemporaryFiles() throws Exception {
-        authenticateAsAdmin();
-        Path archivePath = temporaryDirectory.resolve("archive.zip");
-        Files.writeString(archivePath, "zip-content");
-        ColdStorageArchive archive = new ColdStorageArchive(
-                archivePath, temporaryDirectory, "db-a.cold-storage.zip", 5, 1, 23);
-        when(coldStorageExportService.createExport(DB_NAME)).thenReturn(archive);
-
-        var response = controller().downloadDB2ColdStorageExport(DB_NAME);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        StreamingResponseBody responseBody = response.getBody();
-        assertNotNull(responseBody);
-        responseBody.writeTo(outputStream);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("application/zip", response.getHeaders().getContentType().toString());
-        assertEquals("zip-content", outputStream.toString());
-        assertFalse(Files.exists(temporaryDirectory));
-    }
-
-    @Test
     void regularUserCannotCallAnyAdminEndpoint() {
         authenticateAsUser();
         AuditloggBackfillController securedController = controller();
 
         assertThrows(AccessDeniedException.class, securedController::getRequestedTasks);
         assertThrows(AccessDeniedException.class,
-                () -> securedController.downloadDB2ColdStorageExport(DB_NAME));
-        assertThrows(AccessDeniedException.class,
                 () -> securedController.completeRequestedTask(TeknologiEnum.DB2, DB_NAME));
-        verifyNoInteractions(auditloggTaskService, coldStorageExportService);
+        verifyNoInteractions(auditloggTaskService);
     }
 
     @Test
@@ -121,10 +85,8 @@ class AuditloggBackfillControllerTest {
         assertThrows(AuthenticationCredentialsNotFoundException.class,
                 securedController::getRequestedTasks);
         assertThrows(AuthenticationCredentialsNotFoundException.class,
-                () -> securedController.downloadDB2ColdStorageExport(DB_NAME));
-        assertThrows(AuthenticationCredentialsNotFoundException.class,
                 () -> securedController.completeRequestedTask(TeknologiEnum.DB2, DB_NAME));
-        verifyNoInteractions(auditloggTaskService, coldStorageExportService);
+        verifyNoInteractions(auditloggTaskService);
     }
 
     private void authenticateAsAdmin() {
