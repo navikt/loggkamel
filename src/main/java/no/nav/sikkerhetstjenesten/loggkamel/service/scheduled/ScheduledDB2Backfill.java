@@ -1,6 +1,7 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service.scheduled;
 
 import io.getunleash.Unleash;
+import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -19,6 +20,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
+@ConditionalOnGCP
 public class ScheduledDB2Backfill {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledDB2Backfill.class);

@@ -2,7 +2,7 @@ package no.nav.sikkerhetstjenesten.loggkamel.persistence.packet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.exceptions.invalid.InvalidLogStreamException;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.processor.enrichment.dto.AuditloggLineMessage;
@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
@@ -29,9 +28,6 @@ class GCPPacketPersistenceServiceTest {
     private static final String PACKET_BUCKET_NAME = "packet bucket name";
     private static final String FILENAME = "I am a name for a file";
     private static final String AUDITLOGG_LINES_AS_JSON = "I am totally a json blob";
-
-    @Mock
-    Bucket bucket;
 
     @Mock
     List<AuditloggLineMessage> auditloggLineMessages;
@@ -63,24 +59,19 @@ class GCPPacketPersistenceServiceTest {
         when(objectMapper.writeValueAsString(auditloggLineMessages)).thenThrow(new JsonProcessingException("oh noooo"){});
 
         assertThrows(InvalidLogStreamException.class, () -> packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages));
-    }
-
-    @Test
-    void saveAuditloggLineMessagesWithFilename_missingBucketCausesInvalidLogException() throws JsonProcessingException {
-        when(objectMapper.writeValueAsString(auditloggLineMessages)).thenReturn(AUDITLOGG_LINES_AS_JSON);
-        when(loggkamelProjectStorage.get(anyString())).thenReturn(null);
-
-        assertThrows(InvalidLogStreamException.class, () -> packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages));
+        verifyNoInteractions(loggkamelProjectStorage);
     }
 
     @Test
     void saveAuditloggLineMessagesWithFilename_happyPath() throws JsonProcessingException {
         when(objectMapper.writeValueAsString(auditloggLineMessages)).thenReturn(AUDITLOGG_LINES_AS_JSON);
-        when(loggkamelProjectStorage.get(anyString())).thenReturn(bucket);
-
         packetPersistenceService.saveAuditloggLineMessagesWithFilename(FILENAME, auditloggLineMessages);
 
-        verify(bucket).create(FILENAME, AUDITLOGG_LINES_AS_JSON.getBytes(StandardCharsets.UTF_8), APPLICATION_JSON_VALUE);
+        BlobInfo expectedBlob = BlobInfo.newBuilder(PACKET_BUCKET_NAME, FILENAME)
+                .setContentType(APPLICATION_JSON_VALUE)
+                .build();
+        verify(loggkamelProjectStorage).create(expectedBlob, AUDITLOGG_LINES_AS_JSON.getBytes(StandardCharsets.UTF_8));
+        verifyNoMoreInteractions(loggkamelProjectStorage);
     }
 
 }

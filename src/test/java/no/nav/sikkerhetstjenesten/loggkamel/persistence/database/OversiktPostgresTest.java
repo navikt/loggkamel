@@ -131,6 +131,29 @@ class OversiktPostgresTest extends PostgresRepositoryTestBase {
     }
 
     @Test
+    void adapterCompletesColdStorageRequest() {
+        repository.saveAndFlush(task("db-a", TeknologiEnum.DB2)
+                .loggingLeseoperasjoner(true).backfill("cold-storage-requested").build());
+
+        adapter.setBackfillStatus("db-a", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        assertThat(adapter.findByDbnameAndTeknologi("db-a", TeknologiEnum.DB2).getBackfill())
+                .isEqualTo(BackfillStatus.COLD_STORAGE_COMPLETED);
+    }
+
+    @Test
+    void completingColdStorageLeavesSameDatabaseNameWithOtherTechnologyUnchanged() {
+        repository.saveAndFlush(task("db-a", TeknologiEnum.POSTGRESQL).backfill("cold-storage-requested").build());
+        repository.saveAndFlush(task("db-a", TeknologiEnum.DB2)
+                .loggingLeseoperasjoner(true).backfill("cold-storage-requested").build());
+
+        adapter.setBackfillStatus("db-a", TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        assertThat(adapter.findByDbnameAndTeknologi("db-a", TeknologiEnum.POSTGRESQL).getBackfill())
+                .isEqualTo(BackfillStatus.COLD_STORAGE_REQUESTED);
+    }
+
+    @Test
     void adapterUpdatesArkivforskriftAndEnablesChangeLogging() {
         repository.saveAndFlush(task("db-a", TeknologiEnum.POSTGRESQL).build());
 
