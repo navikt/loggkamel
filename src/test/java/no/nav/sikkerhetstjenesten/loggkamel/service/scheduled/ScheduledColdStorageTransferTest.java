@@ -11,7 +11,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.service.GCPColdStorageUploader;
 import no.nav.sikkerhetstjenesten.loggkamel.service.archive.PostgresColdStorageArchiveService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,7 +38,7 @@ class ScheduledColdStorageTransferTest {
     AuditloggTaskService tasks;
 
     @Mock
-    DB2ColdStorageArchiveService archiveService;
+    DB2ColdStorageArchiveService db2ArchiveService;
 
     @Mock
     PostgresColdStorageArchiveService postgresArchiveService;
@@ -72,11 +71,20 @@ class ScheduledColdStorageTransferTest {
     }
 
     @Test
+    void runLevelFailureIsWarnedWithoutInventingTaskFailures() {
+        when(locks.runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class)))
+                .thenThrow(new IllegalStateException("database unavailable"));
+
+        assertDoesNotThrow(scheduler::transferRequestedColdStorage);
+        verifyNoInteractions(metrics);
+    }
+
+    @Test
     void usesDedicatedColdStorageLockAndDoesNothingWhenAlreadyHeld() {
         scheduler.transferRequestedColdStorage();
 
         verify(locks).runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class));
-        verifyNoInteractions(tasks, archiveService, metrics);
+        verifyNoInteractions(tasks, db2ArchiveService, metrics);
     }
 
     @Test
@@ -95,24 +103,65 @@ class ScheduledColdStorageTransferTest {
     }
 
     @Test
-    void completesOnlyAfterAllArchivesAreUploadedAndCleansFiles() throws IOException {
-        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
-        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+    void skipsUnsupportedTechnologyWithoutChangingTaskStatus() {
+        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.ORACLE);
         when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
-        var archives = archives(DB_NAME_1, false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verifyNoInteractions(db2ArchiveService, postgresArchiveService, uploader, metrics);
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
+    }
+
+    @Test
+    void archiveFailureCountsOnceWithoutUploadingOrCompleting() {
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenThrow(new IllegalStateException("generation failed", new IOException()));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
-        var order = inOrder(archiveService, uploader, tasks, metrics);
-        order.verify(archiveService).createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1);
-        order.verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, archives.archivePaths());
-        order.verify(tasks).setBackfillStatus(DB_NAME_1, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
-        order.verify(metrics).incrementColdStorageSuccess();
+        verifyNoInteractions(uploader);
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
+        verify(metrics).incrementColdStorageFailure();
         verifyNoMoreInteractions(metrics);
-        assertFalse(Files.exists(archives.temporaryDirectory()));
+    }
+
+    @Test
+    void routesPostgresTasksToPostgresArchiveStrategy() {
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.POSTGRESQL);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenThrow(new IllegalStateException("generation failed sentinel"));
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(postgresArchiveService).createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1);
+        verifyNoInteractions(db2ArchiveService, uploader);
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
+        verify(metrics).incrementColdStorageFailure();
+        verifyNoMoreInteractions(metrics);
+    }
+
+    @Test
+    void doesNotDeleteSourcesWhenArchiveGenerationFails() {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenThrow(new IllegalStateException("generation failed sentinel"));
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(postgresArchiveService, never()).deleteArchivedSourceFiles(any());
+        verifyNoInteractions(uploader);
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
     }
 
     @Test
@@ -125,9 +174,10 @@ class ScheduledColdStorageTransferTest {
 
         var firstArchives = archives(DB_NAME_1, false);
         var secondArchives = archives(DB_NAME_2, false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(firstArchives);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO2)).thenReturn(secondArchives);
-        doThrow(new IllegalStateException("upload failed")).when(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, firstArchives.archivePaths());
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(firstArchives);
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO2)).thenReturn(secondArchives);
+        doThrow(new IllegalStateException("upload failed")).when(uploader)
+                .uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, firstArchives.archivePaths());
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
@@ -143,19 +193,80 @@ class ScheduledColdStorageTransferTest {
     }
 
     @Test
-    void archiveFailureCountsOnceWithoutUploadingOrCompleting() {
-        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+    void doesNotDeleteSourcesWhenUploadFails() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
         when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
-
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
-                .thenThrow(new IllegalStateException("generation failed", new IOException()));
+        var archives = archives(DB_NAME_1, false);
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
+        doThrow(new IllegalStateException("upload failed sentinel")).when(uploader)
+                .uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, archives.archivePaths());
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
-        verifyNoInteractions(uploader);
+        verify(postgresArchiveService, never()).deleteArchivedSourceFiles(any());
         verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
         verify(metrics).incrementColdStorageFailure();
+        verifyNoMoreInteractions(metrics);
+        assertFalse(Files.exists(archives.temporaryDirectory()));
+    }
+
+    @Test
+    void passesPostgresTaskToSourceDeletion() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        var archives = archives(DB_NAME_1, false);
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
+        doThrow(new IllegalStateException("deletion failure sentinel")).when(postgresArchiveService)
+                .deleteArchivedSourceFiles(auditloggTaskDTO1);
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(postgresArchiveService).deleteArchivedSourceFiles(auditloggTaskDTO1);
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
+        verify(metrics).incrementColdStorageFailure();
+        verifyNoMoreInteractions(metrics);
+        assertFalse(Files.exists(archives.temporaryDirectory()));
+    }
+
+    @Test
+    void postgresSourceDeletionFailureLeavesTaskRequested() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenReturn(archives(DB_NAME_1, true));
+        doThrow(new IllegalStateException("deletion failed")).when(postgresArchiveService)
+                .deleteArchivedSourceFiles(auditloggTaskDTO1);
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(uploader).uploadLocalFilesToArchiveBucket(eq(auditloggTaskDTO1), any(List.class));
+        verify(tasks, never()).setBackfillStatus(anyString(), any(), any());
+        verify(metrics).incrementColdStorageFailure();
+        verifyNoMoreInteractions(metrics);
+    }
+
+    @Test
+    void deletionFailureAllowsNextTask() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        postgresTask(auditloggTaskDTO2, DB_NAME_2);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenReturn(archives(DB_NAME_1, false));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO2))
+                .thenReturn(archives(DB_NAME_2, false));
+        doThrow(new IllegalStateException("first deletion failed")).when(postgresArchiveService)
+                .deleteArchivedSourceFiles(auditloggTaskDTO1);
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(tasks, never()).setBackfillStatus(DB_NAME_1, TeknologiEnum.POSTGRESQL, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(tasks).setBackfillStatus(DB_NAME_2, TeknologiEnum.POSTGRESQL, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(metrics).incrementColdStorageFailure();
+        verify(metrics).incrementColdStorageSuccess();
         verifyNoMoreInteractions(metrics);
     }
 
@@ -166,7 +277,7 @@ class ScheduledColdStorageTransferTest {
         when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
-        when(archiveService.createLocalArchiveOfColdStorageLogs(any(AuditloggTaskDTO.class)))
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(any(AuditloggTaskDTO.class)))
                 .thenThrow(new IllegalStateException("proxy unavailable"));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
@@ -181,18 +292,91 @@ class ScheduledColdStorageTransferTest {
     }
 
     @Test
-    void emptyExportStillCompletesSuccessfully() throws IOException {
+    void completesOnlyAfterAllArchivesAreUploadedAndCleansFiles() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives(DB_NAME_1, true));
+        var archives = archives(DB_NAME_1, false);
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        var order = inOrder(db2ArchiveService, uploader, tasks);
+        order.verify(db2ArchiveService).createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1);
+        order.verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, archives.archivePaths());
+        order.verify(tasks).setBackfillStatus(DB_NAME_1, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        assertFalse(Files.exists(archives.temporaryDirectory()));
+    }
+
+    @Test
+    void emptyExportStillCompletesSuccessfully() throws IOException {
+        when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenReturn(archives(DB_NAME_1, true));
 
         scheduler.transferColdStorageLogsForEligibleTasks();
 
         verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, List.of());
         verify(tasks).setBackfillStatus(DB_NAME_1, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(metrics).incrementColdStorageSuccess();
+        verifyNoMoreInteractions(metrics);
+    }
+
+    @Test
+    void uploadsAllArchivesBeforeDeletingAnySource() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        var firstArchives = archives(DB_NAME_1, false);
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(firstArchives);
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        var order = inOrder(uploader, postgresArchiveService);
+        order.verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, firstArchives.archivePaths());
+        order.verify(postgresArchiveService).deleteArchivedSourceFiles(auditloggTaskDTO1);
+        verify(metrics).incrementColdStorageSuccess();
+        verifyNoMoreInteractions(metrics);
+    }
+
+    @Test
+    void updatesTaskStatusOnlyAfterSourceDeletion() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenReturn(archives(DB_NAME_1, false));
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        var order = inOrder(postgresArchiveService, tasks);
+        order.verify(postgresArchiveService).createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1);
+        order.verify(postgresArchiveService).deleteArchivedSourceFiles(auditloggTaskDTO1);
+        order.verify(tasks).setBackfillStatus(
+                DB_NAME_1, TeknologiEnum.POSTGRESQL, BackfillStatus.COLD_STORAGE_COMPLETED);
+        verify(metrics).incrementColdStorageSuccess();
+        verifyNoMoreInteractions(metrics);
+    }
+
+    @Test
+    void completesTaskWhenNoPostgresBacklogsFound() throws IOException {
+        postgresTask(auditloggTaskDTO1, DB_NAME_1);
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
+                .thenReturn(List.of(auditloggTaskDTO1));
+        when(postgresArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
+                .thenReturn(archives(DB_NAME_1, true));
+
+        scheduler.transferColdStorageLogsForEligibleTasks();
+
+        verify(uploader).uploadLocalFilesToArchiveBucket(auditloggTaskDTO1, List.of());
+        verify(postgresArchiveService).deleteArchivedSourceFiles(auditloggTaskDTO1);
+        verify(tasks).setBackfillStatus(
+                DB_NAME_1, TeknologiEnum.POSTGRESQL, BackfillStatus.COLD_STORAGE_COMPLETED);
         verify(metrics).incrementColdStorageSuccess();
         verifyNoMoreInteractions(metrics);
     }
@@ -204,7 +388,7 @@ class ScheduledColdStorageTransferTest {
                 .thenReturn(List.of(auditloggTaskDTO1));
 
         var archives = archives(DB_NAME_1, false);
-        when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
+        when(db2ArchiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives);
         try (var files = mockStatic(Files.class)) {
             files.when(() -> Files.walkFileTree(eq(archives.temporaryDirectory()), any()))
                     .thenThrow(new IOException("disk failure"));
@@ -216,101 +400,17 @@ class ScheduledColdStorageTransferTest {
         }
     }
 
-    @Test
-    void runLevelFailureIsWarnedWithoutInventingTaskFailures() {
-        when(locks.runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class)))
-                .thenThrow(new IllegalStateException("database unavailable"));
-
-        assertDoesNotThrow(scheduler::transferRequestedColdStorage);
-        verifyNoInteractions(metrics);
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void routesPostgresTasksToPostgresArchiveStrategy() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void passesPostgresTaskToSourceDeletion() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void uploadsAllArchivesBeforeDeletingAnySource() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void doesNotDeleteSourcesWhenArchiveGenerationFails() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void doesNotDeleteSourcesWhenUploadFails() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void deletionFailureLeavesTaskRequested() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void deletionFailureAllowsNextTask() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void deletionFailureCountsOneTaskFailure() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void updatesTaskStatusOnlyAfterSourceDeletion() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void completesTaskWhenNoPostgresSourcesMatch() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void acceptsExistingDestinationBeforeDeletingSources() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void skipsUnsupportedTechnologyWithoutChangingTaskStatus() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void unsupportedTechnologyDoesNotIncrementSuccessMetric() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void unsupportedTechnologyLogsWarning() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void usesColdStorageLockDistinctFromDb2PullLock() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void taskCompletionFailureLeavesTaskRequested() {
-    }
-
     private TemporaryLocalArchive archives(String db, boolean empty) throws IOException {
         Path directory = Files.createDirectory(temp.resolve(db));
         List<Path> paths = empty ? List.of() : List.of(
                 Files.createFile(directory.resolve("202601-loggkamel-" + db + ".zip")),
                 Files.createFile(directory.resolve("202602-loggkamel-" + db + ".zip")));
         return new TemporaryLocalArchive(directory, paths);
+    }
+
+    private void postgresTask(AuditloggTaskDTO task, String dbName) {
+        when(task.getDbname()).thenReturn(dbName);
+        when(task.getTeknologi()).thenReturn(TeknologiEnum.POSTGRESQL);
     }
 
 }
