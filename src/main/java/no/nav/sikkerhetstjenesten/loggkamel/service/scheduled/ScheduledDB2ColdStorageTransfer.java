@@ -71,7 +71,7 @@ public class ScheduledDB2ColdStorageTransfer {
             uploader.uploadLocalFilesToArchiveBucket(task, archives.archivePaths());
             stage = "task completion";
             auditloggTaskService.setBackfillStatus(
-                    task.getDbname(), TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+                    task.getDbname(), task.getTeknologi(), BackfillStatus.COLD_STORAGE_COMPLETED);
         } catch (RuntimeException exception) {
             log.warn("Scheduled DB2 cold-storage transfer failed during {}, database {}; retry on the next run if still requested ({})",
                     stage, task.getDbname(), exception.getClass().getSimpleName());

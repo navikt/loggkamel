@@ -85,6 +85,7 @@ class ScheduledDB2ColdStorageTransferTest {
     @Test
     void completesOnlyAfterAllArchivesAreUploadedAndCleansFiles() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
@@ -106,6 +107,7 @@ class ScheduledDB2ColdStorageTransferTest {
     void failedUploadLeavesTaskRequestedCleansFilesAndContinuesOtherDatabases() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO2.getDbname()).thenReturn(DB_NAME_2);
+        when(auditloggTaskDTO2.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
@@ -169,6 +171,7 @@ class ScheduledDB2ColdStorageTransferTest {
     @Test
     void emptyExportStillCompletesSuccessfully() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
+        when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
         when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
