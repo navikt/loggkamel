@@ -151,6 +151,12 @@ public class DB2ColdStorageArchiveService {
         new TemporaryLocalArchive(temporaryDirectory, List.of()).close();
     }
 
+    static class ColdStoragePaginationException extends RuntimeException {
+        ColdStoragePaginationException(String message) {
+            super(message);
+        }
+    }
+
     private static final class MonthlyArchiveWriter implements AutoCloseable {
 
         private final Path temporaryDirectory;
