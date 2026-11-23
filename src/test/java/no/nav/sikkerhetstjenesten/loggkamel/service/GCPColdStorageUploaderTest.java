@@ -7,7 +7,7 @@ import ch.qos.logback.core.read.ListAppender;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
-import no.nav.sikkerhetstjenesten.loggkamel.config.DB2ColdStorageProperties;
+import no.nav.sikkerhetstjenesten.loggkamel.config.ColdStorageProperties;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class GCPColdStorageUploaderTest {
     @BeforeEach
     void setUp() {
         uploader = new GCPColdStorageUploader(
-                new DB2ColdStorageProperties("example-gcp-project", "example-bucket", "prod-gcp"), storage);
+                new ColdStorageProperties("example-gcp-project", "example-bucket", "prod-gcp"), storage);
     }
 
     @Test

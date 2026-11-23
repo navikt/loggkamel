@@ -6,9 +6,12 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AdvisoryLockService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskService;
-import no.nav.sikkerhetstjenesten.loggkamel.service.DB2ColdStorageArchiveService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.archive.DB2ColdStorageArchiveService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.GCPColdStorageUploader;
+import no.nav.sikkerhetstjenesten.loggkamel.service.archive.PostgresColdStorageArchiveService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,13 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2LogPuller.DB2_PULL_LOCK_KEY;
+import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.ScheduledColdStorageTransfer.COLD_STORAGE_LOCK_KEY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ScheduledDB2ColdStorageTransferTest {
+class ScheduledColdStorageTransferTest {
 
     private static final String DB_NAME_1 = "dbName1";
     private static final String DB_NAME_2 = "dbName2";
@@ -37,6 +40,9 @@ class ScheduledDB2ColdStorageTransferTest {
 
     @Mock
     DB2ColdStorageArchiveService archiveService;
+
+    @Mock
+    PostgresColdStorageArchiveService postgresArchiveService;
 
     @Mock
     GCPColdStorageUploader uploader;
@@ -51,7 +57,7 @@ class ScheduledDB2ColdStorageTransferTest {
     Path temp;
 
     @InjectMocks
-    ScheduledDB2ColdStorageTransfer scheduler;
+    ScheduledColdStorageTransfer scheduler;
 
     @Mock
     AuditloggTaskDTO auditloggTaskDTO1;
@@ -59,26 +65,32 @@ class ScheduledDB2ColdStorageTransferTest {
     @Mock
     AuditloggTaskDTO auditloggTaskDTO2;
 
-    @Test
-    void usesSharedDB2LockAndDoesNothingWhenAlreadyHeld() {
-        scheduler.transferRequestedDB2ColdStorage();
+    @BeforeEach
+    void setUp() {
+        lenient().when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+        lenient().when(auditloggTaskDTO2.getTeknologi()).thenReturn(TeknologiEnum.DB2);
+    }
 
-        verify(locks).runIfLockAcquired(eq(DB2_PULL_LOCK_KEY), any(Runnable.class));
+    @Test
+    void usesDedicatedColdStorageLockAndDoesNothingWhenAlreadyHeld() {
+        scheduler.transferRequestedColdStorage();
+
+        verify(locks).runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class));
         verifyNoInteractions(tasks, archiveService, metrics);
     }
 
     @Test
     void emptyTaskListDoesNothing() {
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of());
-        when(locks.runIfLockAcquired(eq(DB2_PULL_LOCK_KEY), any(Runnable.class))).thenAnswer(invocation -> {
+        when(locks.runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class))).thenAnswer(invocation -> {
             invocation.getArgument(1, Runnable.class).run();
             return true;
         });
 
-        scheduler.transferRequestedDB2ColdStorage();
+        scheduler.transferRequestedColdStorage();
 
-        verify(tasks).findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED);
+        verify(tasks).findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED);
         verifyNoInteractions(metrics);
     }
 
@@ -86,7 +98,7 @@ class ScheduledDB2ColdStorageTransferTest {
     void completesOnlyAfterAllArchivesAreUploadedAndCleansFiles() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
         var archives = archives(DB_NAME_1, false);
@@ -108,7 +120,7 @@ class ScheduledDB2ColdStorageTransferTest {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO2.getDbname()).thenReturn(DB_NAME_2);
         when(auditloggTaskDTO2.getTeknologi()).thenReturn(TeknologiEnum.DB2);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
         var firstArchives = archives(DB_NAME_1, false);
@@ -133,7 +145,7 @@ class ScheduledDB2ColdStorageTransferTest {
     @Test
     void archiveFailureCountsOnceWithoutUploadingOrCompleting() {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
         when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1))
@@ -151,7 +163,7 @@ class ScheduledDB2ColdStorageTransferTest {
     void failuresAreCountedOncePerTaskOnEachRun() {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO2.getDbname()).thenReturn(DB_NAME_2);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
         when(archiveService.createLocalArchiveOfColdStorageLogs(any(AuditloggTaskDTO.class)))
@@ -172,7 +184,7 @@ class ScheduledDB2ColdStorageTransferTest {
     void emptyExportStillCompletesSuccessfully() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
         when(auditloggTaskDTO1.getTeknologi()).thenReturn(TeknologiEnum.DB2);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
         when(archiveService.createLocalArchiveOfColdStorageLogs(auditloggTaskDTO1)).thenReturn(archives(DB_NAME_1, true));
@@ -188,7 +200,7 @@ class ScheduledDB2ColdStorageTransferTest {
     @Test
     void cleanupFailureDoesNotTurnSuccessfulPublicationIntoTransferFailure() throws IOException {
         when(auditloggTaskDTO1.getDbname()).thenReturn(DB_NAME_1);
-        when(tasks.findActiveTasksByTeknologiAndBackfillStatus(TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_REQUESTED))
+        when(tasks.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED))
                 .thenReturn(List.of(auditloggTaskDTO1));
 
         var archives = archives(DB_NAME_1, false);
@@ -206,11 +218,91 @@ class ScheduledDB2ColdStorageTransferTest {
 
     @Test
     void runLevelFailureIsWarnedWithoutInventingTaskFailures() {
-        when(locks.runIfLockAcquired(eq(DB2_PULL_LOCK_KEY), any(Runnable.class)))
+        when(locks.runIfLockAcquired(eq(COLD_STORAGE_LOCK_KEY), any(Runnable.class)))
                 .thenThrow(new IllegalStateException("database unavailable"));
 
-        assertDoesNotThrow(scheduler::transferRequestedDB2ColdStorage);
+        assertDoesNotThrow(scheduler::transferRequestedColdStorage);
         verifyNoInteractions(metrics);
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void routesPostgresTasksToPostgresArchiveStrategy() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void passesPostgresTaskToSourceDeletion() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void uploadsAllArchivesBeforeDeletingAnySource() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void doesNotDeleteSourcesWhenArchiveGenerationFails() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void doesNotDeleteSourcesWhenUploadFails() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void deletionFailureLeavesTaskRequested() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void deletionFailureAllowsNextTask() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void deletionFailureCountsOneTaskFailure() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void updatesTaskStatusOnlyAfterSourceDeletion() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void completesTaskWhenNoPostgresSourcesMatch() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void acceptsExistingDestinationBeforeDeletingSources() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void skipsUnsupportedTechnologyWithoutChangingTaskStatus() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void unsupportedTechnologyDoesNotIncrementSuccessMetric() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void unsupportedTechnologyLogsWarning() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void usesColdStorageLockDistinctFromDb2PullLock() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void taskCompletionFailureLeavesTaskRequested() {
     }
 
     private TemporaryLocalArchive archives(String db, boolean empty) throws IOException {

@@ -95,6 +95,13 @@ public class AuditloggTaskService {
                 .toList();
     }
 
+    public List<AuditloggTaskDTO> findActiveTasksByBackfillStatus(BackfillStatus backfillStatus) {
+        return adapter.findTasksByBackfillStatuses(List.of(backfillStatus)).stream()
+                .filter(AuditloggTaskDTO::getFiksa)
+                .filter(this::taskHasAnActiveForwardingCategory)
+                .toList();
+    }
+
     public void setBackfillStatus(
             String dbname, TeknologiEnum teknologi, BackfillStatus backfillStatus) {
         adapter.setBackfillStatus(dbname, teknologi, backfillStatus);

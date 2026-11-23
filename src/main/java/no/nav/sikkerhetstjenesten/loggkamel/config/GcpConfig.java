@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @ConditionalOnGCP
-@EnableConfigurationProperties(DB2ColdStorageProperties.class)
+@EnableConfigurationProperties(ColdStorageProperties.class)
 public class GcpConfig {
 
     @Bean
@@ -22,7 +22,7 @@ public class GcpConfig {
 
     @Bean
     @Lazy
-    public Storage coldStorage(DB2ColdStorageProperties properties) {
+    public Storage coldStorage(ColdStorageProperties properties) {
         return StorageOptions.newBuilder().setProjectId(properties.projectId()).build().getService();
     }
 

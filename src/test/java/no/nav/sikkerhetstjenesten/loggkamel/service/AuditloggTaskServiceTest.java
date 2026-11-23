@@ -7,6 +7,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdap
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -355,6 +356,41 @@ class AuditloggTaskServiceTest {
 
         assertThrows(RuntimeException.class,
                 () -> service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED));
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusSelectsRequestedTasksAcrossTechnologies() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusFiltersTasksNotFiksa() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusFiltersDiscardedTasks() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyReadLogging() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyWriteLogging() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusFiltersTasksWithoutEitherLoggingCategory() {
+    }
+
+    @Test
+    @Disabled("Pending coverage review and test implementation")
+    void findActiveTasksByBackfillStatusIncludesEligibleUnsupportedTechnology() {
     }
 
 }

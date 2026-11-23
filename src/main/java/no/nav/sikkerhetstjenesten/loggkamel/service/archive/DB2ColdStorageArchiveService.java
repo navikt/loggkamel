@@ -1,4 +1,4 @@
-package no.nav.sikkerhetstjenesten.loggkamel.service;
+package no.nav.sikkerhetstjenesten.loggkamel.service.archive;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,6 +6,10 @@ import no.nav.sikkerhetstjenesten.loggkamel.client.dto.DB2AuditloggLineDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
+import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskNotFoundException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.InvalidAuditloggTaskStateException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.LoggkamelProxyService;
+import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
