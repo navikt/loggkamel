@@ -7,7 +7,6 @@ import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.OversiktJPAAdap
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.ForbiddenOperationException;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.NaisteamDTO;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -50,22 +49,6 @@ class AuditloggTaskServiceTest {
     AuditloggTaskService service;
 
     @Test
-    void createAuditloggTask_successful() {
-        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
-        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO1);
-
-        assertEquals(auditloggTaskDTO1, service.createAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
-    }
-
-    @Test
-    void createAuditloggTask_exceptionPassesThrough() {
-        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
-        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenThrow(RuntimeException.class);
-
-        assertThrows(RuntimeException.class, () -> service.createAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
-    }
-
-    @Test
     void createAuditloggTask_forbiddenWhenUserIsNotMemberOfNaisteam() {
         when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(OTHER_NAISTEAM);
 
@@ -83,15 +66,39 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void updateAuditloggTask_successful() {
+    void createAuditloggTask_exceptionPassesThrough() {
+        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
+        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.createAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
+    }
+
+    @Test
+    void createAuditloggTask_successful() {
+        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
+        when(adapter.createAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO1);
+
+        assertEquals(auditloggTaskDTO1, service.createAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
+    }
+
+    @Test
+    void updateAuditloggTask_forbiddenWhenUserIsNotMemberOfRequestedNaisteam() {
+        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(OTHER_NAISTEAM);
+
+        assertThrows(ForbiddenOperationException.class, () -> service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
+        verifyNoInteractions(adapter);
+    }
+
+    @Test
+    void updateAuditloggTask_forbiddenWhenExistingTaskBelongsToAnotherNaisteam() {
         when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
         when(auditloggTaskRequestDTO.getDbname()).thenReturn(DBNAME);
         when(auditloggTaskRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
         when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO1);
-        when(auditloggTaskDTO1.getNaisteam()).thenReturn(NAISTEAM_1);
-        when(adapter.updateAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO2);
+        when(auditloggTaskDTO1.getNaisteam()).thenReturn(OTHER_NAISTEAM);
 
-        assertEquals(auditloggTaskDTO2, service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
+        assertThrows(ForbiddenOperationException.class, () -> service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
+        verify(adapter, never()).updateAuditloggTask(auditloggTaskRequestDTO);
     }
 
     @Test
@@ -118,30 +125,15 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void updateAuditloggTask_forbiddenWhenUserIsNotMemberOfRequestedNaisteam() {
-        when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(OTHER_NAISTEAM);
-
-        assertThrows(ForbiddenOperationException.class, () -> service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
-        verifyNoInteractions(adapter);
-    }
-
-    @Test
-    void updateAuditloggTask_forbiddenWhenExistingTaskBelongsToAnotherNaisteam() {
+    void updateAuditloggTask_successful() {
         when(auditloggTaskRequestDTO.getNaisteam()).thenReturn(NAISTEAM_1);
         when(auditloggTaskRequestDTO.getDbname()).thenReturn(DBNAME);
         when(auditloggTaskRequestDTO.getTeknologi()).thenReturn(TEKNOLOGI);
         when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO1);
-        when(auditloggTaskDTO1.getNaisteam()).thenReturn(OTHER_NAISTEAM);
+        when(auditloggTaskDTO1.getNaisteam()).thenReturn(NAISTEAM_1);
+        when(adapter.updateAuditloggTask(auditloggTaskRequestDTO)).thenReturn(auditloggTaskDTO2);
 
-        assertThrows(ForbiddenOperationException.class, () -> service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
-        verify(adapter, never()).updateAuditloggTask(auditloggTaskRequestDTO);
-    }
-
-    @Test
-    void getAuditloggTaskByDbnameAndTeknologi_successful() {
-        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO1);
-
-        assertEquals(auditloggTaskDTO1, service.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
+        assertEquals(auditloggTaskDTO2, service.updateAuditloggTask(auditloggTaskRequestDTO, NAISTEAMS_FOR_USER));
     }
 
     @Test
@@ -152,10 +144,10 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void registerLogsReceivedForAuditloggTask_successful() {
-        assertDoesNotThrow(() -> service.registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI));
+    void getAuditloggTaskByDbnameAndTeknologi_successful() {
+        when(adapter.findByDbnameAndTeknologi(DBNAME, TEKNOLOGI)).thenReturn(auditloggTaskDTO1);
 
-        verify(adapter).registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI);
+        assertEquals(auditloggTaskDTO1, service.getAuditloggTaskByDbnameAndTeknologi(DBNAME, TEKNOLOGI));
     }
 
     @Test
@@ -166,10 +158,10 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void getAuditloggTaskByNaisteam_successful() {
-        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+    void registerLogsReceivedForAuditloggTask_successful() {
+        assertDoesNotThrow(() -> service.registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI));
 
-        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.getAuditloggTaskByNaisteam(NAISTEAM_1));
+        verify(adapter).registerLogsReceivedForAuditloggTask(DBNAME, TEKNOLOGI);
     }
 
     @Test
@@ -177,6 +169,20 @@ class AuditloggTaskServiceTest {
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
 
         assertThrows(RuntimeException.class, () -> service.getAuditloggTaskByNaisteam(NAISTEAM_1));
+    }
+
+    @Test
+    void getAuditloggTaskByNaisteam_successful() {
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
+
+        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.getAuditloggTaskByNaisteam(NAISTEAM_1));
+    }
+
+    @Test
+    void getAllTasksGroupedByNaisteam_exceptionPassesThrough() {
+        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.getAllTasksGroupedByNaisteam());
     }
 
     @Test
@@ -210,10 +216,16 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void getAllTasksGroupedByNaisteam_exceptionPassesThrough() {
-        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+    void getTasksGroupedByNaisteam_noNaisteams() {
+        assertEquals(Collections.emptyList(), service.getTasksGroupedByNaisteam(Collections.emptyList()));
+    }
 
-        assertThrows(RuntimeException.class, () -> service.getAllTasksGroupedByNaisteam());
+    @Test
+    void getTasksGroupedByNaisteam_exceptionPassesThrough() {
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
+
+        List<String> naisteams = List.of(NAISTEAM_1);
+        assertThrows(RuntimeException.class, () -> service.getTasksGroupedByNaisteam(naisteams));
     }
 
     @Test
@@ -230,26 +242,10 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void getTasksGroupedByNaisteam_noNaisteams() {
-        assertEquals(Collections.emptyList(), service.getTasksGroupedByNaisteam(Collections.emptyList()));
-    }
-
-    @Test
-    void getTasksGroupedByNaisteam_exceptionPassesThrough() {
+    void naisteamHasActiveAuditloggTasks_exceptionPassesThrough() {
         when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
 
-        List<String> naisteams = List.of(NAISTEAM_1);
-        assertThrows(RuntimeException.class, () -> service.getTasksGroupedByNaisteam(naisteams));
-    }
-
-    @Test
-    void naisteamHasActiveAuditloggTasks_successful() {
-        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
-        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
-        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(true);
-        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
-
-        assertTrue(service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
+        assertThrows(RuntimeException.class, () -> service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
     }
 
     @Test
@@ -264,44 +260,20 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void naisteamHasActiveAuditloggTasks_exceptionPassesThrough() {
-        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenThrow(RuntimeException.class);
-
-        assertThrows(RuntimeException.class, () -> service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
-    }
-
-    @Test
-    void findAllNaisteamWithActiveAuditloggTasks_successful() {
-        String activeTeam = "active-team";
-        String inactiveTeam = "inactive-team";
-
+    void naisteamHasActiveAuditloggTasks_successful() {
         when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
-        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
-        when(auditloggTaskDTO2.getFiksa()).thenReturn(false);
-        when(adapter.findAllDistinctNaisteam()).thenReturn(List.of(activeTeam, inactiveTeam));
-        when(adapter.getTasksRegisteredToNaisteam(activeTeam)).thenReturn(List.of(auditloggTaskDTO1));
-        when(adapter.getTasksRegisteredToNaisteam(inactiveTeam)).thenReturn(List.of(auditloggTaskDTO2));
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(true);
+        when(adapter.getTasksRegisteredToNaisteam(NAISTEAM_1)).thenReturn(List.of(auditloggTaskDTO1));
 
-        assertEquals(List.of(activeTeam), service.findAllNaisteamWithActiveAuditloggTasks());
+        assertTrue(service.naisteamHasActiveAuditloggTasks(NAISTEAM_1));
     }
 
     @Test
-    void findAllNaisteamWithActiveAuditloggTasks_exceptionPassesThrough() {
-        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+    void findActiveTasksByTeknologi_exceptionPassesThrough() {
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> service.findAllNaisteamWithActiveAuditloggTasks());
-    }
-
-    @Test
-    void findActiveTasksByTeknologi_keepsTasksForwardingEitherLogCategory() {
-        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
-        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
-        when(auditloggTaskDTO2.getDiscardLogs()).thenReturn(false);
-        when(auditloggTaskDTO2.getLoggingLeseoperasjoner()).thenReturn(false);
-        when(auditloggTaskDTO2.getLoggingEndringer()).thenReturn(true);
-        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
-
-        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.findActiveTasksByTeknologi(TEKNOLOGI));
+        assertThrows(RuntimeException.class, () -> service.findActiveTasksByTeknologi(TEKNOLOGI));
     }
 
     @Test
@@ -323,10 +295,15 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void findActiveTasksByTeknologi_exceptionPassesThrough() {
-        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenThrow(RuntimeException.class);
+    void findActiveTasksByTeknologi_keepsTasksForwardingEitherLogCategory() {
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO2.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO2.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO2.getLoggingEndringer()).thenReturn(true);
+        when(adapter.findConfiguredTasksByTeknologi(TEKNOLOGI)).thenReturn(List.of(auditloggTaskDTO1, auditloggTaskDTO2));
 
-        assertThrows(RuntimeException.class, () -> service.findActiveTasksByTeknologi(TEKNOLOGI));
+        assertEquals(List.of(auditloggTaskDTO1, auditloggTaskDTO2), service.findActiveTasksByTeknologi(TEKNOLOGI));
     }
 
     @Test
@@ -343,10 +320,103 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    void setBackfillStatus_delegatesToAdapter() {
-        service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+    void findActiveTasksByBackfillStatusFiltersTasksNotFiksa() {
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(false);
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.BACKFILL_REQUESTED)))
+                .thenReturn(List.of(auditloggTaskDTO1));
 
-        verify(adapter).setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+        assertEquals(Collections.emptyList(), service.findActiveTasksByBackfillStatus(BackfillStatus.BACKFILL_REQUESTED));
+        verify(auditloggTaskDTO1, never()).getDiscardLogs();
+        verify(auditloggTaskDTO1, never()).getLoggingLeseoperasjoner();
+        verify(auditloggTaskDTO1, never()).getLoggingEndringer();
+    }
+
+    @Test
+    void findActiveTasksByBackfillStatusFiltersDiscardedTasks() {
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(true);
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.COLD_STORAGE_REQUESTED)))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(Collections.emptyList(), service.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED));
+        verify(auditloggTaskDTO1, never()).getLoggingLeseoperasjoner();
+        verify(auditloggTaskDTO1, never()).getLoggingEndringer();
+    }
+
+    @Test
+    void findActiveTasksByBackfillStatusFiltersTasksWithoutEitherLoggingCategory() {
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(false);
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.BACKFILL_REQUESTED)))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(Collections.emptyList(), service.findActiveTasksByBackfillStatus(BackfillStatus.BACKFILL_REQUESTED));
+    }
+
+    @Test
+    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyReadLogging() {
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.BACKFILL_REQUESTED)))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(List.of(auditloggTaskDTO1),
+                service.findActiveTasksByBackfillStatus(BackfillStatus.BACKFILL_REQUESTED));
+        verify(auditloggTaskDTO1, never()).getLoggingEndringer();
+    }
+
+    @Test
+    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyWriteLogging() {
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(false);
+        when(auditloggTaskDTO1.getLoggingEndringer()).thenReturn(true);
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.COLD_STORAGE_REQUESTED)))
+                .thenReturn(List.of(auditloggTaskDTO1));
+
+        assertEquals(List.of(auditloggTaskDTO1),
+                service.findActiveTasksByBackfillStatus(BackfillStatus.COLD_STORAGE_REQUESTED));
+    }
+
+    @Test
+    void findActiveTasksByBackfillStatusSelectsRequestedTasksAcrossTechnologies() {
+        AuditloggTaskDTO db2Task = AuditloggTaskDTO.builder()
+                .naisteam(NAISTEAM_1)
+                .teknologi(TeknologiEnum.DB2)
+                .dbname("db2-database")
+                .okonomi(true)
+                .arkivforskrift(false)
+                .endringerUtenKrav(false)
+                .loggingLeseoperasjoner(true)
+                .fiksa(true)
+                .loggingEndringer(false)
+                .funnetLogger(true)
+                .discardLogs(false)
+                .backfill(BackfillStatus.BACKFILL_REQUESTED)
+                .build();
+        AuditloggTaskDTO postgresqlTask = AuditloggTaskDTO.builder()
+                .naisteam(NAISTEAM_2)
+                .teknologi(TeknologiEnum.POSTGRESQL)
+                .dbname("postgresql-database")
+                .okonomi(true)
+                .arkivforskrift(false)
+                .endringerUtenKrav(false)
+                .loggingLeseoperasjoner(false)
+                .fiksa(true)
+                .loggingEndringer(true)
+                .funnetLogger(true)
+                .discardLogs(false)
+                .backfill(BackfillStatus.BACKFILL_REQUESTED)
+                .build();
+        when(adapter.findTasksByBackfillStatuses(List.of(BackfillStatus.BACKFILL_REQUESTED)))
+                .thenReturn(List.of(db2Task, postgresqlTask));
+
+        assertEquals(List.of(db2Task, postgresqlTask),
+                service.findActiveTasksByBackfillStatus(BackfillStatus.BACKFILL_REQUESTED));
+        verify(adapter).findTasksByBackfillStatuses(List.of(BackfillStatus.BACKFILL_REQUESTED));
     }
 
     @Test
@@ -359,38 +429,32 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusSelectsRequestedTasksAcrossTechnologies() {
+    void setBackfillStatus_delegatesToAdapter() {
+        service.setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
+
+        verify(adapter).setBackfillStatus(DBNAME, TeknologiEnum.DB2, BackfillStatus.COLD_STORAGE_COMPLETED);
     }
 
     @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusFiltersTasksNotFiksa() {
+    void findAllNaisteamWithActiveAuditloggTasks_exceptionPassesThrough() {
+        when(adapter.findAllDistinctNaisteam()).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.findAllNaisteamWithActiveAuditloggTasks());
     }
 
     @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusFiltersDiscardedTasks() {
-    }
+    void findAllNaisteamWithActiveAuditloggTasks_successful() {
+        String activeTeam = "active-team";
+        String inactiveTeam = "inactive-team";
 
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyReadLogging() {
-    }
+        when(auditloggTaskDTO1.getFiksa()).thenReturn(true);
+        when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);
+        when(auditloggTaskDTO2.getFiksa()).thenReturn(false);
+        when(adapter.findAllDistinctNaisteam()).thenReturn(List.of(activeTeam, inactiveTeam));
+        when(adapter.getTasksRegisteredToNaisteam(activeTeam)).thenReturn(List.of(auditloggTaskDTO1));
+        when(adapter.getTasksRegisteredToNaisteam(inactiveTeam)).thenReturn(List.of(auditloggTaskDTO2));
 
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusKeepsTasksWithOnlyWriteLogging() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusFiltersTasksWithoutEitherLoggingCategory() {
-    }
-
-    @Test
-    @Disabled("Pending coverage review and test implementation")
-    void findActiveTasksByBackfillStatusIncludesEligibleUnsupportedTechnology() {
+        assertEquals(List.of(activeTeam), service.findAllNaisteamWithActiveAuditloggTasks());
     }
 
 }
