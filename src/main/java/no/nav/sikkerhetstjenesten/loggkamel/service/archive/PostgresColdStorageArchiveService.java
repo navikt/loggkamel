@@ -49,7 +49,7 @@ public class PostgresColdStorageArchiveService {
     }
 
     public TemporaryLocalArchive createLocalArchiveOfColdStorageLogs(AuditloggTaskDTO task) {
-        validateTask(task);
+        validateTaskIsPostgresAndRequestsColdStorage(task);
         Path temporaryDirectory;
         try {
             temporaryDirectory = Files.createTempDirectory(TEMP_DIRECTORY_PREFIX);
@@ -58,12 +58,13 @@ public class PostgresColdStorageArchiveService {
         }
 
         List<Path> archivePaths = new ArrayList<>();
+        // GCP guarantees ordering, we enforce it locally. Log files will be sorted from earliest to latest
         try (var sourceFiles = streamLogFilesForTask(task).sorted(Comparator.comparing(Blob::getName))) {
             var iterator = sourceFiles.iterator();
             Blob nextFile = iterator.hasNext() ? iterator.next() : null;
             // Outer loop iterates over each month with files, inner loop iterates over all files for the current month
             while (nextFile != null) {
-                YearMonth month = monthOfFile(nextFile);
+                YearMonth month = monthOfFileDerivedFromFilename(nextFile);
                 Path archivePath = temporaryDirectory.resolve(
                         month.format(MONTH_FORMAT) + "-loggkamel-" + task.getDbname() + ".zip");
                 try (var zip = new ZipOutputStream(Files.newOutputStream(archivePath))) {
@@ -75,7 +76,7 @@ public class PostgresColdStorageArchiveService {
                         }
                         zip.closeEntry();
                         nextFile = iterator.hasNext() ? iterator.next() : null;
-                    } while (nextFile != null && month.equals(monthOfFile(nextFile)));
+                    } while (nextFile != null && month.equals(monthOfFileDerivedFromFilename(nextFile)));
                 }
                 archivePaths.add(archivePath);
             }
@@ -90,8 +91,7 @@ public class PostgresColdStorageArchiveService {
     }
 
     public void deleteArchivedSourceFiles(AuditloggTaskDTO task) {
-        validateTask(task);
-        // No files arrive during the transfer, so deletion can use a fresh listing.
+        validateTaskIsPostgresAndRequestsColdStorage(task);
         try (var sourceFiles = streamLogFilesForTask(task)) {
             var iterator = sourceFiles.iterator();
             while (iterator.hasNext()) {
@@ -107,13 +107,13 @@ public class PostgresColdStorageArchiveService {
                 .filter(blob -> SOURCE_FILENAME_PATTERN.matcher(blob.getName()).matches());
     }
 
-    private static YearMonth monthOfFile(Blob file) {
+    private static YearMonth monthOfFileDerivedFromFilename(Blob file) {
         String filename = file.getName();
         int dateStart = filename.indexOf('.') + 1;
         return YearMonth.parse(filename.substring(dateStart, dateStart + 6), MONTH_FORMAT);
     }
 
-    private static void validateTask(AuditloggTaskDTO task) {
+    private static void validateTaskIsPostgresAndRequestsColdStorage(AuditloggTaskDTO task) {
         if (task == null) {
             throw new AuditloggTaskNotFoundException("No auditlogg task was provided for monthly cold storage");
         }
