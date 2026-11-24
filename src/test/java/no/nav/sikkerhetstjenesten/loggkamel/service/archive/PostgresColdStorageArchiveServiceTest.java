@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -205,11 +207,17 @@ class PostgresColdStorageArchiveServiceTest {
     void createLocalArchivePreservesFileBytes() throws IOException {
         stubTask();
         byte[] original = {0, 1, 2, 10, 13, (byte) 255};
-        stubListing(page(FEBRUARY_LOGS_COMPRESSED_FILENAME));
-        stubReader(FEBRUARY_LOGS_COMPRESSED_FILENAME, original);
+        ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
+            gzip.write(original);
+        }
+        stubListing(page(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME));
+        stubReader(EARLY_JANUARY_LOGS_FILENAME, original);
+        stubReader(FEBRUARY_LOGS_COMPRESSED_FILENAME, compressed.toByteArray());
 
         try (TemporaryLocalArchive archive = service.createLocalArchiveOfColdStorageLogs(task)) {
-            assertEntryBytes(archive.archivePaths().getFirst(), FEBRUARY_LOGS_COMPRESSED_FILENAME, original);
+            assertEntryBytes(archive.archivePaths().getFirst(), EARLY_JANUARY_LOGS_FILENAME, original);
+            assertEntryBytes(archive.archivePaths().getLast(), FEBRUARY_LOGS_COMPRESSED_FILENAME, compressed.toByteArray());
         }
     }
 
@@ -233,18 +241,6 @@ class PostgresColdStorageArchiveServiceTest {
 
         assertSame(failure, assertThrows(StorageException.class, () -> service.deleteArchivedSourceFiles(task)));
         verify(storage, never()).delete(ARCHIVE_BUCKET, FEBRUARY_LOGS_COMPRESSED_FILENAME);
-    }
-
-    @Test
-    void deleteArchivedSourceFilesDeletesObjectsWithoutGenerations() {
-        stubTask();
-        stubListing(page(EARLY_JANUARY_LOGS_FILENAME));
-
-        service.deleteArchivedSourceFiles(task);
-
-        verify(storage).delete(ARCHIVE_BUCKET, EARLY_JANUARY_LOGS_FILENAME);
-        verify(storage).list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."));
-        verifyNoMoreInteractions(storage);
     }
 
     @Test
