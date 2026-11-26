@@ -1,6 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service.scheduled;
 
-import io.getunleash.Unleash;
 import no.nav.sikkerhetstjenesten.loggkamel.camel.observability.Metrics;
 import no.nav.sikkerhetstjenesten.loggkamel.persistence.database.TeknologiEnum;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
@@ -18,7 +17,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
-import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.ScheduledDB2Backfill.DB2_BACKFILL_FEATURE_FLAG;
 import static no.nav.sikkerhetstjenesten.loggkamel.service.scheduled.DailyDB2LogPuller.DB2_PULL_LOCK_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,9 +50,6 @@ class ScheduledDB2BackfillTest {
     Metrics metrics;
 
     @Mock
-    Unleash unleash;
-
-    @Mock
     AuditloggTaskDTO task1;
 
     @Mock
@@ -65,23 +60,11 @@ class ScheduledDB2BackfillTest {
     @BeforeEach
     void setUp() {
         backfill = new ScheduledDB2Backfill(
-                auditloggTaskService, db2PacketService, advisoryLockService, metrics, unleash, ZoneId.of("Europe/Oslo"));
-    }
-
-    @Test
-    void scheduledBackfillDoesNothingWhenFeatureFlagIsDisabled() {
-        when(unleash.isEnabled(DB2_BACKFILL_FEATURE_FLAG, false)).thenReturn(false);
-
-        backfill.backfillDB2LogsForAllRequestedTasks();
-
-        verifyNoInteractions(advisoryLockService);
-        verifyNoInteractions(auditloggTaskService);
-        verifyNoInteractions(db2PacketService);
+                auditloggTaskService, db2PacketService, advisoryLockService, metrics, ZoneId.of("Europe/Oslo"));
     }
 
     @Test
     void scheduledBackfillUsesSharedDB2PullLock() {
-        when(unleash.isEnabled(DB2_BACKFILL_FEATURE_FLAG, false)).thenReturn(true);
         when(advisoryLockService.runIfLockAcquired(eq(DB2_PULL_LOCK_KEY), any(Runnable.class))).thenReturn(false);
 
         backfill.backfillDB2LogsForAllRequestedTasks();

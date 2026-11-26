@@ -7,7 +7,6 @@ import io.getunleash.UnleashContext;
 import io.getunleash.impactmetrics.MetricsAPI;
 import io.getunleash.util.UnleashConfig;
 import io.getunleash.variant.Variant;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.boot.conditionals.ConditionalOnGCP;
 import no.nav.boot.conditionals.ConditionalOnLocalOrTest;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.function.BiPredicate;
 
-@Slf4j
 @Configuration
 public class UnleashClientConfig {
 
