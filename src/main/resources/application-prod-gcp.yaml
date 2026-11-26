@@ -29,11 +29,10 @@ scheduled:
       cron: "0 0 3 * * *"
     pull:
       cron: "0 0 8 * * *"
-    cold-storage:
-      cron: "0 30 3 * * *"
+  cold-storage:
+    cron: "0 30 3 * * *"
 
 cold-storage:
-  db2:
-    project-id: "nav-audit-logs"
-    bucket-name: "nav-audit-log-archive-bucket"
-    environment: "prod-gcp"
+  project-id: "nav-audit-logs"
+  bucket-name: "nav-audit-log-archive-bucket"
+  environment: "prod-gcp"
