@@ -8,7 +8,8 @@ loggkamel-proxy:
 
 routing:
   postgres:
-    consumer: "google-storage://loggkamel-prod-postgresql-consumer?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
+    consumer-bucket-name: "loggkamel-prod-postgresql-consumer"
+    consumer: "google-storage://${routing.postgres.consumer-bucket-name}?deleteAfterRead=false&exceptionHandler=#gcpConsumerPollingExceptionHandler&includeBody=false"
     invalid-message: "loggkamel-prod-postgresql-invalid-message"
   packet:
     bucket-name: "loggkamel-prod-logglines"
@@ -20,13 +21,13 @@ auth:
     - sikkerhetstjenesten
 
 scheduled:
+  backfill:
+    cron: "0 0 3 * * *"
   idempotent-repository:
     cleanup:
       postgres-retention-minutes: 360
       log-packet-retention-minutes: 10
   db2:
-    backfill:
-      cron: "0 0 3 * * *"
     pull:
       cron: "0 0 8 * * *"
   cold-storage:
