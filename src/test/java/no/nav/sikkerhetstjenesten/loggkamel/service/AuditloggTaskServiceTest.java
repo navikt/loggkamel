@@ -307,6 +307,26 @@ class AuditloggTaskServiceTest {
     }
 
     @Test
+    void findConfiguredTasksByTeknologiAndBackfillStatusPropagatesAdapterFailure() {
+    }
+
+    @Test
+    void findConfiguredTasksByTeknologiAndBackfillStatusReturnsEmptyListWhenNoTasksMatch() {
+    }
+
+    @Test
+    void findConfiguredTasksByTeknologiAndBackfillStatusKeepsTasksMarkedForDiscarding() {
+    }
+
+    @Test
+    void findConfiguredTasksByTeknologiAndBackfillStatusKeepsTasksWithoutForwardingCategories() {
+    }
+
+    @Test
+    void findConfiguredTasksByTeknologiAndBackfillStatusDelegatesTechnologyAndStatusToConfiguredTaskQuery() {
+    }
+
+    @Test
     void findActiveTasksByTeknologiAndBackfillStatus_filtersInactiveTasks() {
         when(auditloggTaskDTO1.getDiscardLogs()).thenReturn(false);
         when(auditloggTaskDTO1.getLoggingLeseoperasjoner()).thenReturn(true);

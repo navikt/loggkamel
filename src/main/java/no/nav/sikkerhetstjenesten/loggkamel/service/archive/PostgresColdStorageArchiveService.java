@@ -8,6 +8,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskNotFoundException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.InvalidAuditloggTaskStateException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.PostgresInvalidMessageService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,18 +32,17 @@ public class PostgresColdStorageArchiveService {
 
     private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("yyyyMM");
     private static final String TEMP_DIRECTORY_PREFIX = "loggkamel-scheduled-cold-storage-";
-    // Example: example-db-name.20260327.auditlog.gz (or without .gz).
-    private static final Pattern SOURCE_FILENAME_PATTERN =
-            Pattern.compile("[^.]+\\.[0-9]{8}\\.auditlog(?:\\.gz)?");
-
     private final Storage storage;
     private final String sourceBucketName;
+    private final PostgresInvalidMessageService invalidMessageService;
 
     public PostgresColdStorageArchiveService(
             @Qualifier("serviceLocalGcpStorage") Storage storage,
-            @Value("${routing.postgres.invalid-message}") String sourceBucketName) {
+            @Value("${routing.postgres.invalid-message}") String sourceBucketName,
+            PostgresInvalidMessageService invalidMessageService) {
         this.storage = storage;
         this.sourceBucketName = sourceBucketName;
+        this.invalidMessageService = invalidMessageService;
     }
 
     public TemporaryLocalArchive createLocalArchiveOfColdStorageLogs(AuditloggTaskDTO task) {
@@ -59,7 +56,7 @@ public class PostgresColdStorageArchiveService {
 
         List<Path> archivePaths = new ArrayList<>();
         // GCP guarantees ordering, we enforce it locally. Log files will be sorted from earliest to latest
-        try (var sourceFiles = streamLogFilesForTask(task).sorted(Comparator.comparing(Blob::getName))) {
+        try (var sourceFiles = invalidMessageService.streamLogFilesInBackoutQueueForTask(task).sorted(Comparator.comparing(Blob::getName))) {
             var iterator = sourceFiles.iterator();
             Blob nextFile = iterator.hasNext() ? iterator.next() : null;
             // Outer loop iterates over each month with files, inner loop iterates over all files for the current month
@@ -92,19 +89,13 @@ public class PostgresColdStorageArchiveService {
 
     public void deleteArchivedSourceFiles(AuditloggTaskDTO task) {
         validateTaskIsPostgresAndRequestsColdStorage(task);
-        try (var sourceFiles = streamLogFilesForTask(task)) {
+        try (var sourceFiles = invalidMessageService.streamLogFilesInBackoutQueueForTask(task)) {
             var iterator = sourceFiles.iterator();
             while (iterator.hasNext()) {
                 String filename = iterator.next().getName();
                 storage.delete(sourceBucketName, filename);
             }
         }
-    }
-
-    private Stream<Blob> streamLogFilesForTask(AuditloggTaskDTO task) {
-        var files = storage.list(sourceBucketName, Storage.BlobListOption.prefix(task.getDbname() + "."));
-        return StreamSupport.stream(files.iterateAll().spliterator(), false)
-                .filter(blob -> SOURCE_FILENAME_PATTERN.matcher(blob.getName()).matches());
     }
 
     private static YearMonth monthOfFileDerivedFromFilename(Blob file) {

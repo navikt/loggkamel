@@ -88,6 +88,11 @@ public class AuditloggTaskService {
                 .toList();
     }
 
+    public List<AuditloggTaskDTO> findConfiguredTasksByTeknologiAndBackfillStatus(
+            TeknologiEnum teknologi, BackfillStatus backfillStatus) {
+        return adapter.findConfiguredTasksByTeknologiAndBackfill(teknologi, backfillStatus);
+    }
+
     public List<AuditloggTaskDTO> findActiveTasksByTeknologiAndBackfillStatus(
             TeknologiEnum teknologi, BackfillStatus backfillStatus) {
         return adapter.findConfiguredTasksByTeknologiAndBackfill(teknologi, backfillStatus).stream()

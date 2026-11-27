@@ -23,6 +23,7 @@ import java.util.List;
 public class ScheduledDB2Backfill {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledDB2Backfill.class);
+    static final long DB2_BACKFILL_LOCK_KEY = AdvisoryLockService.lockKeyFromName("db2-backfill");
 
     private final AuditloggTaskService auditloggTaskService;
     private final DB2PacketService db2PacketService;
@@ -44,14 +45,14 @@ public class ScheduledDB2Backfill {
         this.appZoneId = appZoneId;
     }
 
-    @Scheduled(cron = "${scheduled.db2.backfill.cron}", zone = "${app.timezone}")
+    @Scheduled(cron = "${scheduled.backfill.cron}", zone = "${app.timezone}")
     public void backfillDB2LogsForAllRequestedTasks() {
         boolean lockAcquired = advisoryLockService.runIfLockAcquired(
-                DailyDB2LogPuller.DB2_PULL_LOCK_KEY,
+                DB2_BACKFILL_LOCK_KEY,
                 () -> backfillLogsForAllRequestedTasks(LocalDate.now(appZoneId)));
 
         if (!lockAcquired) {
-            log.info("Another instance holds the DB2 pull lock, skipping scheduled DB2 backfill");
+            log.info("Another instance holds the DB2 backfill lock, skipping scheduled DB2 backfill");
         }
     }
 
@@ -92,11 +93,13 @@ public class ScheduledDB2Backfill {
                     requestedTask.getDbname(),
                     TeknologiEnum.DB2,
                     BackfillStatus.BACKFILL_COMPLETED);
+            metrics.incrementBackfillOutcome(TeknologiEnum.DB2, Metrics.ActionOutcome.success);
             return true;
         } catch (RuntimeException e) {
             log.warn("Scheduled DB2 backfill failed, dbname {}, startDate {}, endDate {}; leaving backfill requested",
                     requestedTask.getDbname(), pullStartDate, pullEndDate, e);
             metrics.incrementPullFailure(requestedTask.getDbname(), TeknologiEnum.DB2);
+            metrics.incrementBackfillOutcome(TeknologiEnum.DB2, Metrics.ActionOutcome.failure);
             return false;
         }
     }

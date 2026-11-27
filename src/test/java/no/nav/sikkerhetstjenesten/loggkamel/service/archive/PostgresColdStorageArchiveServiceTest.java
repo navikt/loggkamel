@@ -11,6 +11,7 @@ import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.AuditloggTaskDTO;
 import no.nav.sikkerhetstjenesten.loggkamel.rest.dto.BackfillStatus;
 import no.nav.sikkerhetstjenesten.loggkamel.service.AuditloggTaskNotFoundException;
 import no.nav.sikkerhetstjenesten.loggkamel.service.InvalidAuditloggTaskStateException;
+import no.nav.sikkerhetstjenesten.loggkamel.service.PostgresInvalidMessageService;
 import no.nav.sikkerhetstjenesten.loggkamel.service.TemporaryLocalArchive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,8 @@ class PostgresColdStorageArchiveServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new PostgresColdStorageArchiveService(storage, ARCHIVE_BUCKET);
+        service = new PostgresColdStorageArchiveService(storage, ARCHIVE_BUCKET,
+                new PostgresInvalidMessageService(storage, ARCHIVE_BUCKET, "consumer-bucket"));
     }
 
     @Test
