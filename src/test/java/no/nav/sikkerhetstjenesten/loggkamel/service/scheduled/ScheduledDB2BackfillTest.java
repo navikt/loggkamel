@@ -75,10 +75,6 @@ class ScheduledDB2BackfillTest {
     }
 
     @Test
-    void backfillLogsForAllRequestedTasksDoesNotRecordOutcomesWhenNoTasksExist() {
-    }
-
-    @Test
     void failedBackfillRemainsRequestedAndOtherTasksContinue() {
         when(task1.getDbname()).thenReturn(DBNAME_1);
         when(task2.getDbname()).thenReturn(DBNAME_2);
@@ -141,19 +137,4 @@ class ScheduledDB2BackfillTest {
                 DBNAME_1, TeknologiEnum.DB2, BackfillStatus.BACKFILL_COMPLETED);
     }
 
-    @Test
-    void backfillSingleTaskRecordsFailureOutcomeWhenPullFails() {
-    }
-
-    @Test
-    void backfillSingleTaskRecordsFailureOutcomeWhenCompletionStatusUpdateFails() {
-    }
-
-    @Test
-    void backfillSingleTaskRecordsSuccessOutcomeOnJanuaryFirstWithoutPulling() {
-    }
-
-    @Test
-    void backfillSingleTaskRecordsSuccessOutcomeAfterCompletionStatusIsPersisted() {
-    }
 }

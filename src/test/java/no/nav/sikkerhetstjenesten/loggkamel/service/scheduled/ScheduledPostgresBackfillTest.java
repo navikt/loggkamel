@@ -9,19 +9,7 @@ class ScheduledPostgresBackfillTest {
     }
 
     @Test
-    void scheduledBackfillUsesLockIndependentOfDB2PullAndColdStorageLocks() {
-    }
-
-    @Test
-    void scheduledBackfillProcessesTasksWhileHoldingPostgresLock() {
-    }
-
-    @Test
     void backfillLogsForAllRequestedTasksPropagatesTaskSelectionFailure() {
-    }
-
-    @Test
-    void backfillLogsForAllRequestedTasksDoesNotRecordOutcomesWhenNoTasksExist() {
     }
 
     @Test
@@ -41,15 +29,7 @@ class ScheduledPostgresBackfillTest {
     }
 
     @Test
-    void backfillSingleTaskRecordsFailureWhenCompletionStatusCannotBePersisted() {
-    }
-
-    @Test
-    void backfillSingleTaskRecordsOneFailureOutcomeForFailedTransfer() {
-    }
-
-    @Test
-    void backfillSingleTaskCompletesWhenNoFilesMatch() {
+    void backfillSingleTaskCompletesForTaskWithNoHistoricalFilesAwaitingBackfill() {
     }
 
     @Test
@@ -58,9 +38,5 @@ class ScheduledPostgresBackfillTest {
 
     @Test
     void backfillSingleTaskCompletesAfterAllFilesHaveBeenMoved() {
-    }
-
-    @Test
-    void backfillSingleTaskRecordsOneSuccessOutcomeAfterPersistingCompletion() {
     }
 }

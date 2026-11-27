@@ -21,18 +21,6 @@ class PostgresInvalidMessageServiceTest {
     }
 
     @Test
-    void streamLogFilesForTaskIncludesUncompressedAuditlogs() {
-    }
-
-    @Test
-    void streamLogFilesForTaskIncludesGzipAuditlogs() {
-    }
-
-    @Test
-    void streamLogFilesForTaskIncludesAllDatesWithoutBackfillWindow() {
-    }
-
-    @Test
     void streamLogFilesForTaskReadsAllListingPages() {
     }
 
@@ -53,23 +41,11 @@ class PostgresInvalidMessageServiceTest {
     }
 
     @Test
-    void moveLogsToConsumerBucketStopsAtFailedFileWithoutUndoingEarlierMoves() {
-    }
-
-    @Test
     void moveLogsToConsumerBucketPropagatesFailureWhileReadingLaterListingPage() {
     }
 
     @Test
-    void moveLogsToConsumerBucketCopiesListedSourceGeneration() {
-    }
-
-    @Test
     void moveLogsToConsumerBucketOverwritesExistingDestinationObject() {
-    }
-
-    @Test
-    void moveLogsToConsumerBucketPreservesFilenameAndContents() {
     }
 
     @Test
@@ -90,9 +66,5 @@ class PostgresInvalidMessageServiceTest {
 
     @Test
     void deleteTransferredSourcePreservesReplacementGenerationWithoutFailingTransfer() {
-    }
-
-    @Test
-    void deleteTransferredSourceDeletesOnlyTheGenerationThatWasCopied() {
     }
 }
