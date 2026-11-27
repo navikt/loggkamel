@@ -44,7 +44,7 @@ auth:
 
 scheduled:
   backfill:
-    cron: "0 0 3 * * *"
+    cron: "0 */10 * * * *"
   idempotent-repository:
     cleanup:
       postgres-retention-minutes: 5
@@ -53,7 +53,7 @@ scheduled:
     pull:
       cron: "0 0 8 * * *"
   cold-storage:
-    cron: "0 */30 * * * *"
+    cron: "0 */10 * * * *"
 
 cold-storage:
   project-id: "tilgangsmaskin-dev-gcp"
