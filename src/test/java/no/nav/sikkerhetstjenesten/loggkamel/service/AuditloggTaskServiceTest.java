@@ -308,10 +308,20 @@ class AuditloggTaskServiceTest {
 
     @Test
     void findConfiguredTasksByTeknologiAndBackfillStatusPropagatesAdapterFailure() {
+        when(adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED))
+                .thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> service.findConfiguredTasksByTeknologiAndBackfillStatus(
+                TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
     }
 
     @Test
     void findConfiguredTasksByTeknologiAndBackfillStatusReturnsEmptyListWhenNoTasksMatch() {
+        when(adapter.findConfiguredTasksByTeknologiAndBackfill(TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED))
+                .thenReturn(Collections.emptyList());
+
+        assertEquals(Collections.emptyList(), service.findConfiguredTasksByTeknologiAndBackfillStatus(
+                TEKNOLOGI, BackfillStatus.BACKFILL_REQUESTED));
     }
 
     @Test
