@@ -46,15 +46,15 @@ public class PostgresInvalidMessageService {
     }
 
     public void moveLogsToConsumerBucket(AuditloggTaskDTO task) {
-        try (var sourceFiles = streamLogFilesInBackoutQueueForTask(task)) {
-            var iterator = sourceFiles.iterator();
+        try (var filesToMoveToConsumer = streamLogFilesInBackoutQueueForTask(task)) {
+            var iterator = filesToMoveToConsumer.iterator();
             while (iterator.hasNext()) {
-                Blob source = iterator.next();
+                Blob fileInBackoutQueue = iterator.next();
                 storage.copy(Storage.CopyRequest.newBuilder()
-                        .setSource(BlobId.of(postgresInvalidMessagesBucket, source.getName(), source.getGeneration()))
-                        .setTarget(BlobId.of(postgresConsumerBucket, source.getName()))
+                        .setSource(BlobId.of(postgresInvalidMessagesBucket, fileInBackoutQueue.getName(), fileInBackoutQueue.getGeneration()))
+                        .setTarget(BlobId.of(postgresConsumerBucket, fileInBackoutQueue.getName()))
                         .build()).getResult();
-                deleteTransferredSource(source);
+                deleteTransferredSource(fileInBackoutQueue);
             }
         }
     }
