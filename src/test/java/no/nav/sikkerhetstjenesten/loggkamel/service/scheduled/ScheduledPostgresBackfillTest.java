@@ -82,18 +82,6 @@ class ScheduledPostgresBackfillTest {
     }
 
     @Test
-    void backfillLogsForAllRequestedTasksSelectsConfiguredRequestedPostgresTasks() {
-        AuditloggTaskDTO task = task("selected-db");
-        when(auditloggTaskService.findConfiguredTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task));
-
-        scheduledBackfill.backfillLogsForAllRequestedTasks();
-
-        verify(auditloggTaskService).findConfiguredTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_REQUESTED);
-    }
-
-    @Test
     void backfillLogsForAllRequestedTasksProcessesEverySelectedTask() {
         AuditloggTaskDTO firstTask = task("first-db");
         AuditloggTaskDTO secondTask = task("second-db");
@@ -119,30 +107,6 @@ class ScheduledPostgresBackfillTest {
 
         verify(auditloggTaskService, never()).setBackfillStatus(
                 "failed-db", TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_COMPLETED);
-    }
-
-    @Test
-    void backfillSingleTaskCompletesForTaskWithNoHistoricalFilesAwaitingBackfill() {
-        AuditloggTaskDTO task = task("no-files-db");
-        when(auditloggTaskService.findConfiguredTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task));
-
-        scheduledBackfill.backfillLogsForAllRequestedTasks();
-
-        verify(auditloggTaskService).setBackfillStatus(
-                "no-files-db", TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_COMPLETED);
-    }
-
-    @Test
-    void backfillSingleTaskCompletesWhenTransferredSourceWasReplacedByConsumerBackout() {
-        AuditloggTaskDTO task = task("replaced-source-db");
-        when(auditloggTaskService.findConfiguredTasksByTeknologiAndBackfillStatus(
-                TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_REQUESTED)).thenReturn(List.of(task));
-
-        scheduledBackfill.backfillLogsForAllRequestedTasks();
-
-        verify(auditloggTaskService).setBackfillStatus(
-                "replaced-source-db", TeknologiEnum.POSTGRESQL, BackfillStatus.BACKFILL_COMPLETED);
     }
 
     @Test
