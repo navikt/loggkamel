@@ -1,7 +1,5 @@
 package no.nav.sikkerhetstjenesten.loggkamel.service.archive;
 
-import com.google.api.gax.paging.Page;
-import com.google.cloud.PageImpl;
 import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
@@ -50,6 +48,9 @@ class PostgresColdStorageArchiveServiceTest {
     Storage storage;
 
     @Mock
+    PostgresInvalidMessageService invalidMessageService;
+
+    @Mock
     AuditloggTaskDTO task;
 
     @TempDir
@@ -59,15 +60,14 @@ class PostgresColdStorageArchiveServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new PostgresColdStorageArchiveService(storage, ARCHIVE_BUCKET,
-                new PostgresInvalidMessageService(storage, ARCHIVE_BUCKET, "consumer-bucket"));
+        service = new PostgresColdStorageArchiveService(storage, ARCHIVE_BUCKET, invalidMessageService);
     }
 
     @Test
     void createLocalArchiveRejectsNullTask() {
         assertThrows(AuditloggTaskNotFoundException.class,
                 () -> service.createLocalArchiveOfColdStorageLogs(null));
-        verifyNoInteractions(storage);
+        verifyNoInteractions(storage, invalidMessageService);
     }
 
     @Test
@@ -76,7 +76,7 @@ class PostgresColdStorageArchiveServiceTest {
 
         assertThrows(InvalidAuditloggTaskStateException.class,
                 () -> service.createLocalArchiveOfColdStorageLogs(task));
-        verifyNoInteractions(storage);
+        verifyNoInteractions(storage, invalidMessageService);
     }
 
     @Test
@@ -86,25 +86,25 @@ class PostgresColdStorageArchiveServiceTest {
 
         assertThrows(InvalidAuditloggTaskStateException.class,
                 () -> service.createLocalArchiveOfColdStorageLogs(task));
-        verifyNoInteractions(storage);
+        verifyNoInteractions(storage, invalidMessageService);
     }
 
     @Test
     void createLocalArchiveFailsWhenSourceListingFails() {
         stubTask();
         StorageException failure = new StorageException(503, "listing unavailable");
-        when(storage.list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."))).thenThrow(failure);
+        when(invalidMessageService.streamLogFilesInBackoutQueueForTask(task)).thenThrow(failure);
 
         assertSame(failure, assertThrows(StorageException.class,
                 () -> service.createLocalArchiveOfColdStorageLogs(task)));
-        verify(storage).list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."));
-        verifyNoMoreInteractions(storage);
+        verify(invalidMessageService).streamLogFilesInBackoutQueueForTask(task);
+        verifyNoInteractions(storage);
     }
 
     @Test
     void createLocalArchiveCleansTemporaryDirectoryWhenCreationFails() throws IOException {
         stubTask();
-        stubListing(page(EARLY_JANUARY_LOGS_FILENAME));
+        stubArchiveFiles(EARLY_JANUARY_LOGS_FILENAME);
         IOException failure = new IOException("source read failed");
         ReadChannel reader = mock(ReadChannel.class);
         when(reader.read(any(ByteBuffer.class))).thenThrow(failure);
@@ -125,24 +125,12 @@ class PostgresColdStorageArchiveServiceTest {
     @Test
     void createLocalArchiveHandlesEmptySourceSet() {
         stubTask();
-        stubListing(page());
+        stubSourceFiles();
 
         try (TemporaryLocalArchive archive = service.createLocalArchiveOfColdStorageLogs(task)) {
             assertTrue(archive.archivePaths().isEmpty());
-            verify(storage).list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."));
-            verifyNoMoreInteractions(storage);
-        }
-    }
-
-    @Test
-    void createLocalArchiveMatchesExactDatabasePrefix() {
-        stubTask();
-        stubListing(page(DB_NAME + ".other.20260102.auditlog"));
-
-        try (TemporaryLocalArchive archive = service.createLocalArchiveOfColdStorageLogs(task)) {
-            verify(storage).list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."));
-            assertTrue(archive.archivePaths().isEmpty());
-            verifyNoMoreInteractions(storage);
+            verify(invalidMessageService).streamLogFilesInBackoutQueueForTask(task);
+            verifyNoInteractions(storage);
         }
     }
 
@@ -157,10 +145,9 @@ class PostgresColdStorageArchiveServiceTest {
     }
 
     @Test
-    void createLocalArchiveReadsAllListingPages() throws IOException {
+    void createLocalArchiveProcessesAllProvidedSourceFiles() throws IOException {
         stubTask();
-        Page<Blob> second = page(LATE_JANUARY_LOGS_FILENAME);
-        stubListing(new PageImpl<>(() -> second, "next", List.of(blob(EARLY_JANUARY_LOGS_FILENAME))));
+        stubArchiveFiles(EARLY_JANUARY_LOGS_FILENAME, LATE_JANUARY_LOGS_FILENAME);
         stubReader(EARLY_JANUARY_LOGS_FILENAME, new byte[0]);
         stubReader(LATE_JANUARY_LOGS_FILENAME, new byte[0]);
 
@@ -174,7 +161,7 @@ class PostgresColdStorageArchiveServiceTest {
     void createLocalArchiveGroupsFilesByYearAndMonth() throws IOException {
         stubTask();
         String previousYearJanuaryFilename = DB_NAME + ".20250102.auditlog";
-        stubListing(page(previousYearJanuaryFilename, EARLY_JANUARY_LOGS_FILENAME, LATE_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME));
+        stubArchiveFiles(previousYearJanuaryFilename, EARLY_JANUARY_LOGS_FILENAME, LATE_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME);
         for (String filename : List.of(previousYearJanuaryFilename, EARLY_JANUARY_LOGS_FILENAME, LATE_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME)) {
             stubReader(filename, new byte[0]);
         }
@@ -195,7 +182,7 @@ class PostgresColdStorageArchiveServiceTest {
     void createLocalArchivePreservesSourceFilenamesInZip() throws IOException {
         stubTask();
         String earlyJanuaryCompressedLogsFilename = EARLY_JANUARY_LOGS_FILENAME + ".gz";
-        stubListing(page(EARLY_JANUARY_LOGS_FILENAME, earlyJanuaryCompressedLogsFilename));
+        stubArchiveFiles(EARLY_JANUARY_LOGS_FILENAME, earlyJanuaryCompressedLogsFilename);
         stubReader(EARLY_JANUARY_LOGS_FILENAME, new byte[0]);
         stubReader(earlyJanuaryCompressedLogsFilename, new byte[0]);
 
@@ -213,7 +200,7 @@ class PostgresColdStorageArchiveServiceTest {
         try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
             gzip.write(original);
         }
-        stubListing(page(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME));
+        stubArchiveFiles(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME);
         stubReader(EARLY_JANUARY_LOGS_FILENAME, original);
         stubReader(FEBRUARY_LOGS_COMPRESSED_FILENAME, compressed.toByteArray());
 
@@ -227,17 +214,17 @@ class PostgresColdStorageArchiveServiceTest {
     void deleteArchivedSourceFilesFailsWhenSourceListingFails() {
         stubTask();
         StorageException failure = new StorageException(503, "listing unavailable");
-        when(storage.list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."))).thenThrow(failure);
+        when(invalidMessageService.streamLogFilesInBackoutQueueForTask(task)).thenThrow(failure);
 
         assertSame(failure, assertThrows(StorageException.class, () -> service.deleteArchivedSourceFiles(task)));
-        verify(storage).list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."));
-        verifyNoMoreInteractions(storage);
+        verify(invalidMessageService).streamLogFilesInBackoutQueueForTask(task);
+        verifyNoInteractions(storage);
     }
 
     @Test
     void deleteArchivedSourceFilesStopsWhenDeletionFails() {
         stubTask();
-        stubListing(page(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME));
+        stubSourceFiles(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME);
         StorageException failure = new StorageException(503, "deletion unavailable");
         when(storage.delete(ARCHIVE_BUCKET, EARLY_JANUARY_LOGS_FILENAME)).thenThrow(failure);
 
@@ -246,10 +233,9 @@ class PostgresColdStorageArchiveServiceTest {
     }
 
     @Test
-    void deleteArchivedSourceFilesProcessesAllListingPages() {
+    void deleteArchivedSourceFilesDeletesAllProvidedSourceFiles() {
         stubTask();
-        Page<Blob> second = page(FEBRUARY_LOGS_COMPRESSED_FILENAME);
-        stubListing(new PageImpl<>(() -> second, "next", List.of(blob(EARLY_JANUARY_LOGS_FILENAME))));
+        stubSourceFiles(EARLY_JANUARY_LOGS_FILENAME, FEBRUARY_LOGS_COMPRESSED_FILENAME);
 
         service.deleteArchivedSourceFiles(task);
 
@@ -260,21 +246,22 @@ class PostgresColdStorageArchiveServiceTest {
     private void stubTask() {
         when(task.getTeknologi()).thenReturn(TeknologiEnum.POSTGRESQL);
         when(task.getBackfill()).thenReturn(BackfillStatus.COLD_STORAGE_REQUESTED);
+    }
+
+    private void stubArchiveFiles(String... filenames) {
         when(task.getDbname()).thenReturn(DB_NAME);
+        stubSourceFiles(filenames);
     }
 
-    private void stubListing(Page<Blob> page) {
-        when(storage.list(ARCHIVE_BUCKET, Storage.BlobListOption.prefix(DB_NAME + "."))).thenReturn(page);
-    }
-
-    private static Page<Blob> page(String... filenames) {
-        return new PageImpl<>(null, null, Arrays.stream(filenames)
-                .map(PostgresColdStorageArchiveServiceTest::blob).toList());
+    private void stubSourceFiles(String... filenames) {
+        when(invalidMessageService.streamLogFilesInBackoutQueueForTask(task))
+                .thenAnswer(invocation -> Arrays.stream(filenames)
+                        .map(PostgresColdStorageArchiveServiceTest::blob));
     }
 
     private static Blob blob(String filename) {
         Blob blob = mock(Blob.class);
-        lenient().when(blob.getName()).thenReturn(filename);
+        when(blob.getName()).thenReturn(filename);
         return blob;
     }
 
@@ -291,7 +278,7 @@ class PostgresColdStorageArchiveServiceTest {
 
     private void assertAcceptedFilename(String filename) {
         stubTask();
-        stubListing(page(filename));
+        stubArchiveFiles(filename);
         StorageException stopAfterSelection = new StorageException(503, "stop at source read");
         when(storage.reader(ARCHIVE_BUCKET, filename)).thenThrow(stopAfterSelection);
 
